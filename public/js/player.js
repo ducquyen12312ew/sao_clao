@@ -1,4 +1,3 @@
-// Advanced Music Player with Queue Management
 class MusicPlayer {
   constructor() {
     this.audio = document.getElementById('audioPlayer');
@@ -6,115 +5,70 @@ class MusicPlayer {
     this.queue = [];
     this.queueIndex = -1;
     this.isShuffled = false;
-    this.repeatMode = 'off'; // 'off', 'all', 'one'
+    this.repeatMode = 'off';
     this.originalQueue = [];
-    
+    if (!this.audio) return;
     this.initElements();
     this.initEventListeners();
-    this.restoreState();
-  }
-
-  initElements() {
-    this.playerEl = document.getElementById('musicPlayer');
-    this.playPauseBtn = document.getElementById('playPauseBtn');
-    this.prevBtn = document.getElementById('prevBtn');
-    this.nextBtn = document.getElementById('nextBtn');
-    this.shuffleBtn = document.getElementById('shuffleBtn');
-    this.repeatBtn = document.getElementById('repeatBtn');
-    this.progressBar = document.getElementById('progressBar');
-    this.progressFill = document.getElementById('progressFill');
-    this.currentTimeEl = document.getElementById('currentTime');
-    this.durationEl = document.getElementById('duration');
-    this.volumeSlider = document.getElementById('volumeSlider');
-    this.volumeIcon = document.getElementById('volumeIcon');
-    this.queueBtn = document.getElementById('queueBtn');
-    this.queuePanel = document.getElementById('queuePanel');
-    this.queueList = document.getElementById('queueList');
+    setTimeout(() => {
+      this.restoreState();
+    }, 100);
   }
 
   initEventListeners() {
-    // Playback controls
-    this.playPauseBtn?.addEventListener('click', () => this.togglePlay());
-    this.prevBtn?.addEventListener('click', () => this.playPrevious());
-    this.nextBtn?.addEventListener('click', () => this.playNext());
-    
-    // Shuffle & Repeat
-    this.shuffleBtn?.addEventListener('click', () => this.toggleShuffle());
-    this.repeatBtn?.addEventListener('click', () => this.cycleRepeat());
-    
-    // Progress bar
-    this.progressBar?.addEventListener('click', (e) => this.seekTo(e));
-    
-    // Volume
-    this.volumeSlider?.addEventListener('input', (e) => this.setVolume(e.target.value));
-    this.volumeIcon?.addEventListener('click', () => this.toggleMute());
-    
-    // Queue panel
-    this.queueBtn?.addEventListener('click', () => this.toggleQueuePanel());
-    
-    // Audio events
+    if (this.playPauseBtn) {
+      this.playPauseBtn.addEventListener('click', () => this.togglePlay());
+    }
+    if (this.prevBtn) {
+      this.prevBtn.addEventListener('click', () => this.playPrevious());
+    }
+    if (this.nextBtn) {
+      this.nextBtn.addEventListener('click', () => this.playNext());
+    }
+    if (this.shuffleBtn) {
+      this.shuffleBtn.addEventListener('click', () => this.toggleShuffle());
+    }
+    if (this.repeatBtn) {
+      this.repeatBtn.addEventListener('click', () => this.cycleRepeat());
+    }
+    if (this.progressBar) {
+      this.progressBar.addEventListener('click', (e) => this.seekTo(e));
+    }
+    if (this.volumeSlider) {
+      this.volumeSlider.addEventListener('input', (e) => this.setVolume(e.target.value));
+    }
+    if (this.volumeIcon) {
+      this.volumeIcon.addEventListener('click', () => this.toggleMute());
+    }
+    if (this.queueBtn) {
+      this.queueBtn.addEventListener('click', () => this.toggleQueuePanel());
+    }
+
     this.audio.addEventListener('timeupdate', () => this.updateProgress());
     this.audio.addEventListener('loadedmetadata', () => this.updateDuration());
     this.audio.addEventListener('ended', () => this.handleTrackEnd());
     this.audio.addEventListener('play', () => this.updatePlayButton(true));
     this.audio.addEventListener('pause', () => this.updatePlayButton(false));
-    
-    // Keyboard shortcuts
-    document.addEventListener('keydown', (e) => this.handleKeyboard(e));
   }
 
-  playTrack(track, autoAddToQueue = true) {
+  playTrack(track) {
+    if (!track || !track.audioUrl) return;
     this.currentTrack = track;
-    
-    // Tự động thêm vào queue khi play (trừ khi gọi từ queue)
-    if (autoAddToQueue) {
-      const existingIndex = this.queue.findIndex(t => t.id === track.id);
-      
-      if (existingIndex === -1) {
-        // Bài hát chưa có trong queue - thêm mới
-        this.queue.push(track);
-        this.originalQueue.push(track);
-        this.queueIndex = this.queue.length - 1;
-      } else {
-        // Bài hát đã có - chỉ cập nhật index
-        this.queueIndex = existingIndex;
-      }
-    }
-    
     this.updateUI(track);
     this.audio.src = track.audioUrl;
-    this.audio.play();
-    this.playerEl.classList.add('active');
-    
-    // Clear all playing states first
-    document.querySelectorAll('.play-btn').forEach(btn => {
-      btn.classList.remove('playing');
-      const icon = btn.querySelector('i');
-      if (icon) {
-        icon.className = 'fa-solid fa-play';
-      }
-    });
-    
-    // Set current track as playing
-    const currentBtn = document.querySelector(`[data-track-id="${track.id}"] .play-btn`);
-    if (currentBtn) {
-      currentBtn.classList.add('playing');
-      const icon = currentBtn.querySelector('i');
-      if (icon) {
-        icon.className = 'fa-solid fa-pause';
-      }
+    const playPromise = this.audio.play();
+    if (playPromise !== undefined) {
+      playPromise.then(() => {
+        this.playerEl.classList.add('active');
+        this.saveState();
+      }).catch(() => {});
     }
-    
-    this.renderQueue();
-    this.saveState();
-    this.recordPlay(track.id);
   }
 
   togglePlay() {
     if (!this.audio.src) return;
-    
     if (this.audio.paused) {
-      this.audio.play();
+      this.audio.play().catch(() => {});
     } else {
       this.audio.pause();
     }
@@ -122,69 +76,59 @@ class MusicPlayer {
 
   playNext() {
     if (this.queue.length === 0) return;
-    
     if (this.repeatMode === 'one') {
       this.audio.currentTime = 0;
       this.audio.play();
       return;
     }
-    
     let nextIndex = this.queueIndex + 1;
-    
     if (nextIndex >= this.queue.length) {
-      if (this.repeatMode === 'all') {
-        nextIndex = 0;
-      } else {
-        return;
-      }
+      if (this.repeatMode === 'all') nextIndex = 0;
+      else return;
     }
-    
     this.queueIndex = nextIndex;
-    this.playTrackFromQueue(nextIndex);
+    this.playTrack(this.queue[nextIndex]);
   }
 
   playPrevious() {
     if (this.queue.length === 0) return;
-    
     if (this.audio.currentTime > 3) {
       this.audio.currentTime = 0;
       return;
     }
-    
     let prevIndex = this.queueIndex - 1;
-    
     if (prevIndex < 0) {
-      if (this.repeatMode === 'all') {
-        prevIndex = this.queue.length - 1;
-      } else {
-        return;
-      }
+      if (this.repeatMode === 'all') prevIndex = this.queue.length - 1;
+      else return;
     }
-    
     this.queueIndex = prevIndex;
-    this.playTrackFromQueue(prevIndex);
+    this.playTrack(this.queue[prevIndex]);
   }
 
-  playTrackFromQueue(index) {
-    if (index < 0 || index >= this.queue.length) return;
-    this.queueIndex = index;
-    this.playTrack(this.queue[index], false);
+  addToQueue(track) {
+    const exists = this.queue.find(t => t.id === track.id);
+    if (exists) return false;
+    this.queue.push(track);
+    this.originalQueue.push(track);
+    if (this.queue.length === 1) {
+      this.queueIndex = 0;
+      this.playTrack(track);
+    }
+    this.renderQueue();
+    this.saveState();
+    return true;
   }
 
   toggleShuffle() {
     this.isShuffled = !this.isShuffled;
     this.shuffleBtn.classList.toggle('active', this.isShuffled);
-    
+    const current = this.queue[this.queueIndex];
     if (this.isShuffled) {
-      const current = this.queue[this.queueIndex];
       this.queue = this.shuffleArray([...this.originalQueue]);
-      this.queueIndex = this.queue.findIndex(t => t.id === current.id);
     } else {
-      const current = this.queue[this.queueIndex];
       this.queue = [...this.originalQueue];
-      this.queueIndex = this.queue.findIndex(t => t.id === current.id);
     }
-    
+    this.queueIndex = this.queue.findIndex(t => t.id === current?.id);
     this.renderQueue();
     this.saveState();
   }
@@ -193,15 +137,12 @@ class MusicPlayer {
     const modes = ['off', 'all', 'one'];
     const currentIndex = modes.indexOf(this.repeatMode);
     this.repeatMode = modes[(currentIndex + 1) % modes.length];
-    
     this.repeatBtn.classList.remove('active', 'repeat-one');
-    
     if (this.repeatMode === 'all') {
       this.repeatBtn.classList.add('active');
     } else if (this.repeatMode === 'one') {
       this.repeatBtn.classList.add('active', 'repeat-one');
     }
-    
     this.saveState();
   }
 
@@ -260,32 +201,33 @@ class MusicPlayer {
     } else {
       iconClass += 'fa-volume-high';
     }
-    this.volumeIcon.className = 'volume-icon ' + iconClass;
+    if (this.volumeIcon) {
+      this.volumeIcon.className = 'volume-icon ' + iconClass;
+    }
   }
 
   updateProgress() {
     if (!this.audio.duration) return;
-    
     const progress = (this.audio.currentTime / this.audio.duration) * 100;
-    this.progressFill.style.width = progress + '%';
-    this.currentTimeEl.textContent = this.formatTime(this.audio.currentTime);
-    
-    if (this.currentTrack) {
-      this.saveState();
+    if (this.progressFill) {
+      this.progressFill.style.width = progress + '%';
+    }
+    if (this.currentTimeEl) {
+      this.currentTimeEl.textContent = this.formatTime(this.audio.currentTime);
     }
   }
 
   updateDuration() {
-    this.durationEl.textContent = this.formatTime(this.audio.duration);
+    if (this.durationEl) {
+      this.durationEl.textContent = this.formatTime(this.audio.duration);
+    }
   }
 
   updatePlayButton(isPlaying) {
-    const icon = this.playPauseBtn.querySelector('i');
+    const icon = this.playPauseBtn?.querySelector('i');
     if (icon) {
       icon.className = isPlaying ? 'fa-solid fa-pause' : 'fa-solid fa-play';
     }
-    
-    // Update all cards - clear all first
     document.querySelectorAll('.play-btn').forEach(btn => {
       btn.classList.remove('playing');
       const btnIcon = btn.querySelector('i');
@@ -293,8 +235,6 @@ class MusicPlayer {
         btnIcon.className = 'fa-solid fa-play';
       }
     });
-    
-    // Only update current track
     if (this.currentTrack && isPlaying) {
       const currentBtn = document.querySelector(`[data-track-id="${this.currentTrack.id}"] .play-btn`);
       if (currentBtn) {
@@ -308,28 +248,31 @@ class MusicPlayer {
   }
 
   updateUI(track) {
-    document.getElementById('playerTitle').textContent = track.title;
-    document.getElementById('playerArtist').textContent = track.artist || 'Unknown Artist';
-    document.getElementById('sidebarTitle').textContent = track.title;
-    document.getElementById('sidebarArtist').textContent = track.artist || 'Unknown Artist';
-    
+    const playerTitle = document.getElementById('playerTitle');
+    const playerArtist = document.getElementById('playerArtist');
+    const playerThumb = document.getElementById('playerThumb');
+    if (playerTitle) playerTitle.textContent = track.title;
+    if (playerArtist) playerArtist.textContent = track.artist || 'Unknown Artist';
     const thumbHTML = track.cover ? `<img src="${track.cover}" alt="${track.title}">` : '';
-    document.getElementById('playerThumb').innerHTML = thumbHTML;
-    document.getElementById('sidebarImage').innerHTML = thumbHTML;
-    
-    document.getElementById('rightSidebar')?.classList.add('active');
+    if (playerThumb) playerThumb.innerHTML = thumbHTML;
+    const sidebarTitle = document.getElementById('sidebarTitle');
+    const sidebarArtist = document.getElementById('sidebarArtist');
+    const sidebarImage = document.getElementById('sidebarImage');
+    if (sidebarTitle) sidebarTitle.textContent = track.title;
+    if (sidebarArtist) sidebarArtist.textContent = track.artist || 'Unknown Artist';
+    if (sidebarImage) sidebarImage.innerHTML = thumbHTML;
   }
 
   toggleQueuePanel() {
-    this.queuePanel.classList.toggle('active');
+    if (this.queuePanel) {
+      this.queuePanel.classList.toggle('active');
+    }
   }
 
   renderQueue() {
     if (!this.queueList) return;
-    
     this.queueList.innerHTML = this.queue.map((track, index) => `
-      <div class="queue-item ${index === this.queueIndex ? 'current' : ''}" 
-           onclick="player.playQueueItem(${index})">
+      <div class="queue-item ${index === this.queueIndex ? 'current' : ''}" onclick="player.playQueueItem(${index})">
         <div class="queue-item-thumb">
           ${track.cover ? `<img src="${track.cover}" alt="${track.title}">` : ''}
         </div>
@@ -337,40 +280,36 @@ class MusicPlayer {
           <div class="queue-item-title">${track.title}</div>
           <div class="queue-item-artist">${track.artist || 'Unknown'}</div>
         </div>
-        <button class="queue-item-remove" onclick="event.stopPropagation(); player.removeFromQueue(${index})">
-          ✕
-        </button>
+        <button class="queue-item-remove" onclick="event.stopPropagation(); player.removeFromQueue(${index})">✕</button>
       </div>
     `).join('');
-    
-    document.getElementById('queueCount').textContent = this.queue.length;
+    const queueCount = document.getElementById('queueCount');
+    if (queueCount) queueCount.textContent = this.queue.length;
   }
 
   playQueueItem(index) {
-    this.playTrackFromQueue(index);
+    if (index < 0 || index >= this.queue.length) return;
+    this.queueIndex = index;
+    this.playTrack(this.queue[index]);
   }
 
   removeFromQueue(index) {
     const removedTrack = this.queue[index];
     this.queue.splice(index, 1);
-    
-    // Remove from original queue too
     const origIndex = this.originalQueue.findIndex(t => t.id === removedTrack.id);
-    if (origIndex !== -1) {
-      this.originalQueue.splice(origIndex, 1);
-    }
-    
+    if (origIndex !== -1) this.originalQueue.splice(origIndex, 1);
     if (index < this.queueIndex) {
       this.queueIndex--;
     } else if (index === this.queueIndex) {
       if (this.queue.length > 0) {
-        this.playTrackFromQueue(Math.min(index, this.queue.length - 1));
+        this.queueIndex = Math.min(index, this.queue.length - 1);
+        this.playTrack(this.queue[this.queueIndex]);
       } else {
+        this.queueIndex = -1;
         this.audio.pause();
-        this.playerEl.classList.remove('active');
+        if (this.playerEl) this.playerEl.classList.remove('active');
       }
     }
-    
     this.renderQueue();
     this.saveState();
   }
@@ -380,42 +319,41 @@ class MusicPlayer {
     this.originalQueue = [];
     this.queueIndex = -1;
     this.audio.pause();
-    this.playerEl.classList.remove('active');
+    this.audio.src = '';
+    this.currentTrack = null;
+    if (this.playerEl) this.playerEl.classList.remove('active');
     this.renderQueue();
     this.saveState();
   }
 
   handleKeyboard(e) {
     if (e.target.tagName === 'INPUT' || e.target.tagName === 'TEXTAREA') return;
-    
     switch(e.code) {
       case 'Space':
         e.preventDefault();
         this.togglePlay();
         break;
       case 'ArrowRight':
-        if (e.shiftKey) {
-          this.playNext();
-        } else {
-          this.audio.currentTime = Math.min(this.audio.currentTime + 5, this.audio.duration);
-        }
+        if (e.shiftKey) this.playNext();
+        else this.audio.currentTime = Math.min(this.audio.currentTime + 5, this.audio.duration);
         break;
       case 'ArrowLeft':
-        if (e.shiftKey) {
-          this.playPrevious();
-        } else {
-          this.audio.currentTime = Math.max(this.audio.currentTime - 5, 0);
-        }
+        if (e.shiftKey) this.playPrevious();
+        else this.audio.currentTime = Math.max(this.audio.currentTime - 5, 0);
         break;
       case 'ArrowUp':
         e.preventDefault();
-        this.volumeSlider.value = Math.min(100, parseInt(this.volumeSlider.value) + 5);
-        this.setVolume(this.volumeSlider.value);
+        if (this.volumeSlider) {
+          this.volumeSlider.value = Math.min(100, parseInt(this.volumeSlider.value) + 5);
+          this.setVolume(this.volumeSlider.value);
+        }
         break;
       case 'ArrowDown':
         e.preventDefault();
-        this.volumeSlider.value = Math.max(0, parseInt(this.volumeSlider.value) - 5);
-        this.setVolume(this.volumeSlider.value);
+        if (this.volumeSlider) {
+          this.volumeSlider.value = Math.max(0, parseInt(this.volumeSlider.value) - 5);
+          this.setVolume(this.volumeSlider.value);
+        }
         break;
     }
   }
@@ -430,9 +368,7 @@ class MusicPlayer {
   async recordPlay(trackId) {
     try {
       await fetch(`/api/plays/${trackId}`, { method: 'POST' });
-    } catch (err) {
-      console.error('Failed to record play:', err);
-    }
+    } catch {}
   }
 
   saveState() {
@@ -440,65 +376,63 @@ class MusicPlayer {
       currentTrack: this.currentTrack,
       queue: this.queue,
       queueIndex: this.queueIndex,
-      currentTime: this.audio.currentTime,
+      currentTime: this.audio.currentTime || 0,
       isShuffled: this.isShuffled,
       repeatMode: this.repeatMode,
       originalQueue: this.originalQueue
     };
-    localStorage.setItem('playerState', JSON.stringify(state));
+    try {
+      localStorage.setItem('playerState', JSON.stringify(state));
+    } catch {}
   }
 
   restoreState() {
     try {
       const saved = localStorage.getItem('playerState');
       if (!saved) return;
-      
       const state = JSON.parse(saved);
-      
-      if (state.currentTrack && state.queue) {
-        this.queue = state.queue;
-        this.originalQueue = state.originalQueue || state.queue;
-        this.queueIndex = state.queueIndex || 0;
-        this.isShuffled = state.isShuffled || false;
-        this.repeatMode = state.repeatMode || 'off';
-        
-        this.updateUI(state.currentTrack);
-        this.audio.src = state.currentTrack.audioUrl;
-        this.audio.currentTime = state.currentTime || 0;
-        this.playerEl.classList.add('active');
-        document.getElementById('rightSidebar')?.classList.add('active');
-        
-        this.shuffleBtn.classList.toggle('active', this.isShuffled);
-        this.repeatBtn.classList.remove('active', 'repeat-one');
-        if (this.repeatMode === 'all') {
-          this.repeatBtn.classList.add('active');
-        } else if (this.repeatMode === 'one') {
-          this.repeatBtn.classList.add('active', 'repeat-one');
-        }
-        
-        this.renderQueue();
+      if (!state.currentTrack || !state.currentTrack.audioUrl) return;
+      this.currentTrack = state.currentTrack;
+      this.queue = state.queue || [];
+      this.originalQueue = state.originalQueue || [];
+      this.queueIndex = state.queueIndex || 0;
+      this.isShuffled = state.isShuffled || false;
+      this.repeatMode = state.repeatMode || 'off';
+      this.updateUI(state.currentTrack);
+      this.audio.src = state.currentTrack.audioUrl;
+      if (state.currentTime && state.currentTime > 0) {
+        this.audio.currentTime = state.currentTime;
       }
-      
+      if (this.playerEl) this.playerEl.classList.add('active');
+      if (this.shuffleBtn) this.shuffleBtn.classList.toggle('active', this.isShuffled);
+      if (this.repeatBtn) {
+        this.repeatBtn.classList.remove('active', 'repeat-one');
+        if (this.repeatMode === 'all') this.repeatBtn.classList.add('active');
+        else if (this.repeatMode === 'one') this.repeatBtn.classList.add('active', 'repeat-one');
+      }
+      this.renderQueue();
       const savedVolume = localStorage.getItem('volume');
       if (savedVolume) {
-        this.volumeSlider.value = savedVolume;
+        if (this.volumeSlider) this.volumeSlider.value = savedVolume;
         this.audio.volume = savedVolume / 100;
         this.updateVolumeIcon(savedVolume);
       }
-    } catch (err) {
-      console.error('Failed to restore state:', err);
+    } catch {
+      localStorage.removeItem('playerState');
     }
   }
 }
 
-// Global function for onclick handlers
-let player;
-
+window.player = null;
 window.addEventListener('DOMContentLoaded', () => {
-  player = new MusicPlayer();
+  window.player = new MusicPlayer();
 });
 
-function playTrack(id, title, artist, cover, audioUrl) {
+window.playTrack = function(id, title, artist, cover, audioUrl) {
+  if (!window.player) {
+    alert('Player chưa sẵn sàng. Vui lòng đợi vài giây và thử lại.');
+    return;
+  }
   const track = { id, title, artist, cover, audioUrl };
-  player.playTrack(track);
-}
+  window.player.playTrack(track);
+};

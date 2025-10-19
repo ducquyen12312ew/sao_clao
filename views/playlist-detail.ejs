@@ -11,13 +11,15 @@
     
     :root {
       --bg-primary: #000000;
+      --bg-secondary: #0a0a0a;
       --bg-card: #121212;
       --bg-card-hover: #1a1a1a;
       --border-color: #282828;
       --text-primary: #ffffff;
       --text-secondary: #b3b3b3;
-      --accent-color: #1ed760;
-      --accent-hover: #1fdf64;
+      --accent-color: #ffffff;
+      --accent-hover: #e0e0e0;
+      --player-bg: #181818;
     }
     
     body {
@@ -25,8 +27,46 @@
       background: var(--bg-primary);
       color: var(--text-primary);
       min-height: 100vh;
+      overflow-x: hidden;
     }
     
+    /* Audio Visualizer */
+    .audio-visualizer {
+      position: fixed;
+      top: 64px;
+      left: 0;
+      right: 0;
+      height: 200px;
+      z-index: 1;
+      pointer-events: none;
+      opacity: 0.6;
+      display: flex;
+      align-items: flex-end;
+      justify-content: center;
+      gap: 3px;
+      padding: 0 20px;
+      background: linear-gradient(180deg, rgba(18,18,18,0.8) 0%, transparent 100%);
+    }
+    
+    .bar {
+      width: 4px;
+      background: linear-gradient(0deg, #ffffff 0%, rgba(255,255,255,0.3) 100%);
+      border-radius: 4px 4px 0 0;
+      transition: height 0.1s ease;
+      animation: pulse 1.5s ease-in-out infinite;
+    }
+    
+    @keyframes pulse {
+      0%, 100% { height: 20px; }
+      50% { height: 60px; }
+    }
+    
+    .bar:nth-child(2n) { animation-delay: 0.1s; }
+    .bar:nth-child(3n) { animation-delay: 0.2s; }
+    .bar:nth-child(4n) { animation-delay: 0.3s; }
+    .bar:nth-child(5n) { animation-delay: 0.4s; }
+    
+    /* Header */
     .header {
       position: fixed;
       top: 0;
@@ -43,7 +83,7 @@
       z-index: 100;
     }
     
-    .logo img { height: 36px; }
+    .logo img { height: 36px; filter: brightness(1.1); }
     
     .nav-menu {
       display: flex;
@@ -67,19 +107,24 @@
     .header-actions {
       display: flex;
       gap: 20px;
+      align-items: center;
     }
     
     .user-avatar {
       width: 36px;
       height: 36px;
       border-radius: 50%;
-      background: linear-gradient(135deg, var(--accent-color), #1db954);
+      background: linear-gradient(135deg, #ffffff, #e0e0e0);
       color: #000;
       display: flex;
       align-items: center;
       justify-content: center;
       font-weight: 700;
+      font-size: 14px;
+      transition: transform 0.2s;
     }
+    
+    .user-avatar:hover { transform: scale(1.08); }
     
     .btn-logout {
       padding: 10px 24px;
@@ -96,14 +141,17 @@
     
     .btn-logout:hover {
       border-color: var(--text-primary);
+      transform: scale(1.04);
     }
     
+    /* Playlist Hero */
     .playlist-hero {
-      padding: 104px 48px 24px;
-      background: linear-gradient(180deg, #2a2a2a 0%, var(--bg-primary) 100%);
+      padding: 140px 48px 40px;
+      background: linear-gradient(180deg, #1a1a1a 0%, var(--bg-primary) 100%);
       display: flex;
       gap: 32px;
       align-items: flex-end;
+      position: relative;
     }
     
     .playlist-cover {
@@ -111,13 +159,15 @@
       height: 240px;
       border-radius: 8px;
       overflow: hidden;
-      box-shadow: 0 12px 48px rgba(0, 0, 0, 0.8);
+      box-shadow: 0 20px 60px rgba(255, 255, 255, 0.1);
       flex-shrink: 0;
+      border: 1px solid rgba(255, 255, 255, 0.1);
     }
     
     .playlist-cover-grid {
       display: grid;
       grid-template-columns: 1fr 1fr;
+      grid-template-rows: 1fr 1fr;
       width: 100%;
       height: 100%;
     }
@@ -126,6 +176,7 @@
       background-size: cover;
       background-position: center;
       background-color: var(--bg-card);
+      border: 0.5px solid rgba(255, 255, 255, 0.05);
     }
     
     .playlist-cover-empty {
@@ -147,44 +198,60 @@
     }
     
     .playlist-type {
-      font-size: 14px;
+      font-size: 12px;
       font-weight: 700;
       text-transform: uppercase;
       margin-bottom: 12px;
+      letter-spacing: 2px;
+      color: var(--text-secondary);
     }
     
     .playlist-name {
-      font-size: 64px;
+      font-size: 72px;
       font-weight: 900;
       line-height: 1.1;
-      margin-bottom: 16px;
-      letter-spacing: -2px;
+      margin-bottom: 20px;
+      letter-spacing: -3px;
+      background: linear-gradient(135deg, #ffffff 0%, #b3b3b3 100%);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      background-clip: text;
     }
     
     .playlist-meta {
       display: flex;
-      gap: 8px;
+      gap: 12px;
       align-items: center;
       font-size: 14px;
       color: var(--text-secondary);
+      font-weight: 600;
+    }
+    
+    .playlist-meta span {
+      display: flex;
+      align-items: center;
+      gap: 6px;
     }
     
     .playlist-description {
       color: var(--text-secondary);
-      margin-top: 12px;
+      margin-top: 16px;
       font-size: 14px;
+      max-width: 600px;
+      line-height: 1.6;
     }
     
+    /* Actions */
     .playlist-actions {
-      padding: 24px 48px;
+      padding: 32px 48px;
       display: flex;
       gap: 16px;
       align-items: center;
     }
     
     .btn-play-all {
-      width: 56px;
-      height: 56px;
+      width: 64px;
+      height: 64px;
       background: var(--accent-color);
       border: none;
       border-radius: 50%;
@@ -192,37 +259,60 @@
       align-items: center;
       justify-content: center;
       cursor: pointer;
-      transition: all 0.2s;
-      font-size: 20px;
+      transition: all 0.3s;
+      font-size: 24px;
       color: #000;
+      box-shadow: 0 8px 24px rgba(255, 255, 255, 0.2);
     }
     
     .btn-play-all:hover {
       background: var(--accent-hover);
-      transform: scale(1.06);
+      transform: scale(1.08);
+      box-shadow: 0 12px 32px rgba(255, 255, 255, 0.3);
     }
     
     .btn-action {
-      background: none;
-      border: none;
+      width: 48px;
+      height: 48px;
+      background: transparent;
+      border: 1px solid var(--border-color);
+      border-radius: 50%;
       color: var(--text-secondary);
       cursor: pointer;
-      font-size: 24px;
-      padding: 8px;
+      font-size: 18px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
       transition: all 0.2s;
     }
     
     .btn-action:hover {
       color: var(--text-primary);
+      border-color: var(--text-primary);
       transform: scale(1.1);
     }
     
+    /* Tracks Container */
     .tracks-container {
-      padding: 0 48px 100px;
+      padding: 0 48px 140px;
+    }
+    
+    .track-header {
+      display: grid;
+      grid-template-columns: 40px 1fr 200px 60px;
+      gap: 16px;
+      padding: 12px 16px;
+      border-bottom: 1px solid var(--border-color);
+      color: var(--text-secondary);
+      font-size: 12px;
+      font-weight: 600;
+      text-transform: uppercase;
+      letter-spacing: 1px;
+      margin-bottom: 8px;
     }
     
     .track-list {
-      margin-top: 24px;
+      margin-top: 8px;
     }
     
     .track-item {
@@ -230,10 +320,954 @@
       grid-template-columns: 40px 1fr 200px 60px;
       gap: 16px;
       padding: 12px 16px;
-      border-radius: 6px;
-      transition: background 0.2s;
+      border-radius: 8px;
+      transition: all 0.2s;
       align-items: center;
+      border: 1px solid transparent;
     }
     
     .track-item:hover {
-      background: var(--bg-card-hover
+      background: var(--bg-card-hover);
+      border-color: var(--border-color);
+    }
+    
+    .track-item.playing {
+      background: var(--bg-card);
+      border-color: var(--accent-color);
+    }
+    
+    .track-number {
+      color: var(--text-secondary);
+      font-size: 14px;
+      text-align: center;
+      font-weight: 600;
+    }
+    
+    .track-item.playing .track-number {
+      color: var(--accent-color);
+    }
+    
+    .track-info {
+      display: flex;
+      align-items: center;
+      gap: 16px;
+    }
+    
+    .track-thumb {
+      width: 48px;
+      height: 48px;
+      border-radius: 6px;
+      overflow: hidden;
+      background: var(--bg-card);
+      flex-shrink: 0;
+      box-shadow: 0 4px 12px rgba(0, 0, 0, 0.5);
+    }
+    
+    .track-thumb img {
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+    }
+    
+    .track-details {
+      flex: 1;
+      min-width: 0;
+    }
+    
+    .track-title {
+      font-size: 15px;
+      font-weight: 600;
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      margin-bottom: 4px;
+    }
+    
+    .track-item.playing .track-title {
+      color: var(--accent-color);
+    }
+    
+    .track-artist {
+      font-size: 13px;
+      color: var(--text-secondary);
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+    }
+    
+    .track-duration {
+      color: var(--text-secondary);
+      font-size: 14px;
+      text-align: center;
+      font-weight: 500;
+    }
+    
+    .track-actions {
+      display: flex;
+      gap: 8px;
+      opacity: 0;
+      transition: opacity 0.2s;
+    }
+    
+    .track-item:hover .track-actions {
+      opacity: 1;
+    }
+    
+    .btn-track-action {
+      background: none;
+      border: none;
+      color: var(--text-secondary);
+      cursor: pointer;
+      font-size: 16px;
+      padding: 8px;
+      transition: all 0.2s;
+      border-radius: 4px;
+    }
+    
+    .btn-track-action:hover {
+      color: var(--text-primary);
+      background: var(--bg-card);
+    }
+    
+    .empty-state {
+      text-align: center;
+      padding: 100px 20px;
+    }
+    
+    .empty-state i {
+      font-size: 80px;
+      color: var(--text-secondary);
+      margin-bottom: 24px;
+    }
+    
+    .empty-state h3 {
+      font-size: 32px;
+      font-weight: 800;
+      margin-bottom: 16px;
+    }
+    
+    .empty-state p {
+      color: var(--text-secondary);
+      font-size: 16px;
+    }
+    
+    /* Music Player - Giống profile.ejs */
+    .music-player {
+      position: fixed;
+      bottom: 0;
+      left: 0;
+      right: 0;
+      background: var(--player-bg);
+      border-top: 1px solid var(--border-color);
+      padding: 16px 24px;
+      display: none;
+      z-index: 1000;
+    }
+    
+    .music-player.active { display: block; }
+    
+    .player-wrapper {
+      display: flex;
+      align-items: center;
+      gap: 24px;
+      max-width: 1800px;
+      margin: 0 auto;
+    }
+    
+    .player-left {
+      display: flex;
+      align-items: center;
+      gap: 16px;
+      min-width: 280px;
+    }
+    
+    .player-thumb {
+      width: 64px;
+      height: 64px;
+      border-radius: 6px;
+      overflow: hidden;
+      background: var(--bg-card);
+      flex-shrink: 0;
+      box-shadow: 0 4px 12px rgba(0, 0, 0, 0.5);
+    }
+    
+    .player-thumb img {
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+    }
+    
+    .player-info {
+      flex: 1;
+      min-width: 0;
+    }
+    
+    .player-title {
+      font-size: 15px;
+      font-weight: 600;
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      margin-bottom: 4px;
+    }
+    
+    .player-artist {
+      font-size: 13px;
+      color: var(--text-secondary);
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+    }
+    
+    .player-center {
+      flex: 1;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 12px;
+      max-width: 800px;
+    }
+    
+    .player-buttons {
+      display: flex;
+      align-items: center;
+      gap: 20px;
+    }
+    
+    .control-btn {
+      background: none;
+      border: none;
+      color: var(--text-secondary);
+      cursor: pointer;
+      transition: all 0.2s;
+      font-size: 18px;
+      padding: 8px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      border-radius: 50%;
+    }
+    
+    .control-btn:hover {
+      color: var(--text-primary);
+      transform: scale(1.08);
+    }
+    
+    .control-btn.active { color: var(--accent-color); }
+    
+    .control-btn.repeat-one::after {
+      content: '1';
+      position: absolute;
+      font-size: 9px;
+      font-weight: 900;
+    }
+    
+    .control-btn.play {
+      width: 40px;
+      height: 40px;
+      background: var(--text-primary);
+      border-radius: 50%;
+      color: #000;
+      font-size: 16px;
+    }
+    
+    .control-btn.play:hover { transform: scale(1.08); }
+    
+    .player-progress-wrapper {
+      width: 100%;
+      display: flex;
+      align-items: center;
+      gap: 12px;
+    }
+    
+    .time {
+      font-size: 12px;
+      color: var(--text-secondary);
+      min-width: 45px;
+      text-align: center;
+      font-weight: 500;
+    }
+    
+    .progress-bar {
+      flex: 1;
+      height: 4px;
+      background: #4d4d4d;
+      border-radius: 2px;
+      cursor: pointer;
+      position: relative;
+      transition: height 0.2s;
+    }
+    
+    .progress-bar:hover { height: 6px; }
+    
+    .progress-fill {
+      height: 100%;
+      background: var(--text-primary);
+      border-radius: 2px;
+      position: relative;
+    }
+    
+    .progress-fill::after {
+      content: '';
+      position: absolute;
+      right: 0;
+      top: 50%;
+      transform: translateY(-50%);
+      width: 12px;
+      height: 12px;
+      background: var(--text-primary);
+      border-radius: 50%;
+      opacity: 0;
+      transition: opacity 0.2s;
+    }
+    
+    .progress-bar:hover .progress-fill::after { opacity: 1; }
+    
+    .player-right {
+      display: flex;
+      align-items: center;
+      gap: 16px;
+      min-width: 200px;
+      justify-content: flex-end;
+    }
+    
+    .volume-control {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+    
+    .volume-icon {
+      cursor: pointer;
+      font-size: 16px;
+      color: var(--text-secondary);
+      transition: color 0.2s;
+    }
+    
+    .volume-icon:hover { color: var(--text-primary); }
+    
+    .volume-slider {
+      width: 100px;
+      height: 4px;
+      -webkit-appearance: none;
+      appearance: none;
+      background: #4d4d4d;
+      border-radius: 2px;
+      cursor: pointer;
+    }
+    
+    .volume-slider::-webkit-slider-thumb {
+      -webkit-appearance: none;
+      appearance: none;
+      width: 12px;
+      height: 12px;
+      background: var(--text-primary);
+      border-radius: 50%;
+      cursor: pointer;
+      opacity: 0;
+      transition: opacity 0.2s;
+    }
+    
+    .volume-control:hover .volume-slider::-webkit-slider-thumb { opacity: 1; }
+    
+    .queue-toggle {
+      background: none;
+      border: none;
+      color: var(--text-secondary);
+      cursor: pointer;
+      font-size: 16px;
+      padding: 8px;
+      position: relative;
+      transition: color 0.2s;
+    }
+    
+    .queue-toggle:hover { color: var(--text-primary); }
+    
+    .queue-count {
+      position: absolute;
+      top: 2px;
+      right: 0;
+      background: var(--accent-color);
+      color: #000;
+      font-size: 10px;
+      font-weight: 900;
+      padding: 2px 5px;
+      border-radius: 10px;
+      min-width: 18px;
+      text-align: center;
+    }
+    
+    /* Queue Panel */
+    .queue-panel {
+      position: fixed;
+      right: -420px;
+      top: 64px;
+      bottom: 97px;
+      width: 420px;
+      background: var(--bg-secondary);
+      border-left: 1px solid var(--border-color);
+      transition: right 0.3s cubic-bezier(0.25, 0.46, 0.45, 0.94);
+      z-index: 99;
+      display: flex;
+      flex-direction: column;
+    }
+    
+    .queue-panel.active { right: 0; }
+    
+    .queue-header {
+      padding: 28px 24px;
+      border-bottom: 1px solid var(--border-color);
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+    
+    .queue-title {
+      font-size: 22px;
+      font-weight: 800;
+    }
+    
+    .queue-clear {
+      padding: 8px 20px;
+      background: transparent;
+      color: var(--text-secondary);
+      border: 1px solid var(--text-secondary);
+      border-radius: 500px;
+      cursor: pointer;
+      font-size: 12px;
+      font-weight: 700;
+      font-family: 'Inter', sans-serif;
+    }
+    
+    .queue-clear:hover {
+      color: var(--text-primary);
+      border-color: var(--text-primary);
+    }
+    
+    .queue-list {
+      flex: 1;
+      overflow-y: auto;
+      padding: 16px;
+    }
+    
+    .queue-item {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      padding: 10px 12px;
+      border-radius: 6px;
+      cursor: pointer;
+      transition: background 0.2s;
+      position: relative;
+    }
+    
+    .queue-item:hover { background: var(--bg-card); }
+    
+    .queue-item.current::before {
+      content: '';
+      position: absolute;
+      left: 0;
+      top: 50%;
+      transform: translateY(-50%);
+      width: 3px;
+      height: 24px;
+      background: var(--accent-color);
+      border-radius: 0 2px 2px 0;
+    }
+    
+    .queue-item-thumb {
+      width: 52px;
+      height: 52px;
+      border-radius: 4px;
+      overflow: hidden;
+      background: var(--bg-card);
+      flex-shrink: 0;
+    }
+    
+    .queue-item-thumb img {
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+    }
+    
+    .queue-item-info {
+      flex: 1;
+      min-width: 0;
+    }
+    
+    .queue-item-title {
+      font-size: 14px;
+      font-weight: 600;
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+    }
+    
+    .queue-item-artist {
+      font-size: 13px;
+      color: var(--text-secondary);
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+    }
+    
+    .queue-item-remove {
+      background: none;
+      border: none;
+      color: var(--text-secondary);
+      cursor: pointer;
+      padding: 8px;
+      opacity: 0;
+      transition: all 0.2s;
+    }
+    
+    .queue-item:hover .queue-item-remove { opacity: 1; }
+    .queue-item-remove:hover { color: var(--text-primary); }
+  </style>
+</head>
+<body>
+  <!-- Audio Visualizer -->
+  <div class="audio-visualizer" id="visualizer">
+    <div class="bar"></div>
+    <div class="bar"></div>
+    <div class="bar"></div>
+    <div class="bar"></div>
+    <div class="bar"></div>
+    <div class="bar"></div>
+    <div class="bar"></div>
+    <div class="bar"></div>
+    <div class="bar"></div>
+    <div class="bar"></div>
+    <div class="bar"></div>
+    <div class="bar"></div>
+    <div class="bar"></div>
+    <div class="bar"></div>
+    <div class="bar"></div>
+    <div class="bar"></div>
+    <div class="bar"></div>
+    <div class="bar"></div>
+    <div class="bar"></div>
+    <div class="bar"></div>
+  </div>
+
+  <header class="header">
+    <div style="display: flex; align-items: center;">
+      <div class="logo">
+        <img src="/public/img/saoclao.png" alt="SAOCLAO">
+      </div>
+      <nav class="nav-menu">
+        <a href="/profile" class="nav-link">
+          <i class="fa-solid fa-house"></i> Trang chủ
+        </a>
+        <a href="/playlists" class="nav-link">
+          <i class="fa-solid fa-music"></i> Playlist của tôi
+        </a>
+      </nav>
+    </div>
+    <div class="header-actions">
+      <div class="user-avatar" title="<%= user.username %>">
+        <%= user.username.charAt(0).toUpperCase() %>
+      </div>
+      <form method="post" action="/logout" style="display:inline">
+        <button type="submit" class="btn-logout">Đăng xuất</button>
+      </form>
+    </div>
+  </header>
+  
+  <div class="playlist-hero">
+    <div class="playlist-cover">
+      <% 
+        const covers = playlist.tracks.slice(0, 4).map(t => t.coverUrl).filter(Boolean);
+      %>
+      <% if (covers.length === 0) { %>
+        <div class="playlist-cover-empty">
+          <i class="fa-solid fa-music"></i>
+        </div>
+      <% } else if (covers.length === 1) { %>
+        <div class="playlist-cover-item" style="background-image: url('<%= covers[0] %>'); width: 100%; height: 100%;"></div>
+      <% } else { %>
+        <div class="playlist-cover-grid">
+          <% for (let i = 0; i < 4; i++) { %>
+            <% if (covers[i]) { %>
+              <div class="playlist-cover-item" style="background-image: url('<%= covers[i] %>');"></div>
+            <% } else { %>
+              <div class="playlist-cover-item"></div>
+            <% } %>
+          <% } %>
+        </div>
+      <% } %>
+    </div>
+    <div class="playlist-info">
+      <div class="playlist-type">Playlist</div>
+      <h1 class="playlist-name"><%= playlist.name %></h1>
+      <div class="playlist-meta">
+        <span><i class="fa-solid fa-user"></i> <%= user.username %></span>
+        <span>•</span>
+        <span><i class="fa-solid fa-music"></i> <%= playlist.tracks.length %> bài hát</span>
+      </div>
+      <% if (playlist.description) { %>
+        <div class="playlist-description"><%= playlist.description %></div>
+      <% } %>
+    </div>
+  </div>
+  
+  <div class="playlist-actions">
+    <% if (playlist.tracks.length > 0) { %>
+      <button class="btn-play-all" onclick="playAll()">
+        <i class="fa-solid fa-play"></i>
+      </button>
+      <button class="btn-play-all" onclick="shufflePlay()" style="background: transparent; border: 2px solid #fff; color: #fff;" title="Phát ngẫu nhiên">
+        <i class="fa-solid fa-shuffle"></i>
+      </button>
+    <% } %>
+    <button class="btn-action" onclick="window.history.back()" title="Quay lại">
+      <i class="fa-solid fa-arrow-left"></i>
+    </button>
+    <button class="btn-action" onclick="deletePlaylist()" title="Xóa playlist">
+      <i class="fa-solid fa-trash"></i>
+    </button>
+  </div>
+  
+  <div class="tracks-container">
+    <% if (playlist.tracks && playlist.tracks.length > 0) { %>
+      <div class="track-header">
+        <div>#</div>
+        <div>Tên bài hát</div>
+        <div>Thời lượng</div>
+        <div></div>
+      </div>
+      <div class="track-list">
+        <% playlist.tracks.forEach((track, index) => { %>
+          <div class="track-item" data-track-id="<%= track._id %>">
+            <div class="track-number"><%= index + 1 %></div>
+            <div class="track-info">
+              <div class="track-thumb">
+                <% if (track.coverUrl) { %>
+                  <img src="<%= track.coverUrl %>" alt="<%= track.title %>">
+                <% } %>
+              </div>
+              <div class="track-details">
+                <div class="track-title"><%= track.title %></div>
+                <div class="track-artist"><%= track.artist || 'Unknown Artist' %></div>
+              </div>
+            </div>
+            <div class="track-duration">--:--</div>
+            <div class="track-actions">
+              <button class="btn-track-action" 
+                      onclick="window.playTrack('<%= track._id %>', '<%= track.title.replace(/'/g, "\\'") %>', '<%= (track.artist || 'Unknown').replace(/'/g, "\\'") %>', '<%= track.coverUrl || '' %>', '<%= track.audioUrl %>')" 
+                      title="Phát">
+                <i class="fa-solid fa-play"></i>
+              </button>
+              <button class="btn-track-action" onclick="removeTrack('<%= track._id %>')" title="Xóa">
+                <i class="fa-solid fa-xmark"></i>
+              </button>
+            </div>
+          </div>
+        <% }) %>
+      </div>
+    <% } else { %>
+      <div class="empty-state">
+        <i class="fa-solid fa-music"></i>
+        <h3>Playlist trống</h3>
+        <p>Hãy thêm bài hát vào playlist của bạn</p>
+      </div>
+    <% } %>
+  </div>
+  
+  <!-- Queue Panel -->
+  <div class="queue-panel" id="queuePanel">
+    <div class="queue-header">
+      <h3 class="queue-title">Hàng đợi</h3>
+      <button class="queue-clear" onclick="player.clearQueue()">Xóa tất cả</button>
+    </div>
+    <div class="queue-list" id="queueList"></div>
+  </div>
+  
+  <!-- Music Player -->
+  <div class="music-player" id="musicPlayer">
+    <div class="player-wrapper">
+      <div class="player-left">
+        <div class="player-thumb" id="playerThumb"></div>
+        <div class="player-info">
+          <div class="player-title" id="playerTitle">Tên bài hát</div>
+          <div class="player-artist" id="playerArtist">Nghệ sĩ</div>
+        </div>
+      </div>
+      
+      <div class="player-center">
+        <div class="player-buttons">
+          <button class="control-btn" id="shuffleBtn" title="Shuffle">
+            <i class="fa-solid fa-shuffle"></i>
+          </button>
+          <button class="control-btn" id="prevBtn" title="Previous">
+            <i class="fa-solid fa-backward-step"></i>
+          </button>
+          <button class="control-btn play" id="playPauseBtn">
+            <i class="fa-solid fa-play"></i>
+          </button>
+          <button class="control-btn" id="nextBtn" title="Next">
+            <i class="fa-solid fa-forward-step"></i>
+          </button>
+          <button class="control-btn" id="repeatBtn" title="Repeat">
+            <i class="fa-solid fa-repeat"></i>
+          </button>
+        </div>
+        <div class="player-progress-wrapper">
+          <span class="time" id="currentTime">0:00</span>
+          <div class="progress-bar" id="progressBar">
+            <div class="progress-fill" id="progressFill"></div>
+          </div>
+          <span class="time" id="duration">0:00</span>
+        </div>
+      </div>
+      
+      <div class="player-right">
+        <div class="volume-control">
+          <i class="fa-solid fa-volume-high volume-icon" id="volumeIcon"></i>
+          <input type="range" class="volume-slider" id="volumeSlider" min="0" max="100" value="70">
+        </div>
+        <button class="queue-toggle" id="queueBtn" title="Queue">
+          <i class="fa-solid fa-list"></i>
+          <span class="queue-count" id="queueCount">0</span>
+        </button>
+      </div>
+    </div>
+  </div>
+  
+  <audio id="audioPlayer"></audio>
+  
+  <script src="/public/js/player.js"></script>
+  <script>
+    // Đợi player khởi tạo xong
+    window.addEventListener('DOMContentLoaded', () => {
+      console.log('Playlist detail page loaded');
+      
+      // Check player initialization
+      const checkPlayer = setInterval(() => {
+        if (window.player) {
+          console.log('Player ready on playlist detail page');
+          clearInterval(checkPlayer);
+          
+          // Update playing state after player is ready
+          setTimeout(() => {
+            updatePlayingState();
+          }, 500);
+        }
+      }, 100);
+      
+      // Stop checking after 5 seconds
+      setTimeout(() => clearInterval(checkPlayer), 5000);
+    });
+    
+    // Visualizer Animation
+    function animateVisualizer() {
+      const bars = document.querySelectorAll('.bar');
+      const audio = document.getElementById('audioPlayer');
+      
+      function updateBars() {
+        if (audio && !audio.paused) {
+          bars.forEach((bar, i) => {
+            const height = Math.random() * 80 + 20;
+            bar.style.height = height + 'px';
+          });
+        } else {
+          bars.forEach(bar => {
+            bar.style.height = '20px';
+          });
+        }
+        requestAnimationFrame(updateBars);
+      }
+      
+      updateBars();
+    }
+    
+    animateVisualizer();
+    
+    // Play All Function
+    function playAll() {
+      if (!window.player) {
+        alert('Player chưa sẵn sàng');
+        return;
+      }
+      
+      const tracks = [
+        <% playlist.tracks.forEach((track, index) => { %>
+          {
+            id: '<%= track._id %>',
+            title: '<%= track.title.replace(/'/g, "\\'") %>',
+            artist: '<%= (track.artist || 'Unknown').replace(/'/g, "\\'") %>',
+            cover: '<%= track.coverUrl || '' %>',
+            audioUrl: '<%= track.audioUrl %>'
+          }<%= index < playlist.tracks.length - 1 ? ',' : '' %>
+        <% }) %>
+      ];
+      
+      if (tracks.length > 0) {
+        window.player.queue = tracks;
+        window.player.originalQueue = [...tracks];
+        window.player.queueIndex = 0;
+        window.player.playTrack(tracks[0]);
+        window.player.renderQueue();
+        window.player.saveState();
+        
+        setTimeout(updatePlayingState, 300);
+      }
+    }
+    
+    // Shuffle Play Function
+    function shufflePlay() {
+      if (!window.player) {
+        alert('Player chưa sẵn sàng');
+        return;
+      }
+      
+      const tracks = [
+        <% playlist.tracks.forEach((track, index) => { %>
+          {
+            id: '<%= track._id %>',
+            title: '<%= track.title.replace(/'/g, "\\'") %>',
+            artist: '<%= (track.artist || 'Unknown').replace(/'/g, "\\'") %>',
+            cover: '<%= track.coverUrl || '' %>',
+            audioUrl: '<%= track.audioUrl %>'
+          }<%= index < playlist.tracks.length - 1 ? ',' : '' %>
+        <% }) %>
+      ];
+      
+      if (tracks.length > 0) {
+        // Shuffle array
+        const shuffled = tracks.sort(() => Math.random() - 0.5);
+        
+        window.player.queue = shuffled;
+        window.player.originalQueue = [...tracks];
+        window.player.queueIndex = 0;
+        window.player.isShuffled = true;
+        window.player.playTrack(shuffled[0]);
+        
+        if (window.player.shuffleBtn) {
+          window.player.shuffleBtn.classList.add('active');
+        }
+        
+        window.player.renderQueue();
+        window.player.saveState();
+        
+        setTimeout(updatePlayingState, 300);
+      }
+    }
+    
+    // Play Single Track
+    window.playTrack = function(id, title, artist, cover, audioUrl) {
+      if (!window.player) {
+        alert('Player chưa sẵn sàng');
+        return;
+      }
+      
+      const track = { id, title, artist, cover, audioUrl };
+      window.player.playTrack(track);
+      
+      // Update UI
+      setTimeout(updatePlayingState, 300);
+    };
+    
+    // Remove Track from Playlist
+    async function removeTrack(trackId) {
+      if (!confirm('Bạn có chắc muốn xóa bài hát này khỏi playlist?')) {
+        return;
+      }
+      
+      try {
+        const res = await fetch('/playlists/<%= playlist._id %>/remove-track', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ trackId })
+        });
+        
+        const data = await res.json();
+        
+        if (data.success) {
+          location.reload();
+        } else {
+          alert(data.message || 'Xóa bài hát thất bại');
+        }
+      } catch (err) {
+        console.error(err);
+        alert('Có lỗi xảy ra');
+      }
+    }
+    
+    // Delete Playlist
+    async function deletePlaylist() {
+      if (!confirm('Bạn có chắc muốn xóa playlist này? Hành động này không thể hoàn tác.')) {
+        return;
+      }
+      
+      try {
+        const res = await fetch('/playlists/<%= playlist._id %>/delete', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' }
+        });
+        
+        const data = await res.json();
+        
+        if (data.success) {
+          window.location.href = '/playlists';
+        } else {
+          alert(data.message || 'Xóa playlist thất bại');
+        }
+      } catch (err) {
+        console.error(err);
+        alert('Có lỗi xảy ra');
+      }
+    }
+    
+    // Update Playing State
+    function updatePlayingState() {
+      if (!window.player || !window.player.currentTrack) {
+        return;
+      }
+      
+      console.log('Updating playing state for:', window.player.currentTrack.id);
+      
+      // Remove all playing states
+      document.querySelectorAll('.track-item').forEach(item => {
+        item.classList.remove('playing');
+      });
+      
+      // Add playing state to current track
+      const currentTrackId = window.player.currentTrack.id;
+      const currentItem = document.querySelector(`.track-item[data-track-id="${currentTrackId}"]`);
+      if (currentItem) {
+        currentItem.classList.add('playing');
+        console.log('Track marked as playing:', currentTrackId);
+      }
+    }
+    
+    // Listen to player events
+    const audio = document.getElementById('audioPlayer');
+    if (audio) {
+      audio.addEventListener('play', () => {
+        console.log('Audio started playing');
+        updatePlayingState();
+      });
+      
+      audio.addEventListener('pause', () => {
+        console.log('Audio paused');
+        updatePlayingState();
+      });
+      
+      audio.addEventListener('ended', updatePlayingState);
+    }
+    
+    // Periodic update to sync state
+    setInterval(() => {
+      if (window.player && window.player.currentTrack) {
+        updatePlayingState();
+      }
+    }, 2000);
+    
+    // Queue toggle
+    document.getElementById('queueBtn')?.addEventListener('click', () => {
+      document.getElementById('queuePanel').classList.toggle('active');
+    });
+  </script>
+</body>
+</html>

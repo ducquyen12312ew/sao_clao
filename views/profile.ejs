@@ -1316,24 +1316,35 @@
   
   <script src="/public/js/player.js"></script>
   <script>
-    // Toggle Sidebar
-    function toggleSidebar() {
-      const sidebar = document.getElementById('rightSidebar');
-      const toggle = document.getElementById('sidebarToggle');
-      const icon = toggle.querySelector('i');
-      
-      sidebar.classList.toggle('active');
-      
+  // ============================================
+  // SIDEBAR MANAGEMENT
+  // ============================================
+  
+  function toggleSidebar() {
+    const sidebar = document.getElementById('rightSidebar');
+    const toggle = document.getElementById('sidebarToggle');
+    const icon = toggle?.querySelector('i');
+    
+    if (!sidebar) return;
+    
+    sidebar.classList.toggle('active');
+    
+    if (icon) {
       if (sidebar.classList.contains('active')) {
         icon.className = 'fa-solid fa-chevron-right';
       } else {
         icon.className = 'fa-solid fa-chevron-left';
       }
     }
-    
-    // Resize Sidebar
+  }
+  
+  // Resize Sidebar - Chỉ khởi tạo khi element tồn tại
+  function initResizeSidebar() {
     const resizeHandle = document.getElementById('resizeHandle');
     const rightSidebar = document.getElementById('rightSidebar');
+    
+    if (!resizeHandle || !rightSidebar) return;
+    
     let isResizing = false;
 
     resizeHandle.addEventListener('mousedown', (e) => {
@@ -1357,8 +1368,16 @@
         rightSidebar.style.transition = '';
       }
     });
-    
+  }
+  
+  // ============================================
+  // SEARCH FUNCTIONALITY
+  // ============================================
+  
+  function initSearch() {
     const searchInput = document.getElementById('searchInput');
+    if (!searchInput) return;
+    
     let searchTimeout;
     
     searchInput.addEventListener('input', (e) => {
@@ -1368,198 +1387,347 @@
         filterTracks(query);
       }, 300);
     });
+  }
+  
+  function filterTracks(query) {
+    const allCards = document.querySelectorAll('.card[data-title]');
     
-    function filterTracks(query) {
-      const allCards = document.querySelectorAll('.card[data-title]');
-      
-      if (!query) {
-        allCards.forEach(card => card.style.display = 'block');
-        return;
-      }
-      
-      allCards.forEach(card => {
-        const title = card.dataset.title;
-        const artist = card.dataset.artist;
-        
-        if (title.includes(query) || artist.includes(query)) {
-          card.style.display = 'block';
-        } else {
-          card.style.display = 'none';
-        }
-      });
+    if (!query) {
+      allCards.forEach(card => card.style.display = 'block');
+      return;
     }
     
-    window.contextTrack = null;
-    let userPlaylists = [];
-    
-    async function loadPlaylists() {
-      try {
-        const res = await fetch('/api/playlists');
-        const data = await res.json();
-        if (data.success) {
-          userPlaylists = data.playlists;
-          updatePlaylistSubmenu();
-        }
-      } catch (err) {
-        console.error(err);
-      }
-    }
-    
-    function updatePlaylistSubmenu() {
-      const submenu = document.getElementById('playlistSubmenu');
-      const createNew = submenu.querySelector('.create-new');
+    allCards.forEach(card => {
+      const title = card.dataset.title || '';
+      const artist = card.dataset.artist || '';
       
-      submenu.innerHTML = '';
+      if (title.includes(query) || artist.includes(query)) {
+        card.style.display = 'block';
+      } else {
+        card.style.display = 'none';
+      }
+    });
+  }
+  
+  // ============================================
+  // CONTEXT MENU & PLAYLIST MANAGEMENT
+  // ============================================
+  
+  window.contextTrack = null;
+  let userPlaylists = [];
+  
+  async function loadPlaylists() {
+    try {
+      const res = await fetch('/api/playlists');
+      const data = await res.json();
+      if (data.success) {
+        userPlaylists = data.playlists;
+        updatePlaylistSubmenu();
+      }
+    } catch (err) {
+      console.error('Error loading playlists:', err);
+    }
+  }
+  
+  function updatePlaylistSubmenu() {
+    const submenu = document.getElementById('playlistSubmenu');
+    if (!submenu) return;
+    
+    const createNew = submenu.querySelector('.create-new');
+    
+    // Clear and rebuild submenu
+    submenu.innerHTML = '';
+    if (createNew) {
       submenu.appendChild(createNew);
+    }
+    
+    userPlaylists.forEach(playlist => {
+      const item = document.createElement('div');
+      item.className = 'submenu-item';
+      item.textContent = playlist.name;
+      item.onclick = (e) => {
+        e.stopPropagation();
+        addToPlaylist(playlist._id);
+      };
+      submenu.appendChild(item);
+    });
+  }
+  
+  function showContextMenu(e, id, title, artist, cover, audioUrl) {
+    e.preventDefault();
+    e.stopPropagation();
+    
+    const menu = document.getElementById('contextMenu');
+    if (!menu) return;
+    
+    // Lưu track info vào biến global
+    window.contextTrack = { 
+      id: id, 
+      title: title, 
+      artist: artist, 
+      cover: cover, 
+      audioUrl: audioUrl 
+    };
+    
+    console.log('Context track set:', window.contextTrack);
+    
+    // Position menu at cursor
+    menu.style.left = e.pageX + 'px';
+    menu.style.top = e.pageY + 'px';
+    menu.classList.add('active');
+    
+    // Load playlists for submenu
+    loadPlaylists();
+    
+    // Add click listener to close menu
+    setTimeout(() => {
+      document.addEventListener('click', closeContextMenu);
+    }, 10);
+  }
+  
+  function closeContextMenu() {
+    const menu = document.getElementById('contextMenu');
+    if (!menu) return;
+    
+    menu.classList.remove('active');
+    document.removeEventListener('click', closeContextMenu);
+  }
+  
+  // ============================================
+  // QUEUE MANAGEMENT
+  // ============================================
+  
+  function addToQueue(track) {
+    console.log('addToQueue called with:', track);
+    
+    // Validation checks
+    if (!track) {
+      console.error('No track provided');
+      showNotification('Lỗi: Không có bài hát');
+      return;
+    }
+    
+    if (!window.player) {
+      console.error('Player not initialized');
+      showNotification('Lỗi: Player chưa sẵn sàng');
+      return;
+    }
+    
+    // Use player's addToQueue method
+    const success = window.player.addToQueue(track);
+    
+    if (success) {
+      showNotification('Đã thêm vào hàng đợi');
+    } else {
+      showNotification('Bài hát đã có trong hàng đợi');
+    }
+    
+    closeContextMenu();
+  }
+  
+  // ============================================
+  // PLAYLIST OPERATIONS
+  // ============================================
+  
+  async function addToPlaylist(playlistId) {
+    if (!window.contextTrack) {
+      showNotification('Lỗi: Không có bài hát được chọn');
+      return;
+    }
+    
+    try {
+      const res = await fetch(`/playlists/${playlistId}/add-track`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ trackId: window.contextTrack.id })
+      });
       
-      userPlaylists.forEach(playlist => {
-        const item = document.createElement('div');
-        item.className = 'submenu-item';
-        item.textContent = playlist.name;
-        item.onclick = () => addToPlaylist(playlist._id);
-        submenu.appendChild(item);
+      const data = await res.json();
+      
+      if (data.success) {
+        showNotification(data.message || 'Đã thêm vào playlist');
+      } else {
+        showNotification(data.message || 'Thêm thất bại');
+      }
+    } catch (err) {
+      console.error('Error adding to playlist:', err);
+      showNotification('Có lỗi xảy ra');
+    }
+  }
+  
+  function openCreatePlaylistModal() {
+    closeContextMenu();
+    const modal = document.getElementById('createPlaylistModal');
+    const input = document.getElementById('playlistName');
+    
+    if (modal) modal.classList.add('active');
+    if (input) {
+      input.focus();
+      input.value = '';
+    }
+    
+    const descInput = document.getElementById('playlistDescription');
+    if (descInput) descInput.value = '';
+  }
+  
+  function closeCreatePlaylistModal() {
+    const modal = document.getElementById('createPlaylistModal');
+    const nameInput = document.getElementById('playlistName');
+    const descInput = document.getElementById('playlistDescription');
+    
+    if (modal) modal.classList.remove('active');
+    if (nameInput) nameInput.value = '';
+    if (descInput) descInput.value = '';
+  }
+  
+  async function createPlaylist() {
+    const nameInput = document.getElementById('playlistName');
+    const descInput = document.getElementById('playlistDescription');
+    
+    const name = nameInput?.value.trim();
+    const description = descInput?.value.trim();
+    
+    if (!name) {
+      showNotification('Vui lòng nhập tên playlist');
+      return;
+    }
+    
+    try {
+      const res = await fetch('/playlists/create', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ name, description: description || '' })
+      });
+      
+      const data = await res.json();
+      
+      if (data.success) {
+        showNotification('Tạo playlist thành công');
+        closeCreatePlaylistModal();
+        
+        // If there's a context track, add it to the new playlist
+        if (window.contextTrack) {
+          await addToPlaylist(data.playlist._id);
+        }
+        
+        // Reload page to show new playlist
+        setTimeout(() => location.reload(), 1000);
+      } else {
+        showNotification(data.message || 'Tạo playlist thất bại');
+      }
+    } catch (err) {
+      console.error('Error creating playlist:', err);
+      showNotification('Có lỗi xảy ra');
+    }
+  }
+  
+  // ============================================
+  // NOTIFICATION SYSTEM
+  // ============================================
+  
+  function showNotification(message) {
+    // Remove existing notifications
+    const existingNotifs = document.querySelectorAll('.custom-notification');
+    existingNotifs.forEach(n => n.remove());
+    
+    // Create new notification
+    const notif = document.createElement('div');
+    notif.className = 'custom-notification';
+    notif.style.cssText = `
+      position: fixed;
+      bottom: 120px;
+      left: 50%;
+      transform: translateX(-50%);
+      background: #282828;
+      color: #fff;
+      padding: 16px 24px;
+      border-radius: 8px;
+      font-size: 14px;
+      font-weight: 600;
+      z-index: 10000;
+      box-shadow: 0 8px 24px rgba(0,0,0,0.8);
+      animation: slideUp 0.3s ease-out;
+    `;
+    notif.textContent = message;
+    document.body.appendChild(notif);
+    
+    // Auto remove after 2.5 seconds
+    setTimeout(() => {
+      notif.style.transition = 'opacity 0.3s, transform 0.3s';
+      notif.style.opacity = '0';
+      notif.style.transform = 'translateX(-50%) translateY(10px)';
+      setTimeout(() => notif.remove(), 300);
+    }, 2500);
+  }
+  
+  // Add animation keyframes
+  if (!document.getElementById('notif-animations')) {
+    const style = document.createElement('style');
+    style.id = 'notif-animations';
+    style.textContent = `
+      @keyframes slideUp {
+        from {
+          opacity: 0;
+          transform: translateX(-50%) translateY(20px);
+        }
+        to {
+          opacity: 1;
+          transform: translateX(-50%) translateY(0);
+        }
+      }
+    `;
+    document.head.appendChild(style);
+  }
+  
+  // ============================================
+  // EVENT LISTENERS
+  // ============================================
+  
+  function initEventListeners() {
+    // Close modal on Escape key
+    document.addEventListener('keydown', (e) => {
+      if (e.key === 'Escape') {
+        closeCreatePlaylistModal();
+      }
+    });
+    
+    // Create playlist on Enter key in name input
+    const playlistNameInput = document.getElementById('playlistName');
+    if (playlistNameInput) {
+      playlistNameInput.addEventListener('keypress', (e) => {
+        if (e.key === 'Enter') {
+          createPlaylist();
+        }
       });
     }
+  }
+  
+  // ============================================
+  // INITIALIZATION
+  // ============================================
+  
+  console.log('Profile script loaded');
+  
+  // Initialize when DOM is ready
+  window.addEventListener('DOMContentLoaded', () => {
+    console.log('DOM loaded, initializing...');
     
-    function showContextMenu(e, id, title, artist, cover, audioUrl) {
-      e.preventDefault();
-      const menu = document.getElementById('contextMenu');
-      
-      window.contextTrack = { id, title, artist, cover, audioUrl };
-      
-      menu.style.left = e.pageX + 'px';
-      menu.style.top = e.pageY + 'px';
-      menu.classList.add('active');
-      
-      loadPlaylists();
-      
-      setTimeout(() => {
-        document.addEventListener('click', closeContextMenu);
-      }, 10);
-    }
+    // Initialize all components
+    initResizeSidebar();
+    initSearch();
+    initEventListeners();
     
-    function closeContextMenu() {
-      const menu = document.getElementById('contextMenu');
-      menu.classList.remove('active');
-      document.removeEventListener('click', closeContextMenu);
-    }
-    
-    function addToQueue(track) {
-      if (track && window.player) {
-        // Kiểm tra bài đã có trong queue chưa
-        const exists = window.player.queue.find(t => t.id === track.id);
-        if (exists) {
-          showNotification('Bài hát đã có trong hàng đợi');
-          return;
-        }
-        
-        window.player.queue.push(track);
-        window.player.originalQueue.push(track);
-        window.player.renderQueue();
-        window.player.saveState();
-        showNotification('Đã thêm vào hàng đợi');
+    // Check if player is initialized
+    const checkPlayer = setInterval(() => {
+      if (window.player) {
+        console.log('Player ready:', window.player);
+        clearInterval(checkPlayer);
       }
-    }
+    }, 100);
     
-    async function addToPlaylist(playlistId) {
-      if (!window.contextTrack) return;
-      
-      try {
-        const res = await fetch(`/playlists/${playlistId}/add-track`, {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ trackId: window.contextTrack.id })
-        });
-        
-        const data = await res.json();
-        showNotification(data.message || (data.success ? 'Đã thêm vào playlist' : 'Thêm thất bại'));
-      } catch (err) {
-        console.error(err);
-        showNotification('Có lỗi xảy ra');
-      }
-    }
-    
-    function openCreatePlaylistModal() {
-      closeContextMenu();
-      document.getElementById('createPlaylistModal').classList.add('active');
-      document.getElementById('playlistName').focus();
-    }
-    
-    function closeCreatePlaylistModal() {
-      document.getElementById('createPlaylistModal').classList.remove('active');
-      document.getElementById('playlistName').value = '';
-      document.getElementById('playlistDescription').value = '';
-    }
-    
-    async function createPlaylist() {
-      const name = document.getElementById('playlistName').value.trim();
-      const description = document.getElementById('playlistDescription').value.trim();
-      
-      if (!name) {
-        showNotification('Vui lòng nhập tên playlist');
-        return;
-      }
-      
-      try {
-        const res = await fetch('/playlists/create', {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ name, description })
-        });
-        
-        const data = await res.json();
-        
-        if (data.success) {
-          showNotification('Tạo playlist thành công');
-          closeCreatePlaylistModal();
-          
-          if (window.contextTrack) {
-            await addToPlaylist(data.playlist._id);
-          }
-          
-          setTimeout(() => location.reload(), 1000);
-        } else {
-          showNotification(data.message || 'Tạo playlist thất bại');
-        }
-      } catch (err) {
-        console.error(err);
-        showNotification('Có lỗi xảy ra');
-      }
-    }
-    
-    function showNotification(message) {
-      const notif = document.createElement('div');
-      notif.style.cssText = `
-        position: fixed;
-        bottom: 120px;
-        left: 50%;
-        transform: translateX(-50%);
-        background: #282828;
-        color: #fff;
-        padding: 16px 24px;
-        border-radius: 8px;
-        font-size: 14px;
-        font-weight: 600;
-        z-index: 10000;
-        box-shadow: 0 8px 24px rgba(0,0,0,0.8);
-      `;
-      notif.textContent = message;
-      document.body.appendChild(notif);
-      
-      setTimeout(() => {
-        notif.style.transition = 'opacity 0.3s';
-        notif.style.opacity = '0';
-        setTimeout(() => notif.remove(), 300);
-      }, 2500);
-    }
-    
-    document.addEventListener('keydown', (e) => {
-      if (e.key === 'Escape') closeCreatePlaylistModal();
-    });
-    
-    document.getElementById('playlistName')?.addEventListener('keypress', (e) => {
-      if (e.key === 'Enter') createPlaylist();
-    });
-  </script>
+    // Stop checking after 5 seconds
+    setTimeout(() => clearInterval(checkPlayer), 5000);
+  });
+</script>
 </body>
 </html>

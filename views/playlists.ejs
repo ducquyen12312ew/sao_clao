@@ -4,6 +4,7 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title><%= title %></title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
   <style>
@@ -11,14 +12,13 @@
     
     :root {
       --bg-primary: #000000;
-      --bg-secondary: #0a0a0a;
       --bg-card: #121212;
       --bg-card-hover: #1a1a1a;
       --border-color: #282828;
       --text-primary: #ffffff;
       --text-secondary: #b3b3b3;
-      --accent-color: #1ed760;
-      --accent-hover: #1fdf64;
+      --accent-color: #ffffff;
+      --accent-hover: #e0e0e0;
     }
     
     body {
@@ -48,7 +48,6 @@
     
     .nav-menu {
       display: flex;
-      align-items: center;
       gap: 32px;
       margin-left: 48px;
     }
@@ -58,20 +57,18 @@
       text-decoration: none;
       font-weight: 600;
       font-size: 14px;
-      transition: color 0.2s;
       display: flex;
       align-items: center;
       gap: 8px;
+      transition: color 0.2s;
     }
     
-    .nav-link:hover, .nav-link.active {
-      color: var(--text-primary);
-    }
+    .nav-link:hover, .nav-link.active { color: var(--text-primary); }
     
     .header-actions {
       display: flex;
-      align-items: center;
       gap: 20px;
+      align-items: center;
     }
     
     .user-avatar {
@@ -84,7 +81,7 @@
       align-items: center;
       justify-content: center;
       font-weight: 700;
-      cursor: pointer;
+      font-size: 14px;
     }
     
     .btn-logout {
@@ -96,8 +93,8 @@
       cursor: pointer;
       font-weight: 600;
       font-size: 13px;
-      transition: all 0.2s;
       font-family: 'Inter', sans-serif;
+      transition: all 0.2s;
     }
     
     .btn-logout:hover {
@@ -196,7 +193,7 @@
     .playlist-cover-empty {
       width: 100%;
       height: 100%;
-      background: linear-gradient(135deg, #1a1a1a 0%, #2a2a2a 100%);
+      background: linear-gradient(135deg, #1a1a1a, #2a2a2a);
       display: flex;
       align-items: center;
       justify-content: center;
@@ -208,9 +205,9 @@
     }
     
     .playlist-name {
-      font-size: 18px;
+      font-size: 16px;
       font-weight: 700;
-      margin-bottom: 8px;
+      margin-bottom: 6px;
       white-space: nowrap;
       overflow: hidden;
       text-overflow: ellipsis;
@@ -224,16 +221,10 @@
     
     .empty-state {
       text-align: center;
-      padding: 120px 20px;
+      padding: 100px 20px;
     }
     
-    .empty-state i {
-      font-size: 80px;
-      color: var(--text-secondary);
-      margin-bottom: 24px;
-    }
-    
-    .empty-state h2 {
+    .empty-state h3 {
       font-size: 32px;
       font-weight: 800;
       margin-bottom: 16px;
@@ -275,9 +266,7 @@
       margin-bottom: 24px;
     }
     
-    .form-group {
-      margin-bottom: 20px;
-    }
+    .form-group { margin-bottom: 20px; }
     
     .form-label {
       display: block;
@@ -289,7 +278,7 @@
     .form-input {
       width: 100%;
       padding: 12px 16px;
-      background: var(--bg-secondary);
+      background: var(--bg-primary);
       border: 1px solid var(--border-color);
       border-radius: 6px;
       color: var(--text-primary);
@@ -341,13 +330,11 @@
       border: 1px solid var(--text-secondary);
     }
     
-    .btn-secondary:hover {
-      border-color: var(--text-primary);
-    }
+    .btn-secondary:hover { border-color: var(--text-primary); }
   </style>
 </head>
 <body>
-  <div class="modal" id="createPlaylistModal">
+  <div class="modal" id="createModal">
     <div class="modal-content">
       <h3 class="modal-title">Tạo playlist mới</h3>
       <div class="form-group">
@@ -410,7 +397,7 @@
                   <i class="fa-solid fa-music"></i>
                 </div>
               <% } else if (covers.length === 1) { %>
-                <div class="playlist-cover-item" style="background-image: url('<%= covers[0] %>'); grid-column: 1 / 3; grid-row: 1 / 3;"></div>
+                <div class="playlist-cover-item" style="background-image: url('<%= covers[0] %>'); width: 100%; height: 100%;"></div>
               <% } else { %>
                 <div class="playlist-cover-grid">
                   <% for (let i = 0; i < 4; i++) { %>
@@ -432,11 +419,10 @@
       </div>
     <% } else { %>
       <div class="empty-state">
-        <i class="fa-solid fa-music"></i>
-        <h2>Chưa có playlist nào</h2>
-        <p>Tạo playlist đầu tiên để bắt đầu sưu tầm các bài hát yêu thích</p>
+        <h3>Chưa có playlist nào</h3>
+        <p>Tạo playlist đầu tiên của bạn ngay bây giờ</p>
         <button class="btn-create" onclick="openModal()">
-          <i class="fa-solid fa-plus"></i> Tạo playlist đầu tiên
+          <i class="fa-solid fa-plus"></i> Tạo playlist
         </button>
       </div>
     <% } %>
@@ -444,12 +430,12 @@
   
   <script>
     function openModal() {
-      document.getElementById('createPlaylistModal').classList.add('active');
+      document.getElementById('createModal').classList.add('active');
       document.getElementById('playlistName').focus();
     }
     
     function closeModal() {
-      document.getElementById('createPlaylistModal').classList.remove('active');
+      document.getElementById('createModal').classList.remove('active');
       document.getElementById('playlistName').value = '';
       document.getElementById('playlistDescription').value = '';
     }
@@ -487,7 +473,7 @@
       if (e.key === 'Escape') closeModal();
     });
     
-    document.getElementById('playlistName').addEventListener('keypress', (e) => {
+    document.getElementById('playlistName')?.addEventListener('keypress', (e) => {
       if (e.key === 'Enter') createPlaylist();
     });
   </script>

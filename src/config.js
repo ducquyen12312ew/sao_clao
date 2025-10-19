@@ -1,68 +1,70 @@
+// src/config.js - REPLACE COMPLETELY
+
 const mongoose = require('mongoose');
+require('dotenv').config();
+
+const mongoURI = process.env.MONGO_URI || 'mongodb://0.0.0.0:27017/MusicCloud';
 
 async function connectDB() {
-  const uri = process.env.MONGO_URI || 'mongodb://0.0.0.0:27017/MusicCloud';
   try {
-    await mongoose.connect(uri, { autoIndex: true });
-    console.log('MongoDB connected');
-  } catch (err) {
-    console.error('MongoDB connection error:', err.message);
+    await mongoose.connect(mongoURI);
+    console.log('✅ MongoDB connected successfully');
+  } catch (error) {
+    console.error('❌ MongoDB connection error:', error);
     process.exit(1);
   }
 }
 
+// User Schema
 const UserSchema = new mongoose.Schema({
-  name: { type: String, required: true, trim: true },
-  username: { type: String, required: true, unique: true, trim: true },
-  email: { type: String, required: true, unique: true, trim: true, lowercase: true },
+  name: { type: String, required: true },
+  username: { type: String, required: true, unique: true },
+  email: { type: String, required: true, unique: true },
   passwordHash: { type: String, required: true },
   createdAt: { type: Date, default: Date.now }
-}, { versionKey: false });
+});
 
-const UserCollection = mongoose.models.users || mongoose.model('users', UserSchema);
-
+// Track Schema with Genres, Tags, Mood
 const TrackSchema = new mongoose.Schema({
-  title: { type: String, required: true, trim: true },
-  artist: { type: String, default: 'Unknown', trim: true },
+  title: { type: String, required: true },
+  artist: { type: String, required: true },
   audioUrl: { type: String, required: true },
-  coverUrl: { type: String, default: '' },
-  plays: { type: Number, default: 0 },
+  coverUrl: { type: String },
+  genres: [{ type: String }],  // NEW: Array of genres
+  tags: [{ type: String }],    // NEW: Array of tags
+  mood: { type: String },      // NEW: Mood/vibe of the song
   createdAt: { type: Date, default: Date.now }
-}, { versionKey: false });
+});
 
+// Add text index for search
+TrackSchema.index({ title: 'text', artist: 'text' });
+
+// Play History Schema
 const PlayHistorySchema = new mongoose.Schema({
-  userId: { type: mongoose.Schema.Types.ObjectId, ref: 'users', required: true },
-  trackId: { type: mongoose.Schema.Types.ObjectId, ref: 'tracks', required: true },
+  userId: { type: mongoose.Schema.Types.ObjectId, ref: 'User', required: true },
+  trackId: { type: mongoose.Schema.Types.ObjectId, ref: 'Track', required: true },
   playedAt: { type: Date, default: Date.now }
-}, { versionKey: false });
+});
 
-const LikeSchema = new mongoose.Schema({
-  userId: { type: mongoose.Schema.Types.ObjectId, ref: 'users', required: true },
-  trackId: { type: mongoose.Schema.Types.ObjectId, ref: 'tracks', required: true },
-  createdAt: { type: Date, default: Date.now }
-}, { versionKey: false });
-
+// Playlist Schema
 const PlaylistSchema = new mongoose.Schema({
-  name: { type: String, required: true, trim: true },
-  description: { type: String, default: '', trim: true },
-  userId: { type: mongoose.Schema.Types.ObjectId, ref: 'users', required: true },
-  tracks: [{ type: mongoose.Schema.Types.ObjectId, ref: 'tracks' }],
-  isPublic: { type: Boolean, default: false },
+  name: { type: String, required: true },
+  description: { type: String },
+  userId: { type: mongoose.Schema.Types.ObjectId, ref: 'User', required: true },
+  tracks: [{ type: mongoose.Schema.Types.ObjectId, ref: 'Track' }],
   createdAt: { type: Date, default: Date.now },
   updatedAt: { type: Date, default: Date.now }
-}, { versionKey: false });
+});
 
-const TrackCollection = mongoose.models.tracks || mongoose.model('tracks', TrackSchema);
-const PlayHistoryCollection = mongoose.models.play_histories || mongoose.model('play_histories', PlayHistorySchema);
-const LikeCollection = mongoose.models.likes || mongoose.model('likes', LikeSchema);
-const PlaylistCollection = mongoose.models.playlists || mongoose.model('playlists', PlaylistSchema);
+const UserCollection = mongoose.model('User', UserSchema);
+const TrackCollection = mongoose.model('Track', TrackSchema);
+const PlayHistoryCollection = mongoose.model('PlayHistory', PlayHistorySchema);
+const PlaylistCollection = mongoose.model('Playlist', PlaylistSchema);
 
 module.exports = {
-  mongoose,
   connectDB,
   UserCollection,
   TrackCollection,
   PlayHistoryCollection,
-  LikeCollection,
   PlaylistCollection
 };

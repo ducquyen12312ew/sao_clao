@@ -58,6 +58,10 @@ const requireAuth = (req, res, next) => {
   next();
 };
 
+// ============================================
+// PUBLIC ROUTES
+// ============================================
+
 app.get('/', async (req, res) => {
   if (req.session.user) return res.redirect('/profile'); 
   const tracks = await TrackCollection.find().sort({ createdAt: -1 }).limit(12).lean();
@@ -145,12 +149,120 @@ const doLogout = (req, res) => req.session.destroy(() => res.redirect('/'));
 app.get('/logout', doLogout);
 app.post('/logout', doLogout);
 
+// ============================================
+// PROFILE ROUTE WITH SMART RECOMMENDATIONS
+// ============================================
+
+app.get(['/me', '/profile'], requireAuth, async (req, res) => {
+  try {
+    const userId = req.session.user.id;
+
+    // Get recently played tracks
+    const recentPlays = await PlayHistoryCollection
+      .find({ userId })
+      .sort({ playedAt: -1 })
+      .limit(20)
+      .populate('trackId')
+      .lean();
+    
+    const seenTracks = new Set();
+    const recentlyPlayed = [];
+    
+    for (const doc of recentPlays) {
+      if (doc.trackId && !seenTracks.has(doc.trackId._id.toString())) {
+        seenTracks.add(doc.trackId._id.toString());
+        recentlyPlayed.push(doc.trackId);
+        if (recentlyPlayed.length >= 12) break;
+      }
+    }
+
+    // Get user's playlists
+    const playlists = await PlaylistCollection
+      .find({ userId })
+      .populate('tracks')
+      .sort({ updatedAt: -1 })
+      .limit(6)
+      .lean();
+    
+    // Smart recommendations based on recent listening
+    let moreOfWhatYouLike = [];
+    
+    if (recentlyPlayed.length > 0) {
+      // Get the most recent track for recommendations
+      const lastTrack = recentlyPlayed[0];
+      
+      // Find similar tracks based on genres, tags, mood
+      const similarTracks = await TrackCollection.find({
+        _id: { $ne: lastTrack._id },
+        $or: [
+          { genres: { $in: lastTrack.genres || [] } },
+          { tags: { $in: lastTrack.tags || [] } },
+          { mood: lastTrack.mood }
+        ]
+      }).limit(30).lean();
+      
+      // Score and sort
+      const scoredTracks = similarTracks.map(track => {
+        let score = 0;
+        
+        // Genre match (highest weight)
+        const genreMatches = (track.genres || []).filter(g => 
+          (lastTrack.genres || []).includes(g)
+        ).length;
+        score += genreMatches * 3;
+        
+        // Tag match (medium weight)
+        const tagMatches = (track.tags || []).filter(t => 
+          (lastTrack.tags || []).includes(t)
+        ).length;
+        score += tagMatches * 2;
+        
+        // Mood match (low weight)
+        if (track.mood === lastTrack.mood) {
+          score += 1;
+        }
+        
+        // Penalize already played tracks
+        const wasPlayed = recentlyPlayed.some(r => r._id.toString() === track._id.toString());
+        if (wasPlayed) {
+          score -= 5;
+        }
+        
+        return { ...track, score };
+      });
+      
+      moreOfWhatYouLike = scoredTracks
+        .sort((a, b) => b.score - a.score)
+        .slice(0, 12);
+    } else {
+      // If no history, show random mix
+      moreOfWhatYouLike = await TrackCollection
+        .aggregate([{ $sample: { size: 12 } }]);
+    }
+
+    res.render('profile', {
+      title: `@${req.session.user.username} • SAOCLAO`,
+      user: req.session.user,
+      moreOfWhatYouLike,
+      recentlyPlayed,
+      playlists  
+    });
+  } catch (err) {
+    console.error(err);
+    res.status(500).send('Server error');
+  }
+});
+
+// ============================================
+// API ROUTES
+// ============================================
+
+// Record play history
 app.post('/api/plays/:trackId', requireAuth, async (req, res) => {
   try {
     const trackId = req.params.trackId;
     const userId = req.session.user.id;
     await PlayHistoryCollection.create({ userId, trackId, playedAt: new Date() });
-    await TrackCollection.updateOne({ _id: trackId }, { $inc: { plays: 1 } });
     res.json({ ok: true });
   } catch (e) {
     console.error(e);
@@ -158,48 +270,7 @@ app.post('/api/plays/:trackId', requireAuth, async (req, res) => {
   }
 });
 
-app.get(['/me', '/profile'], requireAuth, async (req, res) => {
-  const userId = req.session.user.id;
-
-  // Recently Played
-  const recentDocs = await PlayHistoryCollection
-    .find({ userId })
-    .sort({ playedAt: -1 })
-    .populate('trackId')
-    .lean();
-
-  const seenTracks = new Set();
-  const recentlyPlayed = [];
-  
-  for (const doc of recentDocs) {
-    if (doc.trackId && !seenTracks.has(doc.trackId._id.toString())) {
-      seenTracks.add(doc.trackId._id.toString());
-      recentlyPlayed.push(doc.trackId);
-      if (recentlyPlayed.length >= 12) break;
-    }
-  }
-
-  const moreOfWhatYouLike = await TrackCollection.find()
-    .sort({ plays: -1, createdAt: -1 })
-    .limit(8)
-    .lean();
-
-  // PHẦN NÀY QUAN TRỌNG - Load playlists
-  const playlists = await PlaylistCollection.find({ userId })
-    .populate('tracks')
-    .sort({ updatedAt: -1 })
-    .limit(6)
-    .lean();
-
-  res.render('profile', {
-    title: `@${req.session.user.username} • SAOCLAO`,
-    user: req.session.user,
-    moreOfWhatYouLike,
-    recentlyPlayed,
-    playlists  
-  });
-});
-
+// Get playlists for context menu
 app.get('/api/playlists', requireAuth, async (req, res) => {
   try {
     const playlists = await PlaylistCollection.find({ userId: req.session.user.id })
@@ -213,10 +284,164 @@ app.get('/api/playlists', requireAuth, async (req, res) => {
   }
 });
 
+// Search tracks
+app.get('/api/search', requireAuth, async (req, res) => {
+  try {
+    const { q } = req.query;
+    
+    if (!q || q.trim().length === 0) {
+      return res.json({ success: true, tracks: [] });
+    }
+    
+    const query = q.trim();
+    
+    // Search by title, artist, genres, or tags
+    const tracks = await TrackCollection.find({
+      $or: [
+        { title: { $regex: query, $options: 'i' } },
+        { artist: { $regex: query, $options: 'i' } },
+        { genres: { $regex: query, $options: 'i' } },
+        { tags: { $regex: query, $options: 'i' } }
+      ]
+    }).limit(20).lean();
+    
+    res.json({ success: true, tracks });
+  } catch (err) {
+    console.error(err);
+    res.json({ success: false, tracks: [] });
+  }
+});
+
+// Get recommendations based on a track
+app.get('/api/recommendations/:trackId', requireAuth, async (req, res) => {
+  try {
+    const { trackId } = req.params;
+    const limit = parseInt(req.query.limit) || 10;
+    
+    const sourceTrack = await TrackCollection.findById(trackId).lean();
+    
+    if (!sourceTrack) {
+      return res.json({ success: false, message: 'Track not found' });
+    }
+    
+    // Find similar tracks
+    const recommendations = await TrackCollection.find({
+      _id: { $ne: trackId },
+      $or: [
+        { genres: { $in: sourceTrack.genres || [] } },
+        { tags: { $in: sourceTrack.tags || [] } },
+        { mood: sourceTrack.mood }
+      ]
+    }).limit(limit * 2).lean();
+    
+    // Score and sort
+    const scoredRecs = recommendations.map(track => {
+      let score = 0;
+      
+      const genreMatches = (track.genres || []).filter(g => 
+        (sourceTrack.genres || []).includes(g)
+      ).length;
+      score += genreMatches * 3;
+      
+      const tagMatches = (track.tags || []).filter(t => 
+        (sourceTrack.tags || []).includes(t)
+      ).length;
+      score += tagMatches * 2;
+      
+      if (track.mood === sourceTrack.mood) {
+        score += 1;
+      }
+      
+      return { ...track, score };
+    });
+    
+    const topRecs = scoredRecs
+      .sort((a, b) => b.score - a.score)
+      .slice(0, limit);
+    
+    res.json({ success: true, recommendations: topRecs, sourceTrack });
+  } catch (err) {
+    console.error(err);
+    res.json({ success: false, message: 'Error getting recommendations' });
+  }
+});
+
+// Get tracks by genre
+app.get('/api/tracks/genre/:genre', requireAuth, async (req, res) => {
+  try {
+    const { genre } = req.params;
+    const limit = parseInt(req.query.limit) || 20;
+    
+    const tracks = await TrackCollection.find({
+      genres: { $regex: new RegExp(genre, 'i') }
+    }).limit(limit).lean();
+    
+    res.json({ success: true, tracks, genre });
+  } catch (err) {
+    console.error(err);
+    res.json({ success: false, tracks: [] });
+  }
+});
+
+// Get tracks by mood
+app.get('/api/tracks/mood/:mood', requireAuth, async (req, res) => {
+  try {
+    const { mood } = req.params;
+    const limit = parseInt(req.query.limit) || 20;
+    
+    const tracks = await TrackCollection.find({
+      mood: { $regex: new RegExp(mood, 'i') }
+    }).limit(limit).lean();
+    
+    res.json({ success: true, tracks, mood });
+  } catch (err) {
+    console.error(err);
+    res.json({ success: false, tracks: [] });
+  }
+});
+
+// Get all available genres
+app.get('/api/genres', requireAuth, async (req, res) => {
+  try {
+    const genres = await TrackCollection.distinct('genres');
+    res.json({ success: true, genres: genres.sort() });
+  } catch (err) {
+    console.error(err);
+    res.json({ success: false, genres: [] });
+  }
+});
+
+// Get all available moods
+app.get('/api/moods', requireAuth, async (req, res) => {
+  try {
+    const moods = await TrackCollection.distinct('mood');
+    res.json({ success: true, moods: moods.filter(m => m).sort() });
+  } catch (err) {
+    console.error(err);
+    res.json({ success: false, moods: [] });
+  }
+});
+
+// ============================================
+// MOUNTED ROUTES
+// ============================================
+
 app.use('/upload', uploadRoutes);
 app.use('/playlists', playlistRoutes);
 
+// ============================================
+// 404 HANDLER
+// ============================================
+
 app.use((req, res) => res.status(404).render('404', { title: 'Not found' }));
 
+// ============================================
+// START SERVER
+// ============================================
+
 const PORT = process.env.PORT || 3000;
-app.listen(PORT, () => console.log(`MusicCloud v2 on http://localhost:${PORT}`));
+app.listen(PORT, () => {
+  console.log('MusicCloud v2.0');
+  console.log(`Server running on http://localhost:${PORT}`);
+  console.log('Features: Smart Recommendations, Genre/Mood Filtering');
+});
