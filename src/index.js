@@ -10,29 +10,27 @@ const {
   connectDB,
   TrackCollection,
   UserCollection,
-  PlayHistoryCollection
+  PlayHistoryCollection,
+  PlaylistCollection
 } = require('./config');
 
 const uploadRoutes = require('./upload-routes');
+const playlistRoutes = require('./playlist-routes');
 
 const app = express();
 const SALT_ROUNDS = 10;
 
 connectDB();
 
-// Views & static
 app.set('view engine', 'ejs');
 app.set('views', path.join(__dirname, '..', 'views'));
 app.use('/public', express.static(path.join(__dirname, '..', 'public')));
 
-// Parsers
 app.use(express.urlencoded({ extended: true }));
 app.use(express.json());
 
-// Silence favicon
 app.get('/favicon.ico', (req, res) => res.status(204).end());
 
-// Sessions
 const sessionSecret = process.env.SESSION_SECRET || 'dev_secret';
 app.use(session({
   secret: sessionSecret,
@@ -45,7 +43,6 @@ app.use(session({
   })
 }));
 
-// Locals
 app.use((req, res, next) => {
   res.locals.currentUser = req.session.user || null;
   res.locals.flash = req.session.flash || null;
@@ -53,7 +50,6 @@ app.use((req, res, next) => {
   next();
 });
 
-// Helpers
 const requireAuth = (req, res, next) => {
   if (!req.session.user) {
     req.session.flash = { type: 'warning', message: 'Vui lòng đăng nhập.' };
@@ -62,16 +58,12 @@ const requireAuth = (req, res, next) => {
   next();
 };
 
-// HOME
 app.get('/', async (req, res) => {
   if (req.session.user) return res.redirect('/profile'); 
   const tracks = await TrackCollection.find().sort({ createdAt: -1 }).limit(12).lean();
   res.render('home', { title: 'MusicCloud - Discover. Get Discovered.', tracks });
 });
 
-
-/* ------------------------- AUTH (đã merge) ------------------------- */
-// SIGNUP
 app.get('/signup', (req, res) => {
   if (req.session.user) {
     req.session.flash = { type: 'info', message: 'Bạn đã đăng nhập rồi.' };
@@ -85,52 +77,74 @@ app.post('/signup', async (req, res) => {
 
   try {
     const { name, username, email, password } = req.body;
+    
     if (!name || !username || !email || !password) {
-      req.session.flash = { type: 'danger', message: 'Vui lòng điền đầy đủ.' };
+      req.session.flash = { type: 'danger', message: 'Vui lòng điền đầy đủ thông tin.' };
       return res.redirect('/signup');
     }
+    
     const exists = await UserCollection.findOne({ $or: [{ email }, { username }] });
     if (exists) {
       req.session.flash = { type: 'warning', message: 'Email hoặc username đã tồn tại.' };
       return res.redirect('/signup');
     }
+    
     const passwordHash = await bcrypt.hash(password, SALT_ROUNDS);
-    const u = await UserCollection.create({ name, username, email, passwordHash });
-    req.session.user = { id: u._id, name: u.name, username: u.username };
-    req.session.flash = { type: 'success', message: 'Tạo tài khoản thành công!' };
-    res.redirect('/profile');
+    await UserCollection.create({ name, username, email, passwordHash });
+    
+    req.session.flash = { 
+      type: 'success', 
+      message: 'Đăng ký thành công! Vui lòng đăng nhập để tiếp tục.' 
+    };
+    res.redirect('/login');
+    
   } catch (err) {
     console.error(err);
-    req.session.flash = { type: 'danger', message: 'Đăng ký thất bại.' };
+    req.session.flash = { type: 'danger', message: 'Đăng ký thất bại. Vui lòng thử lại.' };
     res.redirect('/signup');
   }
 });
 
-// LOGIN
-app.get('/login', (req,res)=>{
+app.get('/login', (req, res) => {
   if (req.session.user) return res.redirect('/profile');
   res.render('login', { title: 'Sign in' });
 });
 
-// POST form
-app.post('/login', async (req,res)=>{
+app.post('/login', async (req, res) => {
   if (req.session.user) return res.redirect('/profile');
-  const { identifier, password } = req.body;
-  const user = await UserCollection.findOne({ $or: [{ email: identifier }, { username: identifier }] });
-  if (!user) { req.session.flash = { type:'danger', message:'Sai thông tin đăng nhập.' }; return res.redirect('/login'); }
-  const ok = await bcrypt.compare(password, user.passwordHash);
-  if (!ok) { req.session.flash = { type:'danger', message:'Sai thông tin đăng nhập.' }; return res.redirect('/login'); }
-  req.session.user = { id: user._id, name: user.name, username: user.username };
-  res.redirect('/profile');                      
+  
+  try {
+    const { identifier, password } = req.body;
+    
+    const user = await UserCollection.findOne({ 
+      $or: [{ email: identifier }, { username: identifier }] 
+    });
+    
+    if (!user) { 
+      req.session.flash = { type: 'danger', message: 'Sai thông tin đăng nhập.' }; 
+      return res.redirect('/login'); 
+    }
+    
+    const ok = await bcrypt.compare(password, user.passwordHash);
+    if (!ok) { 
+      req.session.flash = { type: 'danger', message: 'Sai thông tin đăng nhập.' }; 
+      return res.redirect('/login'); 
+    }
+    
+    req.session.user = { id: user._id, name: user.name, username: user.username };
+    res.redirect('/profile');
+    
+  } catch (err) {
+    console.error(err);
+    req.session.flash = { type: 'danger', message: 'Đã xảy ra lỗi. Vui lòng thử lại.' };
+    res.redirect('/login');
+  }
 });
 
 const doLogout = (req, res) => req.session.destroy(() => res.redirect('/')); 
 app.get('/logout', doLogout);
 app.post('/logout', doLogout);
 
-
-/* ------------------------- PROFILE ------------------------- */
-// Ghi lịch sử khi play (client gọi POST khi user bấm play)
 app.post('/api/plays/:trackId', requireAuth, async (req, res) => {
   try {
     const trackId = req.params.trackId;
@@ -144,32 +158,37 @@ app.post('/api/plays/:trackId', requireAuth, async (req, res) => {
   }
 });
 
-// Trang cá nhân
 app.get(['/me', '/profile'], requireAuth, async (req, res) => {
   const userId = req.session.user.id;
 
-  // Recently Played (join track)
+  // Recently Played
   const recentDocs = await PlayHistoryCollection
     .find({ userId })
     .sort({ playedAt: -1 })
-    .limit(12)
     .populate('trackId')
     .lean();
 
-  const recentlyPlayed = recentDocs
-    .map(d => d.trackId)
-    .filter(Boolean);
+  const seenTracks = new Set();
+  const recentlyPlayed = [];
+  
+  for (const doc of recentDocs) {
+    if (doc.trackId && !seenTracks.has(doc.trackId._id.toString())) {
+      seenTracks.add(doc.trackId._id.toString());
+      recentlyPlayed.push(doc.trackId);
+      if (recentlyPlayed.length >= 12) break;
+    }
+  }
 
-  // More of what you like: tạm thời lấy theo nhiều plays nhất
   const moreOfWhatYouLike = await TrackCollection.find()
     .sort({ plays: -1, createdAt: -1 })
     .limit(8)
     .lean();
 
-  // Recommend: mới nhất
-  const recommendations = await TrackCollection.find()
-    .sort({ createdAt: -1 })
-    .limit(12)
+  // PHẦN NÀY QUAN TRỌNG - Load playlists
+  const playlists = await PlaylistCollection.find({ userId })
+    .populate('tracks')
+    .sort({ updatedAt: -1 })
+    .limit(6)
     .lean();
 
   res.render('profile', {
@@ -177,13 +196,26 @@ app.get(['/me', '/profile'], requireAuth, async (req, res) => {
     user: req.session.user,
     moreOfWhatYouLike,
     recentlyPlayed,
-    recommendations
+    playlists  
   });
 });
 
-app.use('/upload', uploadRoutes);
+app.get('/api/playlists', requireAuth, async (req, res) => {
+  try {
+    const playlists = await PlaylistCollection.find({ userId: req.session.user.id })
+      .select('_id name')
+      .sort({ updatedAt: -1 })
+      .lean();
+    res.json({ success: true, playlists });
+  } catch (err) {
+    console.error(err);
+    res.json({ success: false });
+  }
+});
 
-// 404
+app.use('/upload', uploadRoutes);
+app.use('/playlists', playlistRoutes);
+
 app.use((req, res) => res.status(404).render('404', { title: 'Not found' }));
 
 const PORT = process.env.PORT || 3000;

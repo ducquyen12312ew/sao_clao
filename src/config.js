@@ -3,27 +3,18 @@ const mongoose = require('mongoose');
 async function connectDB() {
   const uri = process.env.MONGO_URI || 'mongodb://0.0.0.0:27017/MusicCloud';
   try {
-  await mongoose.connect(uri, { autoIndex: true });
-  console.log('MongoDB connected');
+    await mongoose.connect(uri, { autoIndex: true });
+    console.log('MongoDB connected');
+  } catch (err) {
+    console.error('MongoDB connection error:', err.message);
+    process.exit(1);
+  }
 }
-  catch (err) { console.error('MongoDB connection error:', err.message); process.exit(1);} }
 
 const UserSchema = new mongoose.Schema({
-  name: { 
-    type: String, 
-    required: true, 
-    trim: true },
-  username: { 
-    type: String, 
-    required: true, 
-    unique: true, 
-    trim: true },
-  email: { 
-    type: String, 
-    required: true, 
-    unique: true, 
-    trim: true, 
-    lowercase: true },
+  name: { type: String, required: true, trim: true },
+  username: { type: String, required: true, unique: true, trim: true },
+  email: { type: String, required: true, unique: true, trim: true, lowercase: true },
   passwordHash: { type: String, required: true },
   createdAt: { type: Date, default: Date.now }
 }, { versionKey: false });
@@ -45,16 +36,26 @@ const PlayHistorySchema = new mongoose.Schema({
   playedAt: { type: Date, default: Date.now }
 }, { versionKey: false });
 
-/* Likes (để mở rộng phần gợi ý sau này) */
 const LikeSchema = new mongoose.Schema({
   userId: { type: mongoose.Schema.Types.ObjectId, ref: 'users', required: true },
   trackId: { type: mongoose.Schema.Types.ObjectId, ref: 'tracks', required: true },
   createdAt: { type: Date, default: Date.now }
-}, { versionKey: false, indexes: [{ unique: true, fields: { userId: 1, trackId: 1 } }] });
+}, { versionKey: false });
+
+const PlaylistSchema = new mongoose.Schema({
+  name: { type: String, required: true, trim: true },
+  description: { type: String, default: '', trim: true },
+  userId: { type: mongoose.Schema.Types.ObjectId, ref: 'users', required: true },
+  tracks: [{ type: mongoose.Schema.Types.ObjectId, ref: 'tracks' }],
+  isPublic: { type: Boolean, default: false },
+  createdAt: { type: Date, default: Date.now },
+  updatedAt: { type: Date, default: Date.now }
+}, { versionKey: false });
 
 const TrackCollection = mongoose.models.tracks || mongoose.model('tracks', TrackSchema);
 const PlayHistoryCollection = mongoose.models.play_histories || mongoose.model('play_histories', PlayHistorySchema);
 const LikeCollection = mongoose.models.likes || mongoose.model('likes', LikeSchema);
+const PlaylistCollection = mongoose.models.playlists || mongoose.model('playlists', PlaylistSchema);
 
 module.exports = {
   mongoose,
@@ -62,5 +63,6 @@ module.exports = {
   UserCollection,
   TrackCollection,
   PlayHistoryCollection,
-  LikeCollection
+  LikeCollection,
+  PlaylistCollection
 };
