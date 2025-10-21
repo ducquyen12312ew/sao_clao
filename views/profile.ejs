@@ -11,24 +11,46 @@
     * { margin: 0; padding: 0; box-sizing: border-box; }
     
     :root {
-      --bg-primary: #000000;
-      --bg-secondary: #0a0a0a;
-      --bg-card: #121212;
-      --bg-card-hover: #1a1a1a;
-      --border-color: #282828;
+      --bg-primary: #0f0f0f;
+      --bg-secondary: #1a1a1a;
+      --bg-card: #1e1e1e;
+      --bg-card-hover: #252525;
+      --border-color: #2a2a2a;
       --text-primary: #ffffff;
       --text-secondary: #b3b3b3;
       --accent-color: #1ed760;
       --accent-hover: #1fdf64;
       --player-bg: #181818;
+      --gradient-start: #1a4d2e;
+      --gradient-end: #0f2818;
     }
     
     body {
       font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
-      background: var(--bg-primary);
+      background: linear-gradient(135deg, var(--gradient-start) 0%, var(--bg-primary) 40%, var(--bg-primary) 100%);
       color: var(--text-primary);
       overflow-x: hidden;
       line-height: 1.6;
+      min-height: 100vh;
+    }
+    
+    /* Animated background effect */
+    body::before {
+      content: '';
+      position: fixed;
+      top: -50%;
+      left: -50%;
+      width: 200%;
+      height: 200%;
+      background: radial-gradient(circle at 50% 50%, rgba(30, 215, 96, 0.03) 0%, transparent 50%);
+      animation: rotate 30s linear infinite;
+      pointer-events: none;
+      z-index: 0;
+    }
+    
+    @keyframes rotate {
+      0% { transform: rotate(0deg); }
+      100% { transform: rotate(360deg); }
     }
     
     .header {
@@ -37,17 +59,21 @@
       left: 0;
       right: 0;
       height: 64px;
-      background: rgba(0, 0, 0, 0.95);
-      backdrop-filter: blur(20px);
-      border-bottom: 1px solid var(--border-color);
+      background: rgba(15, 15, 15, 0.85);
+      backdrop-filter: blur(20px) saturate(180%);
+      border-bottom: 1px solid rgba(42, 42, 42, 0.5);
       padding: 0 32px;
       display: flex;
       align-items: center;
       justify-content: space-between;
       z-index: 100;
+      box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
     }
     
-    .logo img { height: 36px; filter: brightness(1.1); }
+    .logo img { 
+      height: 36px; 
+      filter: brightness(1.2) drop-shadow(0 2px 8px rgba(30, 215, 96, 0.3));
+    }
     
     .nav-menu {
       display: flex;
@@ -61,13 +87,23 @@
       text-decoration: none;
       font-weight: 600;
       font-size: 14px;
-      transition: color 0.2s;
+      transition: all 0.2s;
       display: flex;
       align-items: center;
       gap: 8px;
+      padding: 8px 12px;
+      border-radius: 6px;
     }
     
-    .nav-link:hover, .nav-link.active { color: var(--text-primary); }
+    .nav-link:hover { 
+      color: var(--text-primary);
+      background: rgba(255, 255, 255, 0.05);
+    }
+    
+    .nav-link.active { 
+      color: var(--accent-color);
+      background: rgba(30, 215, 96, 0.1);
+    }
     
     .search-container {
       flex: 1;
@@ -78,20 +114,22 @@
     
     .search-input {
       width: 100%;
-      padding: 12px 48px;
-      background: var(--bg-card);
+      padding: 12px 48px 12px 48px;
+      background: rgba(30, 30, 30, 0.8);
       border: 1px solid transparent;
       border-radius: 500px;
       color: var(--text-primary);
       font-size: 14px;
       font-weight: 400;
-      transition: all 0.2s;
+      transition: all 0.3s;
+      backdrop-filter: blur(10px);
     }
     
     .search-input:focus {
       outline: none;
-      border-color: var(--text-primary);
-      background: var(--bg-card-hover);
+      border-color: var(--accent-color);
+      background: rgba(30, 30, 30, 0.95);
+      box-shadow: 0 0 0 3px rgba(30, 215, 96, 0.1);
     }
     
     .search-icon {
@@ -99,11 +137,36 @@
       left: 16px;
       top: 50%;
       transform: translateY(-50%);
+      pointer-events: none;
     }
     
     .search-icon i {
       font-size: 16px;
       color: var(--text-secondary);
+    }
+    
+    .search-clear {
+      position: absolute;
+      right: 16px;
+      top: 50%;
+      transform: translateY(-50%);
+      background: none;
+      border: none;
+      color: var(--text-secondary);
+      cursor: pointer;
+      padding: 4px;
+      border-radius: 50%;
+      display: none;
+      transition: all 0.2s;
+    }
+    
+    .search-clear:hover {
+      color: var(--text-primary);
+      background: rgba(255, 255, 255, 0.1);
+    }
+    
+    .search-clear.active {
+      display: block;
     }
     
     .header-actions {
@@ -124,10 +187,14 @@
       font-weight: 700;
       font-size: 14px;
       cursor: pointer;
-      transition: transform 0.2s;
+      transition: all 0.3s;
+      box-shadow: 0 2px 8px rgba(30, 215, 96, 0.3);
     }
     
-    .user-avatar:hover { transform: scale(1.08); }
+    .user-avatar:hover { 
+      transform: scale(1.08);
+      box-shadow: 0 4px 12px rgba(30, 215, 96, 0.5);
+    }
     
     .btn-logout {
       padding: 10px 24px;
@@ -138,30 +205,46 @@
       cursor: pointer;
       font-weight: 600;
       font-size: 13px;
-      transition: all 0.2s;
+      transition: all 0.3s;
       font-family: 'Inter', sans-serif;
     }
     
     .btn-logout:hover {
-      border-color: var(--text-primary);
+      border-color: var(--accent-color);
+      color: var(--accent-color);
       transform: scale(1.04);
+      box-shadow: 0 0 0 3px rgba(30, 215, 96, 0.1);
     }
     
     .main-layout {
       padding-top: 64px;
       display: flex;
       min-height: 100vh;
+      position: relative;
+      z-index: 1;
     }
     
     .content-area {
       flex: 1;
       padding: 40px 48px 140px;
       overflow-y: auto;
-      background: linear-gradient(180deg, #1a1a1a 0%, var(--bg-primary) 300px);
+      background: linear-gradient(180deg, rgba(26, 77, 46, 0.3) 0%, transparent 400px);
     }
     
     .section {
       margin-bottom: 56px;
+      animation: fadeIn 0.5s ease-out;
+    }
+    
+    @keyframes fadeIn {
+      from {
+        opacity: 0;
+        transform: translateY(20px);
+      }
+      to {
+        opacity: 1;
+        transform: translateY(0);
+      }
     }
     
     .section-header {
@@ -175,6 +258,10 @@
       font-size: 28px;
       font-weight: 800;
       letter-spacing: -0.5px;
+      background: linear-gradient(135deg, #ffffff 0%, #b3b3b3 100%);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      background-clip: text;
     }
     
     .view-all {
@@ -182,10 +269,15 @@
       text-decoration: none;
       font-size: 14px;
       font-weight: 700;
-      transition: color 0.2s;
+      transition: all 0.2s;
+      padding: 6px 12px;
+      border-radius: 6px;
     }
     
-    .view-all:hover { color: var(--text-primary); }
+    .view-all:hover { 
+      color: var(--accent-color);
+      background: rgba(30, 215, 96, 0.1);
+    }
     
     .cards-grid {
       display: grid;
@@ -196,53 +288,62 @@
     .card {
       background: var(--bg-card);
       padding: 20px;
-      border-radius: 8px;
+      border-radius: 12px;
       cursor: pointer;
       transition: all 0.3s cubic-bezier(0.25, 0.46, 0.45, 0.94);
       position: relative;
+      border: 1px solid rgba(255, 255, 255, 0.05);
     }
     
     .card:hover {
       background: var(--bg-card-hover);
-      transform: translateY(-4px);
+      transform: translateY(-6px);
+      border-color: rgba(30, 215, 96, 0.3);
+      box-shadow: 0 12px 32px rgba(0, 0, 0, 0.4), 0 0 0 1px rgba(30, 215, 96, 0.2);
     }
     
     .card-image {
-      position: relative;
-      margin-bottom: 20px;
-      overflow: hidden;
-      border-radius: 6px;
-      aspect-ratio: 1;
-      box-shadow: 0 8px 24px rgba(0, 0, 0, 0.5);
-    }
+    position: relative;
+    margin-bottom: 20px;
+    overflow: hidden;
+    border-radius: 8px;
+    aspect-ratio: 1;
+    box-shadow: 0 8px 24px rgba(0, 0, 0, 0.5);
+    display: block;
+    text-decoration: none;
+    cursor: pointer;
+  }
     
     .card-image img {
       width: 100%;
       height: 100%;
       object-fit: cover;
-      transition: transform 0.3s;
+      transition: transform 0.5s cubic-bezier(0.25, 0.46, 0.45, 0.94);
     }
     
-    .card:hover .card-image img { transform: scale(1.05); }
-    
-    .play-btn {
-      position: absolute;
-      right: 12px;
-      bottom: 12px;
-      width: 52px;
-      height: 52px;
-      background: var(--accent-color);
-      border: none;
-      border-radius: 50%;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      opacity: 0;
-      transform: translateY(12px);
-      transition: all 0.3s cubic-bezier(0.25, 0.46, 0.45, 0.94);
-      cursor: pointer;
-      box-shadow: 0 8px 16px rgba(0, 0, 0, 0.4);
+    .card:hover .card-image img { 
+      transform: scale(1.08);
     }
+    
+     .play-btn {
+    position: absolute;
+    right: 12px;
+    bottom: 12px;
+    width: 52px;
+    height: 52px;
+    background: var(--accent-color);
+    border: none;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    opacity: 0;
+    transform: translateY(12px);
+    transition: all 0.3s cubic-bezier(0.25, 0.46, 0.45, 0.94);
+    cursor: pointer;
+    box-shadow: 0 8px 16px rgba(30, 215, 96, 0.4);
+    z-index: 10; /* Keep play button on top */
+  }
     
     .play-btn i {
       font-size: 18px;
@@ -257,7 +358,8 @@
     
     .play-btn:hover {
       background: var(--accent-hover);
-      transform: scale(1.06);
+      transform: scale(1.08);
+      box-shadow: 0 8px 24px rgba(30, 215, 96, 0.6);
     }
     
     .play-btn.playing {
@@ -268,7 +370,7 @@
     
     @keyframes pulse {
       0%, 100% { box-shadow: 0 8px 16px rgba(30, 215, 96, 0.4); }
-      50% { box-shadow: 0 8px 24px rgba(30, 215, 96, 0.6); }
+      50% { box-shadow: 0 8px 32px rgba(30, 215, 96, 0.8); }
     }
     
     .card-title {
@@ -293,23 +395,26 @@
     .playlist-card {
       background: var(--bg-card);
       padding: 20px;
-      border-radius: 8px;
+      border-radius: 12px;
       cursor: pointer;
       transition: all 0.3s;
       text-decoration: none;
       color: inherit;
       display: block;
+      border: 1px solid rgba(255, 255, 255, 0.05);
     }
     
     .playlist-card:hover {
       background: var(--bg-card-hover);
-      transform: translateY(-4px);
+      transform: translateY(-6px);
+      border-color: rgba(30, 215, 96, 0.3);
+      box-shadow: 0 12px 32px rgba(0, 0, 0, 0.4);
     }
     
     .playlist-cover {
       position: relative;
       margin-bottom: 20px;
-      border-radius: 6px;
+      border-radius: 8px;
       aspect-ratio: 1;
       overflow: hidden;
       box-shadow: 0 8px 24px rgba(0, 0, 0, 0.5);
@@ -363,13 +468,15 @@
     
     .context-menu {
       position: fixed;
-      background: #282828;
-      border-radius: 6px;
-      padding: 6px;
+      background: rgba(40, 40, 40, 0.98);
+      backdrop-filter: blur(20px);
+      border-radius: 8px;
+      padding: 8px;
       min-width: 220px;
       box-shadow: 0 16px 48px rgba(0, 0, 0, 0.9);
       z-index: 1000;
       display: none;
+      border: 1px solid rgba(255, 255, 255, 0.1);
     }
     
     .context-menu.active { display: block; }
@@ -377,7 +484,7 @@
     .context-menu-item {
       padding: 12px 16px;
       cursor: pointer;
-      border-radius: 4px;
+      border-radius: 6px;
       font-size: 14px;
       font-weight: 500;
       display: flex;
@@ -388,7 +495,9 @@
       position: relative;
     }
     
-    .context-menu-item:hover { background: #3e3e3e; }
+    .context-menu-item:hover { 
+      background: rgba(62, 62, 62, 0.8);
+    }
     
     .context-menu-item i {
       font-size: 16px;
@@ -398,7 +507,7 @@
     
     .context-menu-divider {
       height: 1px;
-      background: #3e3e3e;
+      background: rgba(62, 62, 62, 0.8);
       margin: 6px 0;
     }
     
@@ -406,14 +515,16 @@
       position: absolute;
       left: 100%;
       top: 0;
-      background: #282828;
-      border-radius: 6px;
-      padding: 6px;
+      background: rgba(40, 40, 40, 0.98);
+      backdrop-filter: blur(20px);
+      border-radius: 8px;
+      padding: 8px;
       min-width: 200px;
       box-shadow: 0 16px 48px rgba(0, 0, 0, 0.9);
       display: none;
       max-height: 300px;
       overflow-y: auto;
+      border: 1px solid rgba(255, 255, 255, 0.1);
     }
     
     .context-menu-item:hover .context-submenu { display: block; }
@@ -421,18 +532,18 @@
     .submenu-item {
       padding: 10px 14px;
       cursor: pointer;
-      border-radius: 4px;
+      border-radius: 6px;
       font-size: 14px;
       color: var(--text-primary);
       transition: background 0.2s;
     }
     
-    .submenu-item:hover { background: #3e3e3e; }
+    .submenu-item:hover { background: rgba(62, 62, 62, 0.8); }
     
     .submenu-item.create-new {
       color: var(--accent-color);
       font-weight: 600;
-      border-bottom: 1px solid #3e3e3e;
+      border-bottom: 1px solid rgba(62, 62, 62, 0.8);
       margin-bottom: 4px;
     }
     
@@ -442,7 +553,8 @@
       left: 0;
       right: 0;
       bottom: 0;
-      background: rgba(0, 0, 0, 0.8);
+      background: rgba(0, 0, 0, 0.85);
+      backdrop-filter: blur(10px);
       display: none;
       align-items: center;
       justify-content: center;
@@ -453,11 +565,12 @@
     
     .modal-content {
       background: var(--bg-card);
-      border-radius: 8px;
+      border-radius: 12px;
       padding: 32px;
       width: 90%;
       max-width: 500px;
       box-shadow: 0 20px 60px rgba(0, 0, 0, 0.9);
+      border: 1px solid rgba(255, 255, 255, 0.1);
     }
     
     .modal-title {
@@ -480,15 +593,17 @@
       padding: 12px 16px;
       background: var(--bg-secondary);
       border: 1px solid var(--border-color);
-      border-radius: 6px;
+      border-radius: 8px;
       color: var(--text-primary);
       font-size: 14px;
       font-family: 'Inter', sans-serif;
+      transition: all 0.2s;
     }
     
     .form-input:focus {
       outline: none;
       border-color: var(--accent-color);
+      box-shadow: 0 0 0 3px rgba(30, 215, 96, 0.1);
     }
     
     .form-textarea {
@@ -522,6 +637,7 @@
     .btn-primary:hover {
       background: var(--accent-hover);
       transform: scale(1.04);
+      box-shadow: 0 4px 12px rgba(30, 215, 96, 0.4);
     }
     
     .btn-secondary {
@@ -530,18 +646,23 @@
       border: 1px solid var(--text-secondary);
     }
     
-    .btn-secondary:hover { border-color: var(--text-primary); }
+    .btn-secondary:hover { 
+      border-color: var(--text-primary);
+      background: rgba(255, 255, 255, 0.05);
+    }
     
     .music-player {
       position: fixed;
       bottom: 0;
       left: 0;
       right: 0;
-      background: var(--player-bg);
-      border-top: 1px solid var(--border-color);
+      background: rgba(24, 24, 24, 0.95);
+      backdrop-filter: blur(20px);
+      border-top: 1px solid rgba(42, 42, 42, 0.8);
       padding: 16px 24px;
       display: none;
       z-index: 1000;
+      box-shadow: 0 -4px 12px rgba(0, 0, 0, 0.3);
     }
     
     .music-player.active { display: block; }
@@ -1119,6 +1240,9 @@
         <i class="fa-solid fa-magnifying-glass"></i>
       </div>
       <input type="text" class="search-input" id="searchInput" placeholder="Tìm bài hát, nghệ sĩ...">
+      <button class="search-clear" id="searchClear">
+        <i class="fa-solid fa-xmark"></i>
+      </button>
     </div>
     <div class="header-actions">
       <div class="user-avatar" title="<%= user.username %>">
@@ -1132,39 +1256,41 @@
   
   <div class="main-layout">
     <div class="content-area">
-      <section class="section">
+      <section class="section" id="recommendations-section">
         <div class="section-header">
           <h2 class="section-title">Có thể bạn thích</h2>
         </div>
         
-        <% if (moreOfWhatYouLike && moreOfWhatYouLike.length > 0) { %>
-          <div class="cards-grid">
-            <% moreOfWhatYouLike.slice(0, 6).forEach((track) => { %>
-              <div class="card" data-track-id="<%= track._id %>" data-title="<%= track.title.toLowerCase() %>" data-artist="<%= (track.artist || '').toLowerCase() %>"
-                   oncontextmenu="showContextMenu(event, '<%= track._id %>', '<%= track.title %>', '<%= track.artist || 'Unknown' %>', '<%= track.coverUrl || '' %>', '<%= track.audioUrl %>')">
-                <div class="card-image">
-                  <img src="<%= track.coverUrl || 'https://images.unsplash.com/photo-1470225620780-dba8ba36b745?w=400' %>" alt="<%= track.title %>">
-                  <button class="play-btn" onclick="playTrack('<%= track._id %>', '<%= track.title %>', '<%= track.artist || 'Unknown' %>', '<%= track.coverUrl || '' %>', '<%= track.audioUrl %>')">
-                    <i class="fa-solid fa-play"></i>
-                  </button>
-                </div>
-                <div class="card-info">
-                  <div class="card-title"><%= track.title %></div>
-                  <div class="card-artist"><%= track.artist || 'Nghệ sĩ không rõ' %></div>
-                </div>
-              </div>
-            <% }) %>
-          </div>
-        <% } else { %>
-          <div class="empty-state">
-            <h3>Chưa có gợi ý</h3>
-            <p>Nghe thêm nhạc để nhận gợi ý cá nhân hóa</p>
-          </div>
-        <% } %>
+       <% if (moreOfWhatYouLike && moreOfWhatYouLike.length > 0) { %>
+  <div class="cards-grid">
+    <% moreOfWhatYouLike.slice(0, 6).forEach((track) => { %>
+      <div class="card" data-track-id="<%= track._id %>" data-title="<%= track.title.toLowerCase() %>" data-artist="<%= (track.artist || '').toLowerCase() %>"
+           oncontextmenu="showContextMenu(event, '<%= track._id %>', '<%= track.title %>', '<%= track.artist || 'Unknown' %>', '<%= track.coverUrl || '' %>', '<%= track.audioUrl %>')">
+        <!-- Clickable image to go to track detail page -->
+        <a href="/track/<%= track._id %>" class="card-image">
+          <img src="<%= track.coverUrl || 'https://images.unsplash.com/photo-1470225620780-dba8ba36b745?w=400' %>" alt="<%= track.title %>">
+          <!-- Play button stays on top and plays music -->
+          <button class="play-btn" onclick="event.preventDefault(); event.stopPropagation(); playTrack('<%= track._id %>', '<%= track.title %>', '<%= track.artist || 'Unknown' %>', '<%= track.coverUrl || '' %>', '<%= track.audioUrl %>')">
+            <i class="fa-solid fa-play"></i>
+          </button>
+        </a>
+        <div class="card-info">
+          <div class="card-title"><%= track.title %></div>
+          <div class="card-artist"><%= track.artist || 'Nghệ sĩ không rõ' %></div>
+        </div>
+      </div>
+    <% }) %>
+  </div>
+<% } else { %>
+  <div class="empty-state">
+    <h3>Chưa có gợi ý</h3>
+    <p>Nghe thêm nhạc để nhận gợi ý cá nhân hóa</p>
+  </div>
+<% } %>
       </section>
 
       <% if (recentlyPlayed && recentlyPlayed.length > 0) { %>
-      <section class="section">
+      <section class="section" id="recently-played-section">
         <div class="section-header">
           <h2 class="section-title">Nghe gần đây</h2>
         </div>
@@ -1188,7 +1314,7 @@
       </section>
       <% } %>
 
-      <section class="section">
+      <section class="section" id="playlists-section">
         <div class="section-header">
           <h2 class="section-title">Playlist của tôi</h2>
           <a href="/playlists" class="view-all">Xem tất cả</a>
@@ -1338,7 +1464,6 @@
     }
   }
   
-  // Resize Sidebar - Chỉ khởi tạo khi element tồn tại
   function initResizeSidebar() {
     const resizeHandle = document.getElementById('resizeHandle');
     const rightSidebar = document.getElementById('rightSidebar');
@@ -1376,37 +1501,146 @@
   
   function initSearch() {
     const searchInput = document.getElementById('searchInput');
+    const searchClear = document.getElementById('searchClear');
+    
     if (!searchInput) return;
     
     let searchTimeout;
     
-    searchInput.addEventListener('input', (e) => {
+    // Input handler
+    searchInput.addEventListener('input', async (e) => {
       clearTimeout(searchTimeout);
-      searchTimeout = setTimeout(() => {
-        const query = e.target.value.toLowerCase().trim();
-        filterTracks(query);
+      const query = e.target.value.trim();
+      
+      // Show/hide clear button
+      if (searchClear) {
+        searchClear.classList.toggle('active', query.length > 0);
+      }
+      
+      if (!query) {
+        clearSearch();
+        return;
+      }
+      
+      searchTimeout = setTimeout(async () => {
+        await performSearch(query);
       }, 300);
+    });
+    
+    // Clear button handler
+    if (searchClear) {
+      searchClear.addEventListener('click', () => {
+        searchInput.value = '';
+        searchClear.classList.remove('active');
+        clearSearch();
+        searchInput.focus();
+      });
+    }
+    
+    // ESC key handler
+    searchInput.addEventListener('keydown', (e) => {
+      if (e.key === 'Escape') {
+        searchInput.value = '';
+        if (searchClear) searchClear.classList.remove('active');
+        clearSearch();
+        searchInput.blur();
+      }
     });
   }
   
-  function filterTracks(query) {
-    const allCards = document.querySelectorAll('.card[data-title]');
-    
-    if (!query) {
-      allCards.forEach(card => card.style.display = 'block');
-      return;
+  function clearSearch() {
+    // Remove search results section
+    const existingResults = document.getElementById('search-results-section');
+    if (existingResults) {
+      existingResults.remove();
     }
     
-    allCards.forEach(card => {
-      const title = card.dataset.title || '';
-      const artist = card.dataset.artist || '';
-      
-      if (title.includes(query) || artist.includes(query)) {
-        card.style.display = 'block';
-      } else {
-        card.style.display = 'none';
+    // Show all original sections
+    const originalSections = [
+      'recently-played-section',
+      'recommendations-section',
+      'playlists-section'
+    ];
+    
+    originalSections.forEach(id => {
+      const section = document.getElementById(id);
+      if (section) {
+        section.style.display = 'block';
       }
     });
+  }
+  
+  async function performSearch(query) {
+    try {
+      const res = await fetch(`/api/search?q=${encodeURIComponent(query)}`);
+      const data = await res.json();
+      
+      if (data.success && data.tracks) {
+        displaySearchResults(data.tracks, query);
+      }
+    } catch (err) {
+      console.error('Search error:', err);
+    }
+  }
+  
+  function displaySearchResults(tracks, query) {
+    // Hide original sections
+    const originalSections = [
+      'recently-played-section',
+      'recommendations-section',
+      'playlists-section'
+    ];
+    
+    originalSections.forEach(id => {
+      const section = document.getElementById(id);
+      if (section) {
+        section.style.display = 'none';
+      }
+    });
+    
+    // Remove existing search results
+    const existingResults = document.getElementById('search-results-section');
+    if (existingResults) {
+      existingResults.remove();
+    }
+    
+    // Create search results section
+    const contentArea = document.querySelector('.content-area');
+    const resultsSection = document.createElement('section');
+    resultsSection.id = 'search-results-section';
+    resultsSection.className = 'section';
+    
+    resultsSection.innerHTML = `
+      <div class="section-header">
+        <h2 class="section-title">Kết quả tìm kiếm cho "${query}"</h2>
+        <span class="view-all">${tracks.length} bài hát</span>
+      </div>
+      ${tracks.length > 0 ? `
+        <div class="cards-grid">
+          ${tracks.map(track => `
+            <div class="card" data-track-id="${track._id}">
+              <div class="card-image">
+                <img src="${track.coverUrl || 'https://images.unsplash.com/photo-1470225620780-dba8ba36b745?w=400'}" alt="${track.title}">
+                <button class="play-btn" onclick="window.playTrack('${track._id}', '${track.title.replace(/'/g, "\\'")}', '${(track.artist || 'Unknown').replace(/'/g, "\\'")}', '${track.coverUrl || ''}', '${track.audioUrl}')">
+                  <i class="fa-solid fa-play"></i>
+                </button>
+              </div>
+              <div class="card-info">
+                <div class="card-title">${track.title}</div>
+                <div class="card-artist">${track.artist || 'Unknown Artist'}</div>
+              </div>
+            </div>
+          `).join('')}
+        </div>
+      ` : `
+        <div class="empty-state">
+          <h3>Không tìm thấy kết quả</h3>
+          <p>Thử tìm kiếm với từ khóa khác</p>
+        </div>
+      `}
+    `;
+    
+    contentArea.insertBefore(resultsSection, contentArea.firstChild);
   }
   
   // ============================================
@@ -1435,7 +1669,6 @@
     
     const createNew = submenu.querySelector('.create-new');
     
-    // Clear and rebuild submenu
     submenu.innerHTML = '';
     if (createNew) {
       submenu.appendChild(createNew);
@@ -1460,7 +1693,6 @@
     const menu = document.getElementById('contextMenu');
     if (!menu) return;
     
-    // Lưu track info vào biến global
     window.contextTrack = { 
       id: id, 
       title: title, 
@@ -1469,17 +1701,12 @@
       audioUrl: audioUrl 
     };
     
-    console.log('Context track set:', window.contextTrack);
-    
-    // Position menu at cursor
     menu.style.left = e.pageX + 'px';
     menu.style.top = e.pageY + 'px';
     menu.classList.add('active');
     
-    // Load playlists for submenu
     loadPlaylists();
     
-    // Add click listener to close menu
     setTimeout(() => {
       document.addEventListener('click', closeContextMenu);
     }, 10);
@@ -1498,9 +1725,6 @@
   // ============================================
   
   function addToQueue(track) {
-    console.log('addToQueue called with:', track);
-    
-    // Validation checks
     if (!track) {
       console.error('No track provided');
       showNotification('Lỗi: Không có bài hát');
@@ -1513,7 +1737,6 @@
       return;
     }
     
-    // Use player's addToQueue method
     const success = window.player.addToQueue(track);
     
     if (success) {
@@ -1605,12 +1828,10 @@
         showNotification('Tạo playlist thành công');
         closeCreatePlaylistModal();
         
-        // If there's a context track, add it to the new playlist
         if (window.contextTrack) {
           await addToPlaylist(data.playlist._id);
         }
         
-        // Reload page to show new playlist
         setTimeout(() => location.reload(), 1000);
       } else {
         showNotification(data.message || 'Tạo playlist thất bại');
@@ -1626,11 +1847,9 @@
   // ============================================
   
   function showNotification(message) {
-    // Remove existing notifications
     const existingNotifs = document.querySelectorAll('.custom-notification');
     existingNotifs.forEach(n => n.remove());
     
-    // Create new notification
     const notif = document.createElement('div');
     notif.className = 'custom-notification';
     notif.style.cssText = `
@@ -1638,20 +1857,21 @@
       bottom: 120px;
       left: 50%;
       transform: translateX(-50%);
-      background: #282828;
+      background: rgba(40, 40, 40, 0.98);
+      backdrop-filter: blur(20px);
       color: #fff;
-      padding: 16px 24px;
+      padding: 16px 28px;
       border-radius: 8px;
       font-size: 14px;
       font-weight: 600;
       z-index: 10000;
       box-shadow: 0 8px 24px rgba(0,0,0,0.8);
+      border: 1px solid rgba(30, 215, 96, 0.3);
       animation: slideUp 0.3s ease-out;
     `;
     notif.textContent = message;
     document.body.appendChild(notif);
     
-    // Auto remove after 2.5 seconds
     setTimeout(() => {
       notif.style.transition = 'opacity 0.3s, transform 0.3s';
       notif.style.opacity = '0';
@@ -1660,7 +1880,6 @@
     }, 2500);
   }
   
-  // Add animation keyframes
   if (!document.getElementById('notif-animations')) {
     const style = document.createElement('style');
     style.id = 'notif-animations';
@@ -1684,14 +1903,12 @@
   // ============================================
   
   function initEventListeners() {
-    // Close modal on Escape key
     document.addEventListener('keydown', (e) => {
       if (e.key === 'Escape') {
         closeCreatePlaylistModal();
       }
     });
     
-    // Create playlist on Enter key in name input
     const playlistNameInput = document.getElementById('playlistName');
     if (playlistNameInput) {
       playlistNameInput.addEventListener('keypress', (e) => {
@@ -1708,16 +1925,13 @@
   
   console.log('Profile script loaded');
   
-  // Initialize when DOM is ready
   window.addEventListener('DOMContentLoaded', () => {
     console.log('DOM loaded, initializing...');
     
-    // Initialize all components
     initResizeSidebar();
     initSearch();
     initEventListeners();
     
-    // Check if player is initialized
     const checkPlayer = setInterval(() => {
       if (window.player) {
         console.log('Player ready:', window.player);
@@ -1725,7 +1939,6 @@
       }
     }, 100);
     
-    // Stop checking after 5 seconds
     setTimeout(() => clearInterval(checkPlayer), 5000);
   });
 </script>

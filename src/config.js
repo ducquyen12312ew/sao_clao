@@ -56,15 +56,25 @@ const PlaylistSchema = new mongoose.Schema({
   updatedAt: { type: Date, default: Date.now }
 });
 
+const CommentSchema = new mongoose.Schema({
+  trackId: { type: mongoose.Schema.Types.ObjectId, ref: 'Track', required: true },
+  userId: { type: mongoose.Schema.Types.ObjectId, ref: 'User', required: true },
+  text: { type: String, required: true },
+  likes: { type: Number, default: 0 },
+  createdAt: { type: Date, default: Date.now }
+});
+
 const UserCollection = mongoose.model('User', UserSchema);
 const TrackCollection = mongoose.model('Track', TrackSchema);
 const PlayHistoryCollection = mongoose.model('PlayHistory', PlayHistorySchema);
 const PlaylistCollection = mongoose.model('Playlist', PlaylistSchema);
+const CommentCollection = mongoose.model('Comment', CommentSchema);
 
 module.exports = {
   connectDB,
   UserCollection,
   TrackCollection,
   PlayHistoryCollection,
-  PlaylistCollection
+  PlaylistCollection,
+  CommentCollection
 };

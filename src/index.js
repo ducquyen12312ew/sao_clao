@@ -11,7 +11,8 @@ const {
   TrackCollection,
   UserCollection,
   PlayHistoryCollection,
-  PlaylistCollection
+  PlaylistCollection,
+  CommentCollection
 } = require('./config');
 
 const uploadRoutes = require('./upload-routes');
@@ -419,6 +420,64 @@ app.get('/api/moods', requireAuth, async (req, res) => {
   } catch (err) {
     console.error(err);
     res.json({ success: false, moods: [] });
+  }
+});
+
+app.get('/track/:id', requireAuth, async (req, res) => {
+  try {
+    const track = await TrackCollection.findById(req.params.id).lean();
+    
+    if (!track) {
+      return res.status(404).render('404', { title: 'Track not found' });
+    }
+    
+    const comments = await CommentCollection
+      .find({ trackId: req.params.id })
+      .populate('userId', 'username')
+      .sort({ createdAt: -1 })
+      .lean();
+    
+    res.render('track-detail', {
+      title: `${track.title} - ${track.artist}`,
+      track,
+      comments,
+      user: req.session.user
+    });
+  } catch (err) {
+    console.error(err);
+    res.status(500).send('Server error');
+  }
+});
+
+// Like track
+app.post('/api/tracks/:id/like', requireAuth, async (req, res) => {
+  try {
+    const track = await TrackCollection.findById(req.params.id);
+    if (!track) return res.json({ success: false });
+    
+    track.likes = (track.likes || 0) + 1;
+    await track.save();
+    
+    res.json({ success: true, likes: track.likes });
+  } catch (err) {
+    res.json({ success: false });
+  }
+});
+
+// Add comment
+app.post('/api/tracks/:id/comments', requireAuth, async (req, res) => {
+  try {
+    const { text } = req.body;
+    
+    const comment = await CommentCollection.create({
+      trackId: req.params.id,
+      userId: req.session.user.id,
+      text
+    });
+    
+    res.json({ success: true, comment });
+  } catch (err) {
+    res.json({ success: false });
   }
 });
 

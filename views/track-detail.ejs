@@ -11,13 +11,13 @@
     * { margin: 0; padding: 0; box-sizing: border-box; }
     
     :root {
-      --bg-primary: #000000;
-      --bg-secondary: #0a0a0a;
-      --bg-card: #121212;
+      --bg-primary: #0f0f0f;
+      --bg-secondary: #1a1a1a;
+      --bg-card: #1e1e1e;
       --text-primary: #ffffff;
       --text-secondary: #b3b3b3;
-      --border-color: #282828;
       --accent-color: #1ed760;
+      --border-color: #2a2a2a;
     }
     
     body {
@@ -33,7 +33,7 @@
       left: 0;
       right: 0;
       height: 64px;
-      background: rgba(0, 0, 0, 0.95);
+      background: rgba(15, 15, 15, 0.95);
       backdrop-filter: blur(20px);
       border-bottom: 1px solid var(--border-color);
       padding: 0 32px;
@@ -70,7 +70,7 @@
     .container {
       max-width: 1400px;
       margin: 0 auto;
-      padding: 100px 40px 140px;
+      padding: 100px 40px 40px;
     }
     
     .hero-section {
@@ -78,10 +78,9 @@
       grid-template-columns: 1fr 400px;
       gap: 48px;
       margin-bottom: 48px;
-      background: rgba(255, 255, 255, 0.02);
+      background: linear-gradient(135deg, rgba(30, 215, 96, 0.1) 0%, transparent 100%);
       padding: 40px;
       border-radius: 16px;
-      border: 1px solid var(--border-color);
     }
     
     .player-section {
@@ -100,29 +99,25 @@
       width: 64px;
       height: 64px;
       border-radius: 50%;
-      background: var(--text-primary);
+      background: var(--accent-color);
       border: none;
       display: flex;
       align-items: center;
       justify-content: center;
       cursor: pointer;
       transition: all 0.3s;
-      box-shadow: 0 8px 24px rgba(255, 255, 255, 0.2);
+      box-shadow: 0 8px 24px rgba(30, 215, 96, 0.4);
     }
     
     .play-button:hover {
       transform: scale(1.08);
-      box-shadow: 0 12px 32px rgba(255, 255, 255, 0.3);
+      box-shadow: 0 12px 32px rgba(30, 215, 96, 0.6);
     }
     
     .play-button i {
       font-size: 24px;
       color: #000;
       margin-left: 3px;
-    }
-    
-    .play-button.playing i {
-      margin-left: 0;
     }
     
     .track-info h1 {
@@ -135,37 +130,31 @@
       font-size: 18px;
       color: var(--text-secondary);
       font-weight: 500;
-      margin-bottom: 12px;
-    }
-    
-    .track-genres {
-      display: flex;
-      gap: 8px;
-      flex-wrap: wrap;
-    }
-    
-    .genre-tag {
-      background: rgba(255, 255, 255, 0.1);
-      color: var(--text-primary);
-      padding: 4px 12px;
-      border-radius: 12px;
-      font-size: 12px;
-      font-weight: 600;
-      border: 1px solid rgba(255, 255, 255, 0.2);
     }
     
     .track-meta {
       display: flex;
       align-items: center;
       gap: 16px;
-      color: var(--text-secondary);
-      font-size: 14px;
+      margin-top: 16px;
+      flex-wrap: wrap;
     }
     
     .meta-item {
       display: flex;
       align-items: center;
       gap: 8px;
+      color: var(--text-secondary);
+      font-size: 14px;
+    }
+    
+    .tag {
+      background: rgba(30, 215, 96, 0.15);
+      color: var(--accent-color);
+      padding: 6px 16px;
+      border-radius: 20px;
+      font-size: 13px;
+      font-weight: 600;
     }
     
     .waveform-container {
@@ -174,8 +163,8 @@
       background: rgba(255, 255, 255, 0.05);
       border-radius: 12px;
       overflow: hidden;
+      cursor: pointer;
       padding: 20px;
-      border: 1px solid var(--border-color);
     }
     
     .waveform {
@@ -183,26 +172,24 @@
       height: 100%;
       display: flex;
       align-items: center;
-      justify-content: center;
-      gap: 3px;
+      gap: 2px;
     }
     
     .waveform-bar {
-      width: 4px;
+      flex: 1;
       background: rgba(255, 255, 255, 0.3);
       border-radius: 2px;
-      transition: all 0.15s ease;
-      height: 20%;
+      transition: all 0.2s;
+      height: 40%;
     }
     
     .waveform-bar.active {
-      background: var(--text-primary);
-      animation: wave 0.8s ease-in-out infinite;
+      background: var(--accent-color);
     }
     
-    @keyframes wave {
-      0%, 100% { height: 20%; }
-      50% { height: 80%; }
+    .waveform-bar:hover {
+      background: var(--accent-color);
+      opacity: 0.8;
     }
     
     .time-display {
@@ -237,8 +224,8 @@
     }
     
     .action-btn:hover {
-      border-color: var(--text-primary);
-      color: var(--text-primary);
+      border-color: var(--accent-color);
+      color: var(--accent-color);
       transform: translateY(-2px);
     }
     
@@ -257,7 +244,6 @@
       border-radius: 12px;
       overflow: hidden;
       box-shadow: 0 16px 48px rgba(0, 0, 0, 0.6);
-      border: 1px solid var(--border-color);
     }
     
     .cover-image img {
@@ -273,7 +259,6 @@
       padding: 20px;
       background: rgba(255, 255, 255, 0.05);
       border-radius: 12px;
-      border: 1px solid var(--border-color);
     }
     
     .stat-item {
@@ -283,7 +268,7 @@
     .stat-value {
       font-size: 24px;
       font-weight: 800;
-      color: var(--text-primary);
+      color: var(--accent-color);
       display: block;
     }
     
@@ -297,7 +282,6 @@
       background: var(--bg-card);
       border-radius: 16px;
       padding: 32px;
-      border: 1px solid var(--border-color);
     }
     
     .comments-header {
@@ -324,7 +308,7 @@
       width: 48px;
       height: 48px;
       border-radius: 50%;
-      background: linear-gradient(135deg, #ffffff, #b3b3b3);
+      background: linear-gradient(135deg, var(--accent-color), #1db954);
       display: flex;
       align-items: center;
       justify-content: center;
@@ -353,13 +337,13 @@
     
     .comment-input:focus {
       outline: none;
-      border-color: var(--text-primary);
+      border-color: var(--accent-color);
       background: rgba(255, 255, 255, 0.08);
     }
     
     .comment-submit {
       padding: 12px 32px;
-      background: var(--text-primary);
+      background: var(--accent-color);
       border: none;
       border-radius: 500px;
       color: #000;
@@ -371,7 +355,7 @@
     
     .comment-submit:hover {
       transform: scale(1.05);
-      box-shadow: 0 4px 12px rgba(255, 255, 255, 0.3);
+      box-shadow: 0 4px 12px rgba(30, 215, 96, 0.4);
     }
     
     .comments-list {
@@ -391,11 +375,13 @@
       border-radius: 50%;
       background: linear-gradient(135deg, #667eea, #764ba2);
       flex-shrink: 0;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      color: #fff;
-      font-weight: 700;
+    }
+    
+    .comment-avatar img {
+      width: 100%;
+      height: 100%;
+      border-radius: 50%;
+      object-fit: cover;
     }
     
     .comment-content {
@@ -446,7 +432,11 @@
     }
     
     .comment-action:hover {
-      color: var(--text-primary);
+      color: var(--accent-color);
+    }
+    
+    .comment-action.liked {
+      color: #ff4444;
     }
     
     .empty-comments {
@@ -465,7 +455,7 @@
       }
       
       .container {
-        padding: 100px 20px 140px;
+        padding: 100px 20px 40px;
       }
     }
   </style>
@@ -482,19 +472,12 @@
     <div class="hero-section">
       <div class="player-section">
         <div class="track-header">
-          <button class="play-button" id="mainPlayBtn">
+          <button class="play-button" onclick="playTrack('<%= track._id %>', '<%= track.title %>', '<%= track.artist %>', '<%= track.coverUrl %>', '<%= track.audioUrl %>')">
             <i class="fa-solid fa-play"></i>
           </button>
           <div class="track-info">
             <h1><%= track.title %></h1>
             <div class="track-artist"><%= track.artist || 'Unknown Artist' %></div>
-            <% if (track.genres && track.genres.length > 0) { %>
-              <div class="track-genres">
-                <% track.genres.slice(0, 3).forEach(genre => { %>
-                  <span class="genre-tag">#<%= genre %></span>
-                <% }) %>
-              </div>
-            <% } %>
           </div>
         </div>
         
@@ -503,14 +486,19 @@
             <i class="fa-regular fa-clock"></i>
             <span><%= new Date(track.createdAt).toLocaleDateString('vi-VN') %></span>
           </div>
+          <% if (track.genres && track.genres.length > 0) { %>
+            <% track.genres.slice(0, 3).forEach(genre => { %>
+              <span class="tag">#<%= genre %></span>
+            <% }) %>
+          <% } %>
         </div>
         
-        <div class="waveform-container">
+        <div class="waveform-container" id="waveformContainer">
           <div class="waveform" id="waveform"></div>
         </div>
         <div class="time-display">
           <span id="currentTime">0:00</span>
-          <span id="duration">0:00</span>
+          <span id="duration">--:--</span>
         </div>
         
         <div class="action-buttons">
@@ -518,7 +506,7 @@
             <i class="fa-regular fa-heart"></i>
             <span id="likeCount"><%= track.likes || 0 %></span>
           </button>
-          <button class="action-btn" id="addToQueueBtn">
+          <button class="action-btn" onclick="addToQueue({id: '<%= track._id %>', title: '<%= track.title %>', artist: '<%= track.artist %>', cover: '<%= track.coverUrl %>', audioUrl: '<%= track.audioUrl %>'})">
             <i class="fa-solid fa-list"></i>
             <span>Add to Queue</span>
           </button>
@@ -535,7 +523,7 @@
         </div>
         <div class="stats">
           <div class="stat-item">
-            <span class="stat-value" id="playCount">0</span>
+            <span class="stat-value" id="playCount"><%= track.playCount || 0 %></span>
             <span class="stat-label">Plays</span>
           </div>
           <div class="stat-item">
@@ -568,9 +556,11 @@
       <div class="comments-list" id="commentsList">
         <% if (comments.length > 0) { %>
           <% comments.forEach(comment => { %>
-            <div class="comment">
+            <div class="comment" data-comment-id="<%= comment._id %>">
               <div class="comment-avatar">
-                <%= comment.userId.username.charAt(0).toUpperCase() %>
+                <div style="width: 100%; height: 100%; background: linear-gradient(135deg, #667eea, #764ba2); border-radius: 50%; display: flex; align-items: center; justify-content: center; color: #fff; font-weight: 700;">
+                  <%= comment.userId.username.charAt(0).toUpperCase() %>
+                </div>
               </div>
               <div class="comment-content">
                 <div class="comment-header">
@@ -579,7 +569,7 @@
                 </div>
                 <p class="comment-text"><%= comment.text %></p>
                 <div class="comment-actions">
-                  <button class="comment-action">
+                  <button class="comment-action comment-like-btn" data-comment-id="<%= comment._id %>">
                     <i class="fa-regular fa-heart"></i>
                     <span><%= comment.likes || 0 %></span>
                   </button>
@@ -596,150 +586,66 @@
     </div>
   </div>
   
-  <audio id="audioPlayer"></audio>
+  <audio id="audioPlayer" src="<%= track.audioUrl %>"></audio>
   
   <script src="/public/js/player.js"></script>
   <script>
-    const trackData = {
-      id: '<%= track._id %>',
-      title: '<%= track.title %>',
-      artist: '<%= track.artist || "Unknown" %>',
-      cover: '<%= track.coverUrl || "" %>',
-      audioUrl: '<%= track.audioUrl %>'
-    };
+    // Generate waveform
+    const waveform = document.getElementById('waveform');
+    const totalBars = 100;
     
-    // Wait for player to be ready
-    const initDetailPage = () => {
-      if (!window.player) {
-        setTimeout(initDetailPage, 100);
-        return;
-      }
-      
-      const mainPlayBtn = document.getElementById('mainPlayBtn');
-      const currentTimeEl = document.getElementById('currentTime');
-      const durationEl = document.getElementById('duration');
-      const waveform = document.getElementById('waveform');
-      
-      // Generate animated waveform bars
-      const totalBars = 40;
-      const bars = [];
-      
-      for (let i = 0; i < totalBars; i++) {
-        const bar = document.createElement('div');
-        bar.className = 'waveform-bar';
-        bar.style.animationDelay = `${i * 0.05}s`;
-        bars.push(bar);
-        waveform.appendChild(bar);
-      }
-      
-      // Main play button
-      mainPlayBtn.addEventListener('click', () => {
-        if (window.player.currentTrack?.id === trackData.id) {
-          window.player.togglePlay();
-        } else {
-          window.player.playTrack(trackData);
-        }
-      });
-      
-      // Sync with global player
-      const audio = window.player.audio;
-      
-      const updateUI = () => {
-        const isCurrentTrack = window.player.currentTrack?.id === trackData.id;
-        const isPlaying = !audio.paused;
-        
-        // Update play button
-        const icon = mainPlayBtn.querySelector('i');
-        if (isCurrentTrack && isPlaying) {
-          icon.className = 'fa-solid fa-pause';
-          mainPlayBtn.classList.add('playing');
-          // Animate waveform
-          bars.forEach(bar => bar.classList.add('active'));
-        } else {
-          icon.className = 'fa-solid fa-play';
-          mainPlayBtn.classList.remove('playing');
-          bars.forEach(bar => bar.classList.remove('active'));
-        }
-        
-        // Update time if this is current track
-        if (isCurrentTrack) {
-          currentTimeEl.textContent = formatTime(audio.currentTime);
-          durationEl.textContent = formatTime(audio.duration);
-        }
-      };
-      
-      // Listen to audio events
-      audio.addEventListener('play', updateUI);
-      audio.addEventListener('pause', updateUI);
-      audio.addEventListener('timeupdate', updateUI);
-      audio.addEventListener('loadedmetadata', updateUI);
-      
-      // Initial UI update
-      updateUI();
-      
-      function formatTime(seconds) {
-        if (isNaN(seconds)) return '0:00';
-        const mins = Math.floor(seconds / 60);
-        const secs = Math.floor(seconds % 60);
-        return `${mins}:${secs.toString().padStart(2, '0')}`;
-      }
-      
-      // Like button
-      document.getElementById('likeBtn').addEventListener('click', async function() {
-        const trackId = this.dataset.trackId;
-        try {
-          const res = await fetch(`/api/tracks/${trackId}/like`, { method: 'POST' });
-          const data = await res.json();
-          if (data.success) {
-            this.classList.toggle('liked');
-            const icon = this.querySelector('i');
-            icon.className = this.classList.contains('liked') ? 'fa-solid fa-heart' : 'fa-regular fa-heart';
-            document.getElementById('likeCount').textContent = data.likes;
-          }
-        } catch (err) {
-          console.error(err);
-        }
-      });
-      
-      // Add to queue
-      document.getElementById('addToQueueBtn').addEventListener('click', () => {
-        window.player.addToQueue(trackData);
-      });
-      
-      // Submit comment
-      document.getElementById('submitComment').addEventListener('click', async function() {
-        const text = document.getElementById('commentInput').value.trim();
-        if (!text) return;
-        
-        try {
-          const res = await fetch('/api/tracks/<%= track._id %>/comments', {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ text })
-          });
-          
-          const data = await res.json();
-          if (data.success) {
-            location.reload();
-          }
-        } catch (err) {
-          console.error(err);
-        }
-      });
-      
-      document.getElementById('commentInput').addEventListener('keypress', (e) => {
-        if (e.key === 'Enter') {
-          document.getElementById('submitComment').click();
-        }
-      });
-    };
-    
-    // Initialize when DOM is ready
-    if (document.readyState === 'loading') {
-      document.addEventListener('DOMContentLoaded', initDetailPage);
-    } else {
-      initDetailPage();
+    for (let i = 0; i < totalBars; i++) {
+      const bar = document.createElement('div');
+      bar.className = 'waveform-bar';
+      const height = Math.random() * 60 + 20;
+      bar.style.height = height + '%';
+      waveform.appendChild(bar);
     }
+    
+    // Like track
+    document.getElementById('likeBtn').addEventListener('click', async function() {
+      const trackId = this.dataset.trackId;
+      try {
+        const res = await fetch(`/api/tracks/${trackId}/like`, { method: 'POST' });
+        const data = await res.json();
+        if (data.success) {
+          this.classList.toggle('liked');
+          const icon = this.querySelector('i');
+          icon.className = this.classList.contains('liked') ? 'fa-solid fa-heart' : 'fa-regular fa-heart';
+          document.getElementById('likeCount').textContent = data.likes;
+        }
+      } catch (err) {
+        console.error(err);
+      }
+    });
+    
+    // Submit comment
+    document.getElementById('submitComment').addEventListener('click', async function() {
+      const text = document.getElementById('commentInput').value.trim();
+      if (!text) return;
+      
+      try {
+        const res = await fetch('/api/tracks/<%= track._id %>/comments', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ text })
+        });
+        
+        const data = await res.json();
+        if (data.success) {
+          location.reload();
+        }
+      } catch (err) {
+        console.error(err);
+      }
+    });
+    
+    // Enter to submit
+    document.getElementById('commentInput').addEventListener('keypress', (e) => {
+      if (e.key === 'Enter') {
+        document.getElementById('submitComment').click();
+      }
+    });
   </script>
 </body>
 </html>
