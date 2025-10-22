@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title><%= track.title %> - <%= track.artist %> • SAOCLAO</title>
+  <title><%= title %></title>
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
@@ -12,19 +12,20 @@
     
     :root {
       --bg-primary: #000000;
-      --bg-secondary: #0a0a0a;
       --bg-card: #121212;
+      --bg-card-hover: #1a1a1a;
+      --border-color: #282828;
       --text-primary: #ffffff;
       --text-secondary: #b3b3b3;
-      --border-color: #282828;
-      --accent-color: #1ed760;
+      --accent-color: #ffffff;
+      --accent-hover: #e0e0e0;
     }
     
     body {
       font-family: 'Inter', sans-serif;
       background: var(--bg-primary);
       color: var(--text-primary);
-      line-height: 1.6;
+      min-height: 100vh;
     }
     
     .header {
@@ -39,707 +40,442 @@
       padding: 0 32px;
       display: flex;
       align-items: center;
-      gap: 24px;
+      justify-content: space-between;
       z-index: 100;
     }
     
-    .back-btn {
-      width: 40px;
-      height: 40px;
-      border-radius: 50%;
-      background: rgba(255, 255, 255, 0.1);
-      border: none;
-      color: var(--text-primary);
-      cursor: pointer;
+    .logo img { height: 36px; }
+    
+    .nav-menu {
       display: flex;
-      align-items: center;
-      justify-content: center;
-      transition: all 0.3s;
+      gap: 32px;
+      margin-left: 48px;
     }
     
-    .back-btn:hover {
-      background: rgba(255, 255, 255, 0.15);
-      transform: scale(1.05);
-    }
-    
-    .header-title {
-      font-size: 18px;
-      font-weight: 700;
-    }
-    
-    .container {
-      max-width: 1400px;
-      margin: 0 auto;
-      padding: 100px 40px 140px;
-    }
-    
-    .hero-section {
-      display: grid;
-      grid-template-columns: 1fr 400px;
-      gap: 48px;
-      margin-bottom: 48px;
-      background: rgba(255, 255, 255, 0.02);
-      padding: 40px;
-      border-radius: 16px;
-      border: 1px solid var(--border-color);
-    }
-    
-    .player-section {
-      display: flex;
-      flex-direction: column;
-      gap: 24px;
-    }
-    
-    .track-header {
-      display: flex;
-      align-items: center;
-      gap: 16px;
-    }
-    
-    .play-button {
-      width: 64px;
-      height: 64px;
-      border-radius: 50%;
-      background: var(--text-primary);
-      border: none;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      cursor: pointer;
-      transition: all 0.3s;
-      box-shadow: 0 8px 24px rgba(255, 255, 255, 0.2);
-    }
-    
-    .play-button:hover {
-      transform: scale(1.08);
-      box-shadow: 0 12px 32px rgba(255, 255, 255, 0.3);
-    }
-    
-    .play-button i {
-      font-size: 24px;
-      color: #000;
-      margin-left: 3px;
-    }
-    
-    .play-button.playing i {
-      margin-left: 0;
-    }
-    
-    .track-info h1 {
-      font-size: 32px;
-      font-weight: 800;
-      margin-bottom: 8px;
-    }
-    
-    .track-artist {
-      font-size: 18px;
+    .nav-link {
       color: var(--text-secondary);
-      font-weight: 500;
-      margin-bottom: 12px;
-    }
-    
-    .track-genres {
-      display: flex;
-      gap: 8px;
-      flex-wrap: wrap;
-    }
-    
-    .genre-tag {
-      background: rgba(255, 255, 255, 0.1);
-      color: var(--text-primary);
-      padding: 4px 12px;
-      border-radius: 12px;
-      font-size: 12px;
+      text-decoration: none;
       font-weight: 600;
-      border: 1px solid rgba(255, 255, 255, 0.2);
-    }
-    
-    .track-meta {
-      display: flex;
-      align-items: center;
-      gap: 16px;
-      color: var(--text-secondary);
       font-size: 14px;
-    }
-    
-    .meta-item {
       display: flex;
       align-items: center;
       gap: 8px;
+      transition: color 0.2s;
     }
     
-    .waveform-container {
-      position: relative;
-      height: 120px;
-      background: rgba(255, 255, 255, 0.05);
-      border-radius: 12px;
-      overflow: hidden;
-      padding: 20px;
-      border: 1px solid var(--border-color);
-    }
+    .nav-link:hover, .nav-link.active { color: var(--text-primary); }
     
-    .waveform {
-      width: 100%;
-      height: 100%;
+    .header-actions {
       display: flex;
+      gap: 20px;
       align-items: center;
-      justify-content: center;
-      gap: 3px;
-    }
-    
-    .waveform-bar {
-      width: 4px;
-      background: rgba(255, 255, 255, 0.3);
-      border-radius: 2px;
-      transition: all 0.15s ease;
-      height: 20%;
-    }
-    
-    .waveform-bar.active {
-      background: var(--text-primary);
-      animation: wave 0.8s ease-in-out infinite;
-    }
-    
-    @keyframes wave {
-      0%, 100% { height: 20%; }
-      50% { height: 80%; }
-    }
-    
-    .time-display {
-      display: flex;
-      justify-content: space-between;
-      color: var(--text-secondary);
-      font-size: 12px;
-      font-weight: 600;
-      margin-top: 12px;
-    }
-    
-    .action-buttons {
-      display: flex;
-      gap: 16px;
-      flex-wrap: wrap;
-    }
-    
-    .action-btn {
-      padding: 12px 24px;
-      border-radius: 500px;
-      border: 1px solid var(--border-color);
-      background: transparent;
-      color: var(--text-secondary);
-      cursor: pointer;
-      display: flex;
-      align-items: center;
-      gap: 8px;
-      font-size: 14px;
-      font-weight: 600;
-      transition: all 0.3s;
-      font-family: 'Inter', sans-serif;
-    }
-    
-    .action-btn:hover {
-      border-color: var(--text-primary);
-      color: var(--text-primary);
-      transform: translateY(-2px);
-    }
-    
-    .action-btn.liked {
-      color: #ff4444;
-      border-color: #ff4444;
-    }
-    
-    .cover-section {
-      position: relative;
-    }
-    
-    .cover-image {
-      width: 100%;
-      aspect-ratio: 1;
-      border-radius: 12px;
-      overflow: hidden;
-      box-shadow: 0 16px 48px rgba(0, 0, 0, 0.6);
-      border: 1px solid var(--border-color);
-    }
-    
-    .cover-image img {
-      width: 100%;
-      height: 100%;
-      object-fit: cover;
-    }
-    
-    .stats {
-      display: flex;
-      justify-content: space-around;
-      margin-top: 24px;
-      padding: 20px;
-      background: rgba(255, 255, 255, 0.05);
-      border-radius: 12px;
-      border: 1px solid var(--border-color);
-    }
-    
-    .stat-item {
-      text-align: center;
-    }
-    
-    .stat-value {
-      font-size: 24px;
-      font-weight: 800;
-      color: var(--text-primary);
-      display: block;
-    }
-    
-    .stat-label {
-      font-size: 13px;
-      color: var(--text-secondary);
-      font-weight: 500;
-    }
-    
-    .comments-section {
-      background: var(--bg-card);
-      border-radius: 16px;
-      padding: 32px;
-      border: 1px solid var(--border-color);
-    }
-    
-    .comments-header {
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
-      margin-bottom: 32px;
-    }
-    
-    .comments-title {
-      font-size: 24px;
-      font-weight: 800;
-    }
-    
-    .comment-input-section {
-      display: flex;
-      gap: 16px;
-      margin-bottom: 32px;
-      padding-bottom: 32px;
-      border-bottom: 1px solid var(--border-color);
     }
     
     .user-avatar {
-      width: 48px;
-      height: 48px;
+      width: 36px;
+      height: 36px;
       border-radius: 50%;
-      background: linear-gradient(135deg, #ffffff, #b3b3b3);
+      background: linear-gradient(135deg, var(--accent-color), #1db954);
+      color: #000;
       display: flex;
       align-items: center;
       justify-content: center;
       font-weight: 700;
-      color: #000;
-      flex-shrink: 0;
-    }
-    
-    .comment-input-wrapper {
-      flex: 1;
-      display: flex;
-      gap: 12px;
-    }
-    
-    .comment-input {
-      flex: 1;
-      background: rgba(255, 255, 255, 0.05);
-      border: 1px solid var(--border-color);
-      border-radius: 500px;
-      padding: 12px 24px;
-      color: var(--text-primary);
       font-size: 14px;
+    }
+    
+    .btn-logout {
+      padding: 10px 24px;
+      background: transparent;
+      color: var(--text-primary);
+      border: 1px solid var(--text-secondary);
+      border-radius: 500px;
+      cursor: pointer;
+      font-weight: 600;
+      font-size: 13px;
       font-family: 'Inter', sans-serif;
-      transition: all 0.3s;
+      transition: all 0.2s;
     }
     
-    .comment-input:focus {
-      outline: none;
+    .btn-logout:hover {
       border-color: var(--text-primary);
-      background: rgba(255, 255, 255, 0.08);
+      transform: scale(1.04);
     }
     
-    .comment-submit {
-      padding: 12px 32px;
-      background: var(--text-primary);
+    .container {
+      padding: 104px 48px 100px;
+      max-width: 1800px;
+      margin: 0 auto;
+    }
+    
+    .page-header {
+      margin-bottom: 48px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+    
+    .page-title {
+      font-size: 48px;
+      font-weight: 900;
+      letter-spacing: -1px;
+    }
+    
+    .btn-create {
+      padding: 14px 32px;
+      background: var(--accent-color);
+      color: #000;
       border: none;
       border-radius: 500px;
-      color: #000;
       font-weight: 700;
+      font-size: 14px;
       cursor: pointer;
-      transition: all 0.3s;
+      transition: all 0.2s;
       font-family: 'Inter', sans-serif;
-    }
-    
-    .comment-submit:hover {
-      transform: scale(1.05);
-      box-shadow: 0 4px 12px rgba(255, 255, 255, 0.3);
-    }
-    
-    .comments-list {
       display: flex;
-      flex-direction: column;
+      align-items: center;
+      gap: 8px;
+    }
+    
+    .btn-create:hover {
+      background: var(--accent-hover);
+      transform: scale(1.04);
+    }
+    
+    .playlists-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
       gap: 24px;
     }
     
-    .comment {
-      display: flex;
-      gap: 16px;
+    .playlist-card {
+      background: var(--bg-card);
+      padding: 20px;
+      border-radius: 8px;
+      cursor: pointer;
+      transition: all 0.3s;
+      text-decoration: none;
+      color: inherit;
+      display: block;
     }
     
-    .comment-avatar {
-      width: 40px;
-      height: 40px;
-      border-radius: 50%;
-      background: linear-gradient(135deg, #667eea, #764ba2);
-      flex-shrink: 0;
+    .playlist-card:hover {
+      background: var(--bg-card-hover);
+      transform: translateY(-4px);
+    }
+    
+    .playlist-cover {
+      position: relative;
+      margin-bottom: 20px;
+      border-radius: 6px;
+      aspect-ratio: 1;
+      overflow: hidden;
+      box-shadow: 0 8px 24px rgba(0, 0, 0, 0.5);
+    }
+    
+    .playlist-cover-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      grid-template-rows: 1fr 1fr;
+      width: 100%;
+      height: 100%;
+      background: var(--bg-card-hover);
+    }
+    
+    .playlist-cover-item {
+      width: 100%;
+      height: 100%;
+      background-size: cover;
+      background-position: center;
+      background-color: var(--bg-card);
+    }
+    
+    .playlist-cover-empty {
+      width: 100%;
+      height: 100%;
+      background: linear-gradient(135deg, #1a1a1a, #2a2a2a);
       display: flex;
       align-items: center;
       justify-content: center;
-      color: #fff;
+    }
+    
+    .playlist-cover-empty i {
+      font-size: 64px;
+      color: var(--text-secondary);
+    }
+    
+    .playlist-name {
+      font-size: 16px;
       font-weight: 700;
+      margin-bottom: 6px;
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
     }
     
-    .comment-content {
-      flex: 1;
+    .playlist-count {
+      font-size: 14px;
+      color: var(--text-secondary);
+      font-weight: 500;
     }
     
-    .comment-header {
-      display: flex;
+    .empty-state {
+      text-align: center;
+      padding: 100px 20px;
+    }
+    
+    .empty-state h3 {
+      font-size: 32px;
+      font-weight: 800;
+      margin-bottom: 16px;
+    }
+    
+    .empty-state p {
+      color: var(--text-secondary);
+      font-size: 16px;
+      margin-bottom: 32px;
+    }
+    
+    .modal {
+      position: fixed;
+      top: 0;
+      left: 0;
+      right: 0;
+      bottom: 0;
+      background: rgba(0, 0, 0, 0.8);
+      display: none;
       align-items: center;
-      gap: 12px;
+      justify-content: center;
+      z-index: 2000;
+    }
+    
+    .modal.active { display: flex; }
+    
+    .modal-content {
+      background: var(--bg-card);
+      border-radius: 8px;
+      padding: 32px;
+      width: 90%;
+      max-width: 500px;
+      box-shadow: 0 20px 60px rgba(0, 0, 0, 0.9);
+    }
+    
+    .modal-title {
+      font-size: 24px;
+      font-weight: 800;
+      margin-bottom: 24px;
+    }
+    
+    .form-group { margin-bottom: 20px; }
+    
+    .form-label {
+      display: block;
+      font-size: 14px;
+      font-weight: 600;
       margin-bottom: 8px;
     }
     
-    .comment-author {
-      font-weight: 700;
+    .form-input {
+      width: 100%;
+      padding: 12px 16px;
+      background: var(--bg-primary);
+      border: 1px solid var(--border-color);
+      border-radius: 6px;
+      color: var(--text-primary);
       font-size: 14px;
-    }
-    
-    .comment-time {
-      font-size: 13px;
-      color: var(--text-secondary);
-    }
-    
-    .comment-text {
-      font-size: 14px;
-      color: var(--text-secondary);
-      line-height: 1.6;
-      margin-bottom: 12px;
-    }
-    
-    .comment-actions {
-      display: flex;
-      gap: 20px;
-    }
-    
-    .comment-action {
-      background: none;
-      border: none;
-      color: var(--text-secondary);
-      cursor: pointer;
-      font-size: 13px;
-      font-weight: 600;
-      display: flex;
-      align-items: center;
-      gap: 6px;
-      transition: all 0.2s;
       font-family: 'Inter', sans-serif;
     }
     
-    .comment-action:hover {
+    .form-input:focus {
+      outline: none;
+      border-color: var(--accent-color);
+    }
+    
+    .form-textarea {
+      min-height: 100px;
+      resize: vertical;
+    }
+    
+    .modal-footer {
+      display: flex;
+      gap: 12px;
+      justify-content: flex-end;
+      margin-top: 24px;
+    }
+    
+    .btn {
+      padding: 12px 24px;
+      border-radius: 500px;
+      font-weight: 700;
+      font-size: 14px;
+      cursor: pointer;
+      border: none;
+      font-family: 'Inter', sans-serif;
+      transition: all 0.2s;
+    }
+    
+    .btn-primary {
+      background: var(--accent-color);
+      color: #000;
+    }
+    
+    .btn-primary:hover {
+      background: var(--accent-hover);
+      transform: scale(1.04);
+    }
+    
+    .btn-secondary {
+      background: transparent;
       color: var(--text-primary);
+      border: 1px solid var(--text-secondary);
     }
     
-    .empty-comments {
-      text-align: center;
-      padding: 60px 20px;
-      color: var(--text-secondary);
-    }
-    
-    @media (max-width: 968px) {
-      .hero-section {
-        grid-template-columns: 1fr;
-      }
-      
-      .cover-section {
-        order: -1;
-      }
-      
-      .container {
-        padding: 100px 20px 140px;
-      }
-    }
+    .btn-secondary:hover { border-color: var(--text-primary); }
   </style>
 </head>
 <body>
-  <header class="header">
-    <button class="back-btn" onclick="window.history.back()">
-      <i class="fa-solid fa-arrow-left"></i>
-    </button>
-    <div class="header-title">Now Playing</div>
-  </header>
-
-  <div class="container">
-    <div class="hero-section">
-      <div class="player-section">
-        <div class="track-header">
-          <button class="play-button" id="mainPlayBtn">
-            <i class="fa-solid fa-play"></i>
-          </button>
-          <div class="track-info">
-            <h1><%= track.title %></h1>
-            <div class="track-artist"><%= track.artist || 'Unknown Artist' %></div>
-            <% if (track.genres && track.genres.length > 0) { %>
-              <div class="track-genres">
-                <% track.genres.slice(0, 3).forEach(genre => { %>
-                  <span class="genre-tag">#<%= genre %></span>
-                <% }) %>
-              </div>
-            <% } %>
-          </div>
-        </div>
-        
-        <div class="track-meta">
-          <div class="meta-item">
-            <i class="fa-regular fa-clock"></i>
-            <span><%= new Date(track.createdAt).toLocaleDateString('vi-VN') %></span>
-          </div>
-        </div>
-        
-        <div class="waveform-container">
-          <div class="waveform" id="waveform"></div>
-        </div>
-        <div class="time-display">
-          <span id="currentTime">0:00</span>
-          <span id="duration">0:00</span>
-        </div>
-        
-        <div class="action-buttons">
-          <button class="action-btn" id="likeBtn" data-track-id="<%= track._id %>">
-            <i class="fa-regular fa-heart"></i>
-            <span id="likeCount"><%= track.likes || 0 %></span>
-          </button>
-          <button class="action-btn" id="addToQueueBtn">
-            <i class="fa-solid fa-list"></i>
-            <span>Add to Queue</span>
-          </button>
-          <button class="action-btn">
-            <i class="fa-solid fa-share"></i>
-            <span>Share</span>
-          </button>
-        </div>
+  <div class="modal" id="createModal">
+    <div class="modal-content">
+      <h3 class="modal-title">Tạo playlist mới</h3>
+      <div class="form-group">
+        <label class="form-label">Tên playlist</label>
+        <input type="text" class="form-input" id="playlistName" placeholder="Nhập tên playlist">
       </div>
-      
-      <div class="cover-section">
-        <div class="cover-image">
-          <img src="<%= track.coverUrl || 'https://images.unsplash.com/photo-1514525253161-7a46d19cd819?w=500' %>" alt="<%= track.title %>">
-        </div>
-        <div class="stats">
-          <div class="stat-item">
-            <span class="stat-value" id="playCount">0</span>
-            <span class="stat-label">Plays</span>
-          </div>
-          <div class="stat-item">
-            <span class="stat-value"><%= track.likes || 0 %></span>
-            <span class="stat-label">Likes</span>
-          </div>
-          <div class="stat-item">
-            <span class="stat-value"><%= comments.length %></span>
-            <span class="stat-label">Comments</span>
-          </div>
-        </div>
+      <div class="form-group">
+        <label class="form-label">Mô tả</label>
+        <textarea class="form-input form-textarea" id="playlistDescription" placeholder="Mô tả về playlist"></textarea>
       </div>
-    </div>
-    
-    <div class="comments-section">
-      <div class="comments-header">
-        <h2 class="comments-title">Comments (<%= comments.length %>)</h2>
-      </div>
-      
-      <div class="comment-input-section">
-        <div class="user-avatar"><%= user.username.charAt(0).toUpperCase() %></div>
-        <div class="comment-input-wrapper">
-          <input type="text" class="comment-input" placeholder="Write a comment..." id="commentInput">
-          <button class="comment-submit" id="submitComment">
-            <i class="fa-solid fa-paper-plane"></i>
-          </button>
-        </div>
-      </div>
-      
-      <div class="comments-list" id="commentsList">
-        <% if (comments.length > 0) { %>
-          <% comments.forEach(comment => { %>
-            <div class="comment">
-              <div class="comment-avatar">
-                <%= comment.userId.username.charAt(0).toUpperCase() %>
-              </div>
-              <div class="comment-content">
-                <div class="comment-header">
-                  <span class="comment-author"><%= comment.userId.username %></span>
-                  <span class="comment-time"><%= new Date(comment.createdAt).toLocaleString('vi-VN') %></span>
-                </div>
-                <p class="comment-text"><%= comment.text %></p>
-                <div class="comment-actions">
-                  <button class="comment-action">
-                    <i class="fa-regular fa-heart"></i>
-                    <span><%= comment.likes || 0 %></span>
-                  </button>
-                </div>
-              </div>
-            </div>
-          <% }) %>
-        <% } else { %>
-          <div class="empty-comments">
-            <p>No comments yet. Be the first to comment!</p>
-          </div>
-        <% } %>
+      <div class="modal-footer">
+        <button class="btn btn-secondary" onclick="closeModal()">Hủy</button>
+        <button class="btn btn-primary" onclick="createPlaylist()">Tạo</button>
       </div>
     </div>
   </div>
+
+  <header class="header">
+    <div style="display: flex; align-items: center;">
+      <div class="logo">
+        <img src="/public/img/saoclao.png" alt="SAOCLAO">
+      </div>
+      <nav class="nav-menu">
+        <a href="/profile" class="nav-link">
+          <i class="fa-solid fa-house"></i> Trang chủ
+        </a>
+        <a href="/playlists" class="nav-link active">
+          <i class="fa-solid fa-music"></i> Playlist của tôi
+        </a>
+      </nav>
+    </div>
+    <div class="header-actions">
+      <div class="user-avatar" title="<%= user.username %>">
+        <%= user.username.charAt(0).toUpperCase() %>
+      </div>
+      <form method="post" action="/logout" style="display:inline">
+        <button type="submit" class="btn-logout">Đăng xuất</button>
+      </form>
+    </div>
+  </header>
   
-  <audio id="audioPlayer"></audio>
-  
-  <script src="/public/js/player.js"></script>
-  <script>
-    const trackData = {
-      id: '<%= track._id %>',
-      title: '<%= track.title %>',
-      artist: '<%= track.artist || "Unknown" %>',
-      cover: '<%= track.coverUrl || "" %>',
-      audioUrl: '<%= track.audioUrl %>'
-    };
+  <div class="container">
+    <div class="page-header">
+      <h1 class="page-title">Playlist của tôi</h1>
+      <button class="btn-create" onclick="openModal()">
+        <i class="fa-solid fa-plus"></i> Tạo playlist
+      </button>
+    </div>
     
-    // Wait for player to be ready
-    const initDetailPage = () => {
-      if (!window.player) {
-        setTimeout(initDetailPage, 100);
+    <% if (playlists && playlists.length > 0) { %>
+      <div class="playlists-grid">
+        <% playlists.forEach((playlist) => { 
+          const trackCount = playlist.tracks.length;
+          const covers = playlist.tracks.slice(0, 4).map(t => t.coverUrl).filter(Boolean);
+        %>
+          <a href="/playlists/<%= playlist._id %>" class="playlist-card">
+            <div class="playlist-cover">
+              <% if (covers.length === 0) { %>
+                <div class="playlist-cover-empty">
+                  <i class="fa-solid fa-music"></i>
+                </div>
+              <% } else if (covers.length === 1) { %>
+                <div class="playlist-cover-item" style="background-image: url('<%= covers[0] %>'); width: 100%; height: 100%;"></div>
+              <% } else { %>
+                <div class="playlist-cover-grid">
+                  <% for (let i = 0; i < 4; i++) { %>
+                    <% if (covers[i]) { %>
+                      <div class="playlist-cover-item" style="background-image: url('<%= covers[i] %>');"></div>
+                    <% } else { %>
+                      <div class="playlist-cover-item"></div>
+                    <% } %>
+                  <% } %>
+                </div>
+              <% } %>
+            </div>
+            <div class="playlist-info">
+              <div class="playlist-name"><%= playlist.name %></div>
+              <div class="playlist-count"><%= trackCount %> bài hát</div>
+            </div>
+          </a>
+        <% }) %>
+      </div>
+    <% } else { %>
+      <div class="empty-state">
+        <h3>Chưa có playlist nào</h3>
+        <p>Tạo playlist đầu tiên của bạn ngay bây giờ</p>
+        <button class="btn-create" onclick="openModal()">
+          <i class="fa-solid fa-plus"></i> Tạo playlist
+        </button>
+      </div>
+    <% } %>
+  </div>
+  
+  <script>
+    function openModal() {
+      document.getElementById('createModal').classList.add('active');
+      document.getElementById('playlistName').focus();
+    }
+    
+    function closeModal() {
+      document.getElementById('createModal').classList.remove('active');
+      document.getElementById('playlistName').value = '';
+      document.getElementById('playlistDescription').value = '';
+    }
+    
+    async function createPlaylist() {
+      const name = document.getElementById('playlistName').value.trim();
+      const description = document.getElementById('playlistDescription').value.trim();
+      
+      if (!name) {
+        alert('Vui lòng nhập tên playlist');
         return;
       }
       
-      const mainPlayBtn = document.getElementById('mainPlayBtn');
-      const currentTimeEl = document.getElementById('currentTime');
-      const durationEl = document.getElementById('duration');
-      const waveform = document.getElementById('waveform');
-      
-      // Generate animated waveform bars
-      const totalBars = 40;
-      const bars = [];
-      
-      for (let i = 0; i < totalBars; i++) {
-        const bar = document.createElement('div');
-        bar.className = 'waveform-bar';
-        bar.style.animationDelay = `${i * 0.05}s`;
-        bars.push(bar);
-        waveform.appendChild(bar);
-      }
-      
-      // Main play button
-      mainPlayBtn.addEventListener('click', () => {
-        if (window.player.currentTrack?.id === trackData.id) {
-          window.player.togglePlay();
+      try {
+        const res = await fetch('/playlists/create', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ name, description })
+        });
+        
+        const data = await res.json();
+        
+        if (data.success) {
+          location.reload();
         } else {
-          window.player.playTrack(trackData);
+          alert(data.message || 'Tạo playlist thất bại');
         }
-      });
-      
-      // Sync with global player
-      const audio = window.player.audio;
-      
-      const updateUI = () => {
-        const isCurrentTrack = window.player.currentTrack?.id === trackData.id;
-        const isPlaying = !audio.paused;
-        
-        // Update play button
-        const icon = mainPlayBtn.querySelector('i');
-        if (isCurrentTrack && isPlaying) {
-          icon.className = 'fa-solid fa-pause';
-          mainPlayBtn.classList.add('playing');
-          // Animate waveform
-          bars.forEach(bar => bar.classList.add('active'));
-        } else {
-          icon.className = 'fa-solid fa-play';
-          mainPlayBtn.classList.remove('playing');
-          bars.forEach(bar => bar.classList.remove('active'));
-        }
-        
-        // Update time if this is current track
-        if (isCurrentTrack) {
-          currentTimeEl.textContent = formatTime(audio.currentTime);
-          durationEl.textContent = formatTime(audio.duration);
-        }
-      };
-      
-      // Listen to audio events
-      audio.addEventListener('play', updateUI);
-      audio.addEventListener('pause', updateUI);
-      audio.addEventListener('timeupdate', updateUI);
-      audio.addEventListener('loadedmetadata', updateUI);
-      
-      // Initial UI update
-      updateUI();
-      
-      function formatTime(seconds) {
-        if (isNaN(seconds)) return '0:00';
-        const mins = Math.floor(seconds / 60);
-        const secs = Math.floor(seconds % 60);
-        return `${mins}:${secs.toString().padStart(2, '0')}`;
+      } catch (err) {
+        console.error(err);
+        alert('Có lỗi xảy ra');
       }
-      
-      // Like button
-      document.getElementById('likeBtn').addEventListener('click', async function() {
-        const trackId = this.dataset.trackId;
-        try {
-          const res = await fetch(`/api/tracks/${trackId}/like`, { method: 'POST' });
-          const data = await res.json();
-          if (data.success) {
-            this.classList.toggle('liked');
-            const icon = this.querySelector('i');
-            icon.className = this.classList.contains('liked') ? 'fa-solid fa-heart' : 'fa-regular fa-heart';
-            document.getElementById('likeCount').textContent = data.likes;
-          }
-        } catch (err) {
-          console.error(err);
-        }
-      });
-      
-      // Add to queue
-      document.getElementById('addToQueueBtn').addEventListener('click', () => {
-        window.player.addToQueue(trackData);
-      });
-      
-      // Submit comment
-      document.getElementById('submitComment').addEventListener('click', async function() {
-        const text = document.getElementById('commentInput').value.trim();
-        if (!text) return;
-        
-        try {
-          const res = await fetch('/api/tracks/<%= track._id %>/comments', {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ text })
-          });
-          
-          const data = await res.json();
-          if (data.success) {
-            location.reload();
-          }
-        } catch (err) {
-          console.error(err);
-        }
-      });
-      
-      document.getElementById('commentInput').addEventListener('keypress', (e) => {
-        if (e.key === 'Enter') {
-          document.getElementById('submitComment').click();
-        }
-      });
-    };
-    
-    // Initialize when DOM is ready
-    if (document.readyState === 'loading') {
-      document.addEventListener('DOMContentLoaded', initDetailPage);
-    } else {
-      initDetailPage();
     }
+    
+    document.addEventListener('keydown', (e) => {
+      if (e.key === 'Escape') closeModal();
+    });
+    
+    document.getElementById('playlistName')?.addEventListener('keypress', (e) => {
+      if (e.key === 'Enter') createPlaylist();
+    });
   </script>
 </body>
 </html>

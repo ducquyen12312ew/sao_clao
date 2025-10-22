@@ -290,6 +290,8 @@ app.get('/api/search', requireAuth, async (req, res) => {
   try {
     const { q } = req.query;
     
+    console.log('Search query received:', q); // Debug log
+    
     if (!q || q.trim().length === 0) {
       return res.json({ success: true, tracks: [] });
     }
@@ -304,12 +306,17 @@ app.get('/api/search', requireAuth, async (req, res) => {
         { genres: { $regex: query, $options: 'i' } },
         { tags: { $regex: query, $options: 'i' } }
       ]
-    }).limit(20).lean();
+    })
+    .select('_id title artist coverUrl audioUrl genres tags') // Select specific fields
+    .limit(20)
+    .lean();
+    
+    console.log('Search results count:', tracks.length); // Debug log
     
     res.json({ success: true, tracks });
   } catch (err) {
-    console.error(err);
-    res.json({ success: false, tracks: [] });
+    console.error('Search error:', err);
+    res.status(500).json({ success: false, tracks: [], error: err.message });
   }
 });
 
@@ -431,16 +438,37 @@ app.get('/track/:id', requireAuth, async (req, res) => {
       return res.status(404).render('404', { title: 'Track not found' });
     }
     
+    // Get comments
     const comments = await CommentCollection
       .find({ trackId: req.params.id })
       .populate('userId', 'username')
       .sort({ createdAt: -1 })
       .lean();
     
+    // Get related tracks (same genre)
+    const relatedTracks = await TrackCollection.find({
+      _id: { $ne: track._id },
+      genres: { $in: track.genres || [] }
+    })
+    .limit(5)
+    .select('_id title artist coverUrl genres plays likes')
+    .lean();
+    
+    // Get playlists containing this track
+    const playlists = await PlaylistCollection.find({
+      tracks: track._id
+    })
+    .populate('userId', 'username')
+    .limit(3)
+    .select('_id name coverUrl userId')
+    .lean();
+    
     res.render('track-detail', {
       title: `${track.title} - ${track.artist}`,
       track,
       comments,
+      relatedTracks,
+      playlists,
       user: req.session.user
     });
   } catch (err) {
