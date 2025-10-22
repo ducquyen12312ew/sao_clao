@@ -4,8 +4,11 @@ const session = require('express-session');
 const MongoStore = require('connect-mongo');
 const bcrypt = require('bcrypt');
 const dotenv = require('dotenv');
+
+// Load environment variables
 dotenv.config();
 
+// Import database configuration and models
 const {
   connectDB,
   TrackCollection,
@@ -15,35 +18,53 @@ const {
   CommentCollection
 } = require('./config');
 
+// Import route modules
 const uploadRoutes = require('./upload-routes');
 const playlistRoutes = require('./playlist-routes');
 
+// Initialize Express app
 const app = express();
 const SALT_ROUNDS = 10;
 
-connectDB();
+// ============================================
+// VIEW ENGINE & STATIC FILES
+// ============================================
 
 app.set('view engine', 'ejs');
 app.set('views', path.join(__dirname, '..', 'views'));
 app.use('/public', express.static(path.join(__dirname, '..', 'public')));
 
+// ============================================
+// MIDDLEWARE
+// ============================================
+
+// Body parsers
 app.use(express.urlencoded({ extended: true }));
 app.use(express.json());
 
+// Favicon handler
 app.get('/favicon.ico', (req, res) => res.status(204).end());
 
-const sessionSecret = process.env.SESSION_SECRET || 'dev_secret';
+// Session configuration
+const sessionSecret = process.env.SESSION_SECRET || 'dev_secret_change_in_production';
 app.use(session({
   secret: sessionSecret,
   resave: false,
   saveUninitialized: false,
-  cookie: { httpOnly: true, maxAge: 1000 * 60 * 60 * 24 * 7 },
+  cookie: { 
+    httpOnly: true, 
+    secure: process.env.NODE_ENV === 'production', // HTTPS only in production
+    maxAge: 1000 * 60 * 60 * 24 * 7 // 7 days
+  },
   store: MongoStore.create({
-    mongoUrl: process.env.MONGO_URI || 'mongodb://0.0.0.0:27017/MusicCloud',
-    collectionName: 'sessions'
+    mongoUrl: process.env.MONGO_URI || 'mongodb://127.0.0.1:27017/MusicCloud',
+    dbName: 'MusicCloud',
+    collectionName: 'sessions',
+    touchAfter: 24 * 3600 // Lazy session update
   })
 }));
 
+// Flash messages and user context
 app.use((req, res, next) => {
   res.locals.currentUser = req.session.user || null;
   res.locals.flash = req.session.flash || null;
@@ -51,6 +72,7 @@ app.use((req, res, next) => {
   next();
 });
 
+// Authentication middleware
 const requireAuth = (req, res, next) => {
   if (!req.session.user) {
     req.session.flash = { type: 'warning', message: 'Vui lòng đăng nhập.' };
@@ -63,12 +85,28 @@ const requireAuth = (req, res, next) => {
 // PUBLIC ROUTES
 // ============================================
 
+// Home page
 app.get('/', async (req, res) => {
-  if (req.session.user) return res.redirect('/profile'); 
-  const tracks = await TrackCollection.find().sort({ createdAt: -1 }).limit(12).lean();
-  res.render('home', { title: 'MusicCloud - Discover. Get Discovered.', tracks });
+  try {
+    if (req.session.user) return res.redirect('/profile');
+    
+    const tracks = await TrackCollection
+      .find()
+      .sort({ createdAt: -1 })
+      .limit(12)
+      .lean();
+    
+    res.render('home', { 
+      title: 'MusicCloud - Discover. Get Discovered.', 
+      tracks 
+    });
+  } catch (err) {
+    console.error('Home page error:', err);
+    res.status(500).send('Server error');
+  }
 });
 
+// Signup page
 app.get('/signup', (req, res) => {
   if (req.session.user) {
     req.session.flash = { type: 'info', message: 'Bạn đã đăng nhập rồi.' };
@@ -77,23 +115,36 @@ app.get('/signup', (req, res) => {
   res.render('signup', { title: 'Create account' });
 });
 
+// Signup handler
 app.post('/signup', async (req, res) => {
   if (req.session.user) return res.redirect('/');
 
   try {
     const { name, username, email, password } = req.body;
     
+    // Validation
     if (!name || !username || !email || !password) {
-      req.session.flash = { type: 'danger', message: 'Vui lòng điền đầy đủ thông tin.' };
+      req.session.flash = { 
+        type: 'danger', 
+        message: 'Vui lòng điền đầy đủ thông tin.' 
+      };
       return res.redirect('/signup');
     }
     
-    const exists = await UserCollection.findOne({ $or: [{ email }, { username }] });
+    // Check if user exists
+    const exists = await UserCollection.findOne({ 
+      $or: [{ email }, { username }] 
+    });
+    
     if (exists) {
-      req.session.flash = { type: 'warning', message: 'Email hoặc username đã tồn tại.' };
+      req.session.flash = { 
+        type: 'warning', 
+        message: 'Email hoặc username đã tồn tại.' 
+      };
       return res.redirect('/signup');
     }
     
+    // Create new user
     const passwordHash = await bcrypt.hash(password, SALT_ROUNDS);
     await UserCollection.create({ name, username, email, passwordHash });
     
@@ -104,49 +155,78 @@ app.post('/signup', async (req, res) => {
     res.redirect('/login');
     
   } catch (err) {
-    console.error(err);
-    req.session.flash = { type: 'danger', message: 'Đăng ký thất bại. Vui lòng thử lại.' };
+    console.error('Signup error:', err);
+    req.session.flash = { 
+      type: 'danger', 
+      message: 'Đăng ký thất bại. Vui lòng thử lại.' 
+    };
     res.redirect('/signup');
   }
 });
 
+// Login page
 app.get('/login', (req, res) => {
   if (req.session.user) return res.redirect('/profile');
   res.render('login', { title: 'Sign in' });
 });
 
+// Login handler
 app.post('/login', async (req, res) => {
   if (req.session.user) return res.redirect('/profile');
   
   try {
     const { identifier, password } = req.body;
     
+    // Find user by email or username
     const user = await UserCollection.findOne({ 
       $or: [{ email: identifier }, { username: identifier }] 
     });
     
     if (!user) { 
-      req.session.flash = { type: 'danger', message: 'Sai thông tin đăng nhập.' }; 
+      req.session.flash = { 
+        type: 'danger', 
+        message: 'Sai thông tin đăng nhập.' 
+      }; 
       return res.redirect('/login'); 
     }
     
+    // Verify password
     const ok = await bcrypt.compare(password, user.passwordHash);
     if (!ok) { 
-      req.session.flash = { type: 'danger', message: 'Sai thông tin đăng nhập.' }; 
+      req.session.flash = { 
+        type: 'danger', 
+        message: 'Sai thông tin đăng nhập.' 
+      }; 
       return res.redirect('/login'); 
     }
     
-    req.session.user = { id: user._id, name: user.name, username: user.username };
+    // Set session
+    req.session.user = { 
+      id: user._id, 
+      name: user.name, 
+      username: user.username 
+    };
+    
     res.redirect('/profile');
     
   } catch (err) {
-    console.error(err);
-    req.session.flash = { type: 'danger', message: 'Đã xảy ra lỗi. Vui lòng thử lại.' };
+    console.error('Login error:', err);
+    req.session.flash = { 
+      type: 'danger', 
+      message: 'Đã xảy ra lỗi. Vui lòng thử lại.' 
+    };
     res.redirect('/login');
   }
 });
 
-const doLogout = (req, res) => req.session.destroy(() => res.redirect('/')); 
+// Logout handler
+const doLogout = (req, res) => {
+  req.session.destroy((err) => {
+    if (err) console.error('Logout error:', err);
+    res.redirect('/');
+  });
+};
+
 app.get('/logout', doLogout);
 app.post('/logout', doLogout);
 
@@ -224,7 +304,9 @@ app.get(['/me', '/profile'], requireAuth, async (req, res) => {
         }
         
         // Penalize already played tracks
-        const wasPlayed = recentlyPlayed.some(r => r._id.toString() === track._id.toString());
+        const wasPlayed = recentlyPlayed.some(r => 
+          r._id.toString() === track._id.toString()
+        );
         if (wasPlayed) {
           score -= 5;
         }
@@ -242,14 +324,14 @@ app.get(['/me', '/profile'], requireAuth, async (req, res) => {
     }
 
     res.render('profile', {
-      title: `@${req.session.user.username} • SAOCLAO`,
+      title: `@${req.session.user.username} • MusicCloud`,
       user: req.session.user,
       moreOfWhatYouLike,
       recentlyPlayed,
       playlists  
     });
   } catch (err) {
-    console.error(err);
+    console.error('Profile page error:', err);
     res.status(500).send('Server error');
   }
 });
@@ -263,25 +345,39 @@ app.post('/api/plays/:trackId', requireAuth, async (req, res) => {
   try {
     const trackId = req.params.trackId;
     const userId = req.session.user.id;
-    await PlayHistoryCollection.create({ userId, trackId, playedAt: new Date() });
+    
+    await PlayHistoryCollection.create({ 
+      userId, 
+      trackId, 
+      playedAt: new Date() 
+    });
+    
+    // Increment play count
+    await TrackCollection.findByIdAndUpdate(
+      trackId,
+      { $inc: { playCount: 1 } }
+    );
+    
     res.json({ ok: true });
-  } catch (e) {
-    console.error(e);
-    res.status(500).json({ ok: false });
+  } catch (err) {
+    console.error('Play history error:', err);
+    res.status(500).json({ ok: false, error: err.message });
   }
 });
 
 // Get playlists for context menu
 app.get('/api/playlists', requireAuth, async (req, res) => {
   try {
-    const playlists = await PlaylistCollection.find({ userId: req.session.user.id })
+    const playlists = await PlaylistCollection
+      .find({ userId: req.session.user.id })
       .select('_id name')
       .sort({ updatedAt: -1 })
       .lean();
+    
     res.json({ success: true, playlists });
   } catch (err) {
-    console.error(err);
-    res.json({ success: false });
+    console.error('Get playlists error:', err);
+    res.status(500).json({ success: false, error: err.message });
   }
 });
 
@@ -289,8 +385,6 @@ app.get('/api/playlists', requireAuth, async (req, res) => {
 app.get('/api/search', requireAuth, async (req, res) => {
   try {
     const { q } = req.query;
-    
-    console.log('Search query received:', q); // Debug log
     
     if (!q || q.trim().length === 0) {
       return res.json({ success: true, tracks: [] });
@@ -307,11 +401,9 @@ app.get('/api/search', requireAuth, async (req, res) => {
         { tags: { $regex: query, $options: 'i' } }
       ]
     })
-    .select('_id title artist coverUrl audioUrl genres tags') // Select specific fields
+    .select('_id title artist coverUrl audioUrl genres tags')
     .limit(20)
     .lean();
-    
-    console.log('Search results count:', tracks.length); // Debug log
     
     res.json({ success: true, tracks });
   } catch (err) {
@@ -369,8 +461,12 @@ app.get('/api/recommendations/:trackId', requireAuth, async (req, res) => {
     
     res.json({ success: true, recommendations: topRecs, sourceTrack });
   } catch (err) {
-    console.error(err);
-    res.json({ success: false, message: 'Error getting recommendations' });
+    console.error('Recommendations error:', err);
+    res.status(500).json({ 
+      success: false, 
+      message: 'Error getting recommendations',
+      error: err.message 
+    });
   }
 });
 
@@ -386,8 +482,8 @@ app.get('/api/tracks/genre/:genre', requireAuth, async (req, res) => {
     
     res.json({ success: true, tracks, genre });
   } catch (err) {
-    console.error(err);
-    res.json({ success: false, tracks: [] });
+    console.error('Genre tracks error:', err);
+    res.status(500).json({ success: false, tracks: [], error: err.message });
   }
 });
 
@@ -403,8 +499,8 @@ app.get('/api/tracks/mood/:mood', requireAuth, async (req, res) => {
     
     res.json({ success: true, tracks, mood });
   } catch (err) {
-    console.error(err);
-    res.json({ success: false, tracks: [] });
+    console.error('Mood tracks error:', err);
+    res.status(500).json({ success: false, tracks: [], error: err.message });
   }
 });
 
@@ -412,10 +508,10 @@ app.get('/api/tracks/mood/:mood', requireAuth, async (req, res) => {
 app.get('/api/genres', requireAuth, async (req, res) => {
   try {
     const genres = await TrackCollection.distinct('genres');
-    res.json({ success: true, genres: genres.sort() });
+    res.json({ success: true, genres: genres.filter(g => g).sort() });
   } catch (err) {
-    console.error(err);
-    res.json({ success: false, genres: [] });
+    console.error('Get genres error:', err);
+    res.status(500).json({ success: false, genres: [], error: err.message });
   }
 });
 
@@ -425,10 +521,14 @@ app.get('/api/moods', requireAuth, async (req, res) => {
     const moods = await TrackCollection.distinct('mood');
     res.json({ success: true, moods: moods.filter(m => m).sort() });
   } catch (err) {
-    console.error(err);
-    res.json({ success: false, moods: [] });
+    console.error('Get moods error:', err);
+    res.status(500).json({ success: false, moods: [], error: err.message });
   }
 });
+
+// ============================================
+// TRACK DETAIL PAGE
+// ============================================
 
 app.get('/track/:id', requireAuth, async (req, res) => {
   try {
@@ -451,7 +551,7 @@ app.get('/track/:id', requireAuth, async (req, res) => {
       genres: { $in: track.genres || [] }
     })
     .limit(5)
-    .select('_id title artist coverUrl genres plays likes')
+    .select('_id title artist coverUrl genres playCount')
     .lean();
     
     // Get playlists containing this track
@@ -460,7 +560,7 @@ app.get('/track/:id', requireAuth, async (req, res) => {
     })
     .populate('userId', 'username')
     .limit(3)
-    .select('_id name coverUrl userId')
+    .select('_id name userId')
     .lean();
     
     res.render('track-detail', {
@@ -472,7 +572,7 @@ app.get('/track/:id', requireAuth, async (req, res) => {
       user: req.session.user
     });
   } catch (err) {
-    console.error(err);
+    console.error('Track detail error:', err);
     res.status(500).send('Server error');
   }
 });
@@ -480,15 +580,20 @@ app.get('/track/:id', requireAuth, async (req, res) => {
 // Like track
 app.post('/api/tracks/:id/like', requireAuth, async (req, res) => {
   try {
-    const track = await TrackCollection.findById(req.params.id);
-    if (!track) return res.json({ success: false });
+    const track = await TrackCollection.findByIdAndUpdate(
+      req.params.id,
+      { $inc: { likes: 1 } },
+      { new: true }
+    );
     
-    track.likes = (track.likes || 0) + 1;
-    await track.save();
+    if (!track) {
+      return res.status(404).json({ success: false, message: 'Track not found' });
+    }
     
     res.json({ success: true, likes: track.likes });
   } catch (err) {
-    res.json({ success: false });
+    console.error('Like track error:', err);
+    res.status(500).json({ success: false, error: err.message });
   }
 });
 
@@ -497,15 +602,28 @@ app.post('/api/tracks/:id/comments', requireAuth, async (req, res) => {
   try {
     const { text } = req.body;
     
+    if (!text || text.trim().length === 0) {
+      return res.status(400).json({ 
+        success: false, 
+        message: 'Comment cannot be empty' 
+      });
+    }
+    
     const comment = await CommentCollection.create({
       trackId: req.params.id,
       userId: req.session.user.id,
-      text
+      text: text.trim()
     });
     
-    res.json({ success: true, comment });
+    const populatedComment = await CommentCollection
+      .findById(comment._id)
+      .populate('userId', 'username')
+      .lean();
+    
+    res.json({ success: true, comment: populatedComment });
   } catch (err) {
-    res.json({ success: false });
+    console.error('Add comment error:', err);
+    res.status(500).json({ success: false, error: err.message });
   }
 });
 
@@ -520,15 +638,49 @@ app.use('/playlists', playlistRoutes);
 // 404 HANDLER
 // ============================================
 
-app.use((req, res) => res.status(404).render('404', { title: 'Not found' }));
+app.use((req, res) => {
+  res.status(404).render('404', { title: 'Not found' });
+});
 
 // ============================================
-// START SERVER
+// ERROR HANDLER
+// ============================================
+
+app.use((err, req, res, next) => {
+  console.error('Unhandled error:', err);
+  res.status(500).send('Internal Server Error');
+});
+
+// ============================================
+// START SERVER (ONLY AFTER DB CONNECTION)
 // ============================================
 
 const PORT = process.env.PORT || 3000;
-app.listen(PORT, () => {
-  console.log('MusicCloud v2.0');
-  console.log(`Server running on http://localhost:${PORT}`);
-  console.log('Features: Smart Recommendations, Genre/Mood Filtering');
-});
+
+async function startServer() {
+  try {
+    // Connect to database first
+    await connectDB();
+    
+    // Then start the server
+    app.listen(PORT, '0.0.0.0', () => {
+      console.log('━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━');
+      console.log('🎵 MusicCloud v2.0 - Production Ready');
+      console.log('━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━');
+      console.log(`✅ Server running on port ${PORT}`);
+      console.log(`🌍 Environment: ${process.env.NODE_ENV || 'development'}`);
+      console.log('📊 Features: Smart Recommendations, Genre/Mood Filtering');
+      console.log('━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━');
+    });
+    
+  } catch (err) {
+    console.error('━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━');
+    console.error('❌ FATAL ERROR: Failed to start server');
+    console.error('━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━');
+    console.error(err);
+    process.exit(1);
+  }
+}
+
+// Start the application
+startServer();
