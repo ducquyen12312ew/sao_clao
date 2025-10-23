@@ -18,35 +18,35 @@
       --border-color: #2a2a2a;
       --text-primary: #ffffff;
       --text-secondary: #b3b3b3;
-      --accent-color: #1ed760;
-      --accent-hover: #1fdf64;
+      --accent-color: #ffffff;
+      --accent-hover: #e0e0e0;
       --player-bg: #181818;
-      --gradient-start: #1a4d2e;
-      --gradient-end: #0f2818;
+      --gradient-start: #1a1a1a;
+      --gradient-end: #0f0f0f;
     }
     
     body {
-      font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
-      background: linear-gradient(135deg, var(--gradient-start) 0%, var(--bg-primary) 40%, var(--bg-primary) 100%);
-      color: var(--text-primary);
-      overflow-x: hidden;
-      line-height: 1.6;
-      min-height: 100vh;
-    }
+  font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+  background: linear-gradient(135deg, var(--gradient-start) 0%, var(--bg-primary) 40%, var(--bg-primary) 100%);
+  color: var(--text-primary);
+  overflow-x: hidden;
+  line-height: 1.6;
+  min-height: 100vh;
+}
     
     /* Animated background effect */
     body::before {
-      content: '';
-      position: fixed;
-      top: -50%;
-      left: -50%;
-      width: 200%;
-      height: 200%;
-      background: radial-gradient(circle at 50% 50%, rgba(30, 215, 96, 0.03) 0%, transparent 50%);
-      animation: rotate 30s linear infinite;
-      pointer-events: none;
-      z-index: 0;
-    }
+  content: '';
+  position: fixed;
+  top: -50%;
+  left: -50%;
+  width: 200%;
+  height: 200%;
+  background: radial-gradient(circle at 50% 50%, rgba(255,255,255,0.015) 0%, transparent 50%);
+  animation: rotate 30s linear infinite;
+  pointer-events: none;
+  z-index: 0;
+}
     
     @keyframes rotate {
       0% { transform: rotate(0deg); }
@@ -54,26 +54,24 @@
     }
     
     .header {
-      position: fixed;
-      top: 0;
-      left: 0;
-      right: 0;
-      height: 64px;
-      background: rgba(15, 15, 15, 0.85);
-      backdrop-filter: blur(20px) saturate(180%);
-      border-bottom: 1px solid rgba(42, 42, 42, 0.5);
-      padding: 0 32px;
-      display: flex;
-      align-items: center;
-      justify-content: space-between;
-      z-index: 100;
-      box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
-    }
+  position: fixed;
+  top: 0; left: 0; right: 0;
+  height: 64px;
+  background: rgba(15,15,15,0.85);
+  backdrop-filter: blur(20px) saturate(180%);
+  border-bottom: 1px solid rgba(42,42,42,0.5);
+  padding: 0 32px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  z-index: 100;
+  box-shadow: 0 4px 12px rgba(0,0,0,0.3);
+}
     
-    .logo img { 
-      height: 36px; 
-      filter: brightness(1.2) drop-shadow(0 2px 8px rgba(30, 215, 96, 0.3));
-    }
+   .logo img { 
+  height: 36px;
+  filter: brightness(1.2) drop-shadow(0 2px 8px rgba(255,255,255,0.15));
+}
     
     .nav-menu {
       display: flex;
@@ -179,7 +177,7 @@
       width: 36px;
       height: 36px;
       border-radius: 50%;
-      background: linear-gradient(135deg, var(--accent-color), #1db954);
+      background: linear-gradient(135deg, var(--accent-color), #202020);
       color: #000;
       display: flex;
       align-items: center;
@@ -188,12 +186,12 @@
       font-size: 14px;
       cursor: pointer;
       transition: all 0.3s;
-      box-shadow: 0 2px 8px rgba(30, 215, 96, 0.3);
+      box-shadow: 0 2px 8px rgba(68, 68, 68, 0.3);
     }
     
     .user-avatar:hover { 
       transform: scale(1.08);
-      box-shadow: 0 4px 12px rgba(30, 215, 96, 0.5);
+      box-shadow: 0 4px 12px rgba(40, 40, 40, 0.5);
     }
     
     .btn-logout {
@@ -1164,6 +1162,30 @@
       font-size: 16px;
     }
     
+    .user-avatar {
+  cursor: pointer;
+}
+
+.user-avatar:hover {
+  transform: scale(1.1);
+  box-shadow: 0 4px 12px rgba(30, 215, 96, 0.5);
+}
+
+
+.track-artist a,
+.comment-author {
+  cursor: pointer;
+  transition: color 0.2s ease;
+}
+
+.track-artist a:hover {
+  color: var(--text-primary) !important;
+  text-decoration: underline;
+}
+
+.comment-author:hover {
+  color: var(--accent-color) !important;
+}
     ::-webkit-scrollbar { width: 12px; }
     ::-webkit-scrollbar-track { background: transparent; }
     ::-webkit-scrollbar-thumb { background: #4d4d4d; border-radius: 6px; }
@@ -1245,9 +1267,13 @@
       </button>
     </div>
     <div class="header-actions">
-      <div class="user-avatar" title="<%= user.username %>">
-        <%= user.username.charAt(0).toUpperCase() %>
-      </div>
+      <div class="user-avatar" onclick="window.location.href='/users/<%= user.username %>'">
+  <% if (user.avatarUrl) { %>
+    <img src="<%= user.avatarUrl %>" alt="<%= user.username %>" style="width:100%;height:100%;object-fit:cover;border-radius:50%;">
+  <% } else { %>
+    <%= user.username.charAt(0).toUpperCase() %>
+  <% } %>
+</div>
       <form method="post" action="/logout" style="display:inline">
         <button type="submit" class="btn-logout">Đăng xuất</button>
       </form>

@@ -114,6 +114,10 @@
       color: var(--text-primary);
     }
 
+    .track-artist a:hover {
+  color: var(--text-primary) !important;
+}
+
     .search-bar {
       width: 100%;
       height: 40px;
@@ -460,10 +464,37 @@
       overflow-y: auto;
     }
 
+    .comment-author:hover {
+  color: var(--accent-color) !important;
+}
     .sidebar::-webkit-scrollbar {
       width: 6px;
     }
 
+    .user-avatar {
+  cursor: pointer;
+}
+
+.user-avatar:hover {
+  transform: scale(1.1);
+  box-shadow: 0 4px 12px rgba(30, 215, 96, 0.5);
+}
+
+/* Clickable Artist/Username Links */
+.track-artist a,
+.comment-author {
+  cursor: pointer;
+  transition: color 0.2s ease;
+}
+
+.track-artist a:hover {
+  color: var(--text-primary) !important;
+  text-decoration: underline;
+}
+
+.comment-author:hover {
+  color: var(--accent-color) !important;
+}
     .sidebar::-webkit-scrollbar-track {
       background: transparent;
     }
@@ -1401,9 +1432,9 @@
       </div>
 
       <div class="user-menu">
-        <div class="user-avatar">
-          <%= user.username.charAt(0).toUpperCase() %>
-        </div>
+        <div class="user-avatar" onclick="window.location.href='/users/<%= user.username %>'">
+  <%= user.username.charAt(0).toUpperCase() %>
+</div>
         <div class="user-dropdown">
           <div class="dropdown-header">
             <div class="dropdown-user-name"><%= user.username %></div>
@@ -1447,7 +1478,15 @@
           </button>
           <div class="track-info">
             <h1><%= track.title %></h1>
-            <div class="track-artist"><%= track.artist || 'Unknown Artist' %></div>
+            <div class="track-artist">
+  <% if (track.userId && track.userId.username) { %>
+    <a href="/users/<%= track.userId.username %>" style="color: var(--text-secondary); text-decoration: none; transition: color 0.2s;">
+      <%= track.artist || 'Unknown Artist' %>
+    </a>
+  <% } else { %>
+    <%= track.artist || 'Unknown Artist' %>
+  <% } %>
+</div>
             <% if (track.genres && track.genres.length > 0) { %>
               <div class="track-genres">
                 <% track.genres.slice(0, 3).forEach(genre => { %>
@@ -1534,7 +1573,9 @@
               </div>
               <div class="comment-content">
                 <div class="comment-header">
-                  <span class="comment-author"><%= comment.userId.username %></span>
+                  <a href="/users/<%= comment.userId.username %>" class="comment-author" style="text-decoration: none; color: var(--text-primary); transition: color 0.2s;">
+  <%= comment.userId.username %>
+</a>
                   <span class="comment-time"><%= new Date(comment.createdAt).toLocaleString('vi-VN') %></span>
                 </div>
                 <p class="comment-text"><%= comment.text %></p>

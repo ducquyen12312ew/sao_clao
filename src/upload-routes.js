@@ -33,7 +33,14 @@ router.post('/new', upload.fields([{name:'audio',maxCount:1},{name:'cover',maxCo
     if(!title || !audio){ req.session.flash = { type: 'danger', message: 'Thiếu tiêu đề hoặc file audio.' }; return res.redirect('/upload'); }
     const audioUrl = `/public/uploads/audio/${audio.filename}`;
     const coverUrl = cover ? `/public/uploads/covers/${cover.filename}` : '';
-    await TrackCollection.create({ title: title.trim(), artist: (artist||'').trim(), audioUrl, coverUrl });
+    
+    await TrackCollection.create({ 
+  title: title.trim(), 
+  artist: (artist||'').trim(), 
+  audioUrl, 
+  coverUrl,
+  userId: req.session.user.id 
+});
     req.session.flash = { type: 'success', message: 'Upload thành công!' };
     res.redirect('/');
   }catch(err){ console.error(err); req.session.flash = { type: 'danger', message: 'Upload thất bại.' }; res.redirect('/upload'); }

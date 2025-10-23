@@ -330,6 +330,30 @@
       border: 1px solid var(--text-secondary);
     }
     
+    .user-avatar {
+  cursor: pointer;
+}
+
+.user-avatar:hover {
+  transform: scale(1.1);
+  box-shadow: 0 4px 12px rgba(30, 215, 96, 0.5);
+}
+
+.track-artist a,
+.comment-author {
+  cursor: pointer;
+  transition: color 0.2s ease;
+}
+
+.track-artist a:hover {
+  color: var(--text-primary) !important;
+  text-decoration: underline;
+}
+
+.comment-author:hover {
+  color: var(--accent-color) !important;
+}
+
     .btn-secondary:hover { border-color: var(--text-primary); }
   </style>
 </head>
@@ -367,7 +391,7 @@
       </nav>
     </div>
     <div class="header-actions">
-      <div class="user-avatar" title="<%= user.username %>">
+      <div class="user-avatar" onclick="window.location.href='/users/<%= user.username %>'">
         <%= user.username.charAt(0).toUpperCase() %>
       </div>
       <form method="post" action="/logout" style="display:inline">

@@ -15,12 +15,15 @@ const {
   UserCollection,
   PlayHistoryCollection,
   PlaylistCollection,
-  CommentCollection
+  CommentCollection,
+  FollowCollection
 } = require('./config');
 
 // Import route modules
 const uploadRoutes = require('./upload-routes');
 const playlistRoutes = require('./playlist-routes');
+const userRoutes = require('./user-routes');
+const settingsRoutes = require('./settings-routes');
 
 // Initialize Express app
 const app = express();
@@ -244,10 +247,12 @@ app.post('/login', async (req, res) => {
     
     // Set session
     req.session.user = { 
-      id: user._id, 
-      name: user.name, 
-      username: user.username 
-    };
+  id: user._id, 
+  name: user.name, 
+  username: user.username,
+  avatarUrl: user.avatarUrl || '',  // <-- THÊM DÒNG NÀY
+  bio: user.bio || ''                // <-- OPTIONAL
+};
     
     console.log('✅ User logged in:', user.username);
     
@@ -586,12 +591,43 @@ app.get('/api/moods', requireAuth, async (req, res) => {
 });
 
 // ============================================
+// SEARCH USERS API
+// ============================================
+
+app.get('/api/search/users', requireAuth, async (req, res) => {
+  try {
+    const { q } = req.query;
+    
+    if (!q || q.trim().length === 0) {
+      return res.json({ success: true, users: [] });
+    }
+    
+    const users = await UserCollection.find({
+      $or: [
+        { username: { $regex: q, $options: 'i' } },
+        { name: { $regex: q, $options: 'i' } }
+      ]
+    })
+    .select('username name avatarUrl followersCount')
+    .limit(10)
+    .lean();
+    
+    res.json({ success: true, users });
+  } catch (err) {
+    console.error('Search users error:', err);
+    res.json({ success: false, users: [], error: err.message });
+  }
+});
+
+// ============================================
 // TRACK DETAIL PAGE
 // ============================================
 
 app.get('/track/:id', requireAuth, async (req, res) => {
   try {
-    const track = await TrackCollection.findById(req.params.id).lean();
+const track = await TrackCollection.findById(req.params.id)
+  .populate('userId', 'username name')  
+  .lean();
     
     if (!track) {
       return res.status(404).render('404', { title: 'Track not found' });
@@ -692,6 +728,11 @@ app.post('/api/tracks/:id/comments', requireAuth, async (req, res) => {
 
 app.use('/upload', uploadRoutes);
 app.use('/playlists', playlistRoutes);
+app.use('/users', userRoutes);
+
+console.log('🔧 Mounting settings routes...');  // <-- THÊM DÒNG NÀY
+app.use('/settings', settingsRoutes);
+console.log('✅ Settings routes mounted!'); 
 
 // ============================================
 // 404 HANDLER

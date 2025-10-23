@@ -1,0 +1,713 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title><%= title %></title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+  
+  <style>
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+
+    :root {
+      --bg-primary: #000;
+      --bg-secondary: #0a0a0a;
+      --bg-card: #111;
+      --text-primary: #fff;
+      --text-secondary: #999;
+      --border-color: #222;
+      --accent: #ff5500;
+    }
+
+    body {
+      font-family: 'Inter', -apple-system, sans-serif;
+      background: var(--bg-primary);
+      color: var(--text-primary);
+      line-height: 1.6;
+    }
+
+    /* HEADER */
+    .header {
+      position: fixed;
+      top: 0;
+      left: 0;
+      right: 0;
+      height: 64px;
+      background: rgba(0, 0, 0, 0.98);
+      backdrop-filter: blur(20px);
+      border-bottom: 1px solid var(--border-color);
+      padding: 0 24px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      z-index: 1000;
+    }
+
+    .header-left {
+      display: flex;
+      align-items: center;
+      gap: 24px;
+    }
+
+    .logo {
+      display: flex;
+      align-items: center;
+      text-decoration: none;
+    }
+
+    .logo img {
+      height: 32px;
+      width: auto;
+    }
+
+    .header-actions {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+    }
+
+    .btn {
+      padding: 8px 20px;
+      border-radius: 4px;
+      font-weight: 600;
+      font-size: 13px;
+      cursor: pointer;
+      transition: all 0.2s;
+      border: none;
+      font-family: 'Inter', sans-serif;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+
+    .btn-primary {
+      background: var(--accent);
+      color: #fff;
+    }
+
+    .btn-primary:hover {
+      background: #ff6a1a;
+    }
+
+    .btn-secondary {
+      background: rgba(255, 255, 255, 0.05);
+      color: var(--text-primary);
+      border: 1px solid var(--border-color);
+    }
+
+    .btn-secondary:hover {
+      background: rgba(255, 255, 255, 0.1);
+    }
+
+    .user-avatar-small {
+      width: 36px;
+      height: 36px;
+      border-radius: 50%;
+      background: linear-gradient(135deg, var(--accent), #ff8533);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-weight: 700;
+      font-size: 14px;
+      cursor: pointer;
+      transition: transform 0.2s;
+    }
+
+    .user-avatar-small:hover {
+      transform: scale(1.1);
+    }
+
+    /* PROFILE HEADER BANNER */
+    .profile-banner {
+      margin-top: 64px;
+      height: 260px;
+      background: linear-gradient(135deg, #1a1a1a 0%, #0a0a0a 100%);
+      position: relative;
+      border-bottom: 1px solid var(--border-color);
+    }
+
+    .profile-info-bar {
+      max-width: 1240px;
+      margin: 0 auto;
+      padding: 0 24px;
+      display: flex;
+      align-items: flex-end;
+      gap: 24px;
+      position: absolute;
+      bottom: -40px;
+      left: 0;
+      right: 0;
+    }
+
+    .profile-avatar {
+      width: 200px;
+      height: 200px;
+      border-radius: 50%;
+      background: linear-gradient(135deg, var(--accent), #ff8533);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 72px;
+      font-weight: 900;
+      border: 4px solid var(--bg-primary);
+      box-shadow: 0 8px 24px rgba(0,0,0,0.8);
+      flex-shrink: 0;
+      overflow: hidden;
+    }
+
+    .profile-avatar img {
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+    }
+
+    .profile-info {
+      flex: 1;
+      padding-bottom: 20px;
+    }
+
+    .profile-username {
+      font-size: 32px;
+      font-weight: 900;
+      margin-bottom: 8px;
+      letter-spacing: -0.5px;
+    }
+
+    .profile-name {
+      font-size: 16px;
+      color: var(--text-secondary);
+      margin-bottom: 12px;
+    }
+
+    .profile-actions {
+      display: flex;
+      gap: 12px;
+    }
+
+    /* MAIN CONTENT */
+    .main-container {
+      max-width: 1240px;
+      margin: 80px auto 0;
+      padding: 0 24px;
+      display: grid;
+      grid-template-columns: 1fr 340px;
+      gap: 40px;
+    }
+
+    /* LEFT: TRACKS */
+    .tracks-section {
+      padding-top: 40px;
+    }
+
+    .section-header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      margin-bottom: 24px;
+      padding-bottom: 12px;
+      border-bottom: 1px solid var(--border-color);
+    }
+
+    .section-title {
+      font-size: 20px;
+      font-weight: 700;
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      color: var(--text-secondary);
+    }
+
+    .section-title .count {
+      color: var(--text-primary);
+    }
+
+    /* TRACK ITEM (SOUNDCLOUD STYLE) */
+    .track-item {
+      display: flex;
+      gap: 16px;
+      padding: 16px 0;
+      border-bottom: 1px solid var(--border-color);
+      transition: background 0.2s;
+      cursor: pointer;
+    }
+
+    .track-item:hover {
+      background: rgba(255, 255, 255, 0.02);
+    }
+
+    .track-cover {
+      width: 160px;
+      height: 160px;
+      border-radius: 4px;
+      background: linear-gradient(135deg, var(--accent), #ff8533);
+      flex-shrink: 0;
+      overflow: hidden;
+      position: relative;
+    }
+
+    .track-cover img {
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+    }
+
+    .track-play-btn {
+      position: absolute;
+      top: 50%;
+      left: 50%;
+      transform: translate(-50%, -50%);
+      width: 56px;
+      height: 56px;
+      border-radius: 50%;
+      background: var(--accent);
+      color: #fff;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 18px;
+      opacity: 0;
+      transition: opacity 0.2s;
+      border: none;
+      cursor: pointer;
+    }
+
+    .track-item:hover .track-play-btn {
+      opacity: 1;
+    }
+
+    .track-details {
+      flex: 1;
+      min-width: 0;
+    }
+
+    .track-header {
+      display: flex;
+      align-items: flex-start;
+      justify-content: space-between;
+      margin-bottom: 8px;
+    }
+
+    .track-meta {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      font-size: 12px;
+      color: var(--text-secondary);
+      margin-bottom: 8px;
+    }
+
+    .track-title-text {
+      font-size: 16px;
+      font-weight: 600;
+      margin-bottom: 4px;
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+    }
+
+    .track-artist-text {
+      font-size: 14px;
+      color: var(--text-secondary);
+    }
+
+    /* FAKE WAVEFORM */
+    .track-waveform {
+      height: 60px;
+      background: rgba(255, 255, 255, 0.03);
+      border-radius: 4px;
+      margin-bottom: 12px;
+      position: relative;
+      overflow: hidden;
+      display: flex;
+      align-items: center;
+      gap: 2px;
+      padding: 0 8px;
+    }
+
+    .waveform-bar {
+      flex: 1;
+      background: rgba(255, 85, 0, 0.3);
+      height: 30%;
+      border-radius: 2px;
+      animation: waveAnimation 2s ease-in-out infinite;
+    }
+
+    .waveform-bar:nth-child(2n) {
+      height: 50%;
+      animation-delay: 0.1s;
+    }
+
+    .waveform-bar:nth-child(3n) {
+      height: 70%;
+      animation-delay: 0.2s;
+    }
+
+    @keyframes waveAnimation {
+      0%, 100% { transform: scaleY(1); }
+      50% { transform: scaleY(1.2); }
+    }
+
+    .track-stats {
+      display: flex;
+      gap: 20px;
+      font-size: 13px;
+      color: var(--text-secondary);
+    }
+
+    .track-stat {
+      display: flex;
+      align-items: center;
+      gap: 6px;
+    }
+
+    /* RIGHT SIDEBAR */
+    .sidebar {
+      padding-top: 40px;
+    }
+
+    .stats-card {
+      background: var(--bg-card);
+      border: 1px solid var(--border-color);
+      border-radius: 8px;
+      padding: 24px;
+      margin-bottom: 24px;
+    }
+
+    .stats-grid {
+      display: grid;
+      grid-template-columns: repeat(2, 1fr);
+      gap: 20px;
+    }
+
+    .stat-item {
+      text-align: center;
+    }
+
+    .stat-value {
+      font-size: 28px;
+      font-weight: 900;
+      color: var(--text-primary);
+      display: block;
+      margin-bottom: 4px;
+    }
+
+    .stat-label {
+      font-size: 12px;
+      color: var(--text-secondary);
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+    }
+
+    .bio-card {
+      background: var(--bg-card);
+      border: 1px solid var(--border-color);
+      border-radius: 8px;
+      padding: 24px;
+      margin-bottom: 24px;
+    }
+
+    .bio-title {
+      font-size: 14px;
+      font-weight: 700;
+      margin-bottom: 12px;
+      color: var(--text-secondary);
+    }
+
+    .bio-text {
+      font-size: 14px;
+      line-height: 1.6;
+      color: var(--text-primary);
+    }
+
+    .empty-state {
+      text-align: center;
+      padding: 80px 20px;
+      color: var(--text-secondary);
+    }
+
+    .empty-state i {
+      font-size: 48px;
+      margin-bottom: 16px;
+      opacity: 0.5;
+    }
+
+    /* NOTIFICATION */
+    .notification {
+      position: fixed;
+      bottom: 24px;
+      right: 24px;
+      background: var(--bg-card);
+      border: 1px solid var(--border-color);
+      color: #fff;
+      padding: 16px 24px;
+      border-radius: 8px;
+      font-size: 14px;
+      font-weight: 600;
+      z-index: 10000;
+      box-shadow: 0 8px 24px rgba(0,0,0,0.8);
+      animation: slideIn 0.3s ease-out;
+    }
+
+    @keyframes slideIn {
+      from {
+        opacity: 0;
+        transform: translateY(20px);
+      }
+      to {
+        opacity: 1;
+        transform: translateY(0);
+      }
+    }
+
+    /* RESPONSIVE */
+    @media (max-width: 968px) {
+      .main-container {
+        grid-template-columns: 1fr;
+        padding: 0 16px;
+      }
+
+      .profile-info-bar {
+        flex-direction: column;
+        align-items: center;
+        text-align: center;
+        position: static;
+        padding: 24px;
+      }
+
+      .profile-avatar {
+        width: 150px;
+        height: 150px;
+        font-size: 56px;
+      }
+
+      .profile-banner {
+        height: auto;
+      }
+
+      .track-cover {
+        width: 120px;
+        height: 120px;
+      }
+
+      .stats-grid {
+        grid-template-columns: repeat(4, 1fr);
+      }
+    }
+  </style>
+</head>
+<body>
+  <!-- HEADER -->
+  <header class="header">
+    <div class="header-left">
+      <a href="/" class="logo">
+        <img src="/public/img/saoclao.png" alt="SAOCLAO" onerror="this.style.display='none'; this.parentElement.innerHTML='<span style=\'font-size:24px;font-weight:900;color:#fff\'>SAOCLAO</span>'">
+      </a>
+    </div>
+
+    <div class="header-actions">
+      <% if (user) { %>
+        <% if (isOwnProfile) { %>
+        <% } %>
+      <% } else { %>
+        <button class="btn btn-primary" onclick="window.location.href='/login'">
+          Đăng nhập
+        </button>
+      <% } %>
+    </div>
+  </header>
+
+  <!-- PROFILE BANNER -->
+  <div class="profile-banner">
+    <div class="profile-info-bar">
+      <div class="profile-avatar">
+        <% if (profileUser.avatarUrl) { %>
+          <img src="<%= profileUser.avatarUrl %>" alt="<%= profileUser.name %>">
+        <% } else { %>
+          <%= profileUser.username.charAt(0).toUpperCase() %>
+        <% } %>
+      </div>
+
+      <div class="profile-info">
+        <h1 class="profile-username"><%= profileUser.username %></h1>
+        <p class="profile-name"><%= profileUser.name %></p>
+
+        <div class="profile-actions">
+          <% if (isOwnProfile) { %>
+            <button class="btn btn-secondary" onclick="window.location.href='/settings'">
+              <i class="fa-solid fa-pen"></i>
+              Edit profile
+            </button>
+          <% } else if (user) { %>
+            <button class="btn <%= isFollowing ? 'btn-secondary' : 'btn-primary' %>" id="followBtn" data-username="<%= profileUser.username %>">
+              <i class="fa-solid <%= isFollowing ? 'fa-user-check' : 'fa-user-plus' %>"></i>
+              <%= isFollowing ? 'Following' : 'Follow' %>
+            </button>
+          <% } else { %>
+            <button class="btn btn-primary" onclick="window.location.href='/login'">
+              Follow
+            </button>
+          <% } %>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- MAIN CONTENT -->
+  <div class="main-container">
+    <!-- LEFT: TRACKS -->
+    <div class="tracks-section">
+      <div class="section-header">
+        <h2 class="section-title">
+          <i class="fa-solid fa-music"></i>
+          <span class="count"><%= tracks.length %></span> tracks
+        </h2>
+      </div>
+
+      <% if (tracks.length > 0) { %>
+        <% tracks.forEach(track => { %>
+          <div class="track-item" onclick="window.location.href='/track/<%= track._id %>'">
+            <div class="track-cover">
+              <img src="<%= track.coverUrl || 'https://images.unsplash.com/photo-1514525253161-7a46d19cd819?w=500' %>" 
+                   alt="<%= track.title %>">
+              <button class="track-play-btn">
+                <i class="fa-solid fa-play"></i>
+              </button>
+            </div>
+
+            <div class="track-details">
+              <div class="track-header">
+                <div>
+                  <div class="track-meta">
+                    <i class="fa-solid fa-clock"></i>
+                    <%= new Date(track.createdAt).toLocaleDateString('vi-VN') %>
+                  </div>
+                  <div class="track-title-text"><%= track.title %></div>
+                  <div class="track-artist-text"><%= track.artist %></div>
+                </div>
+              </div>
+
+              <div class="track-waveform">
+                <% for(let i = 0; i < 50; i++) { %>
+                  <div class="waveform-bar"></div>
+                <% } %>
+              </div>
+
+              <div class="track-stats">
+                <div class="track-stat">
+                  <i class="fa-solid fa-play"></i>
+                  <%= track.playCount || 0 %>
+                </div>
+                <div class="track-stat">
+                  <i class="fa-solid fa-heart"></i>
+                  <%= track.likes || 0 %>
+                </div>
+              </div>
+            </div>
+          </div>
+        <% }) %>
+      <% } else { %>
+        <div class="empty-state">
+          <i class="fa-solid fa-music"></i>
+          <p>Chưa có tracks nào</p>
+        </div>
+      <% } %>
+    </div>
+
+    <!-- RIGHT: SIDEBAR -->
+    <div class="sidebar">
+      <div class="stats-card">
+        <div class="stats-grid">
+          <div class="stat-item">
+            <span class="stat-value"><%= profileUser.followersCount || 0 %></span>
+            <span class="stat-label">Followers</span>
+          </div>
+          <div class="stat-item">
+            <span class="stat-value"><%= profileUser.followingCount || 0 %></span>
+            <span class="stat-label">Following</span>
+          </div>
+          <div class="stat-item">
+            <span class="stat-value"><%= tracks.length %></span>
+            <span class="stat-label">Tracks</span>
+          </div>
+          <div class="stat-item">
+            <span class="stat-value"><%= totalPlays %></span>
+            <span class="stat-label">Plays</span>
+          </div>
+        </div>
+      </div>
+
+      <% if (profileUser.bio) { %>
+        <div class="bio-card">
+          <h3 class="bio-title">Bio</h3>
+          <p class="bio-text"><%= profileUser.bio %></p>
+        </div>
+      <% } %>
+    </div>
+  </div>
+
+  <script>
+    // FOLLOW/UNFOLLOW
+    const followBtn = document.getElementById('followBtn');
+    
+    if (followBtn) {
+      followBtn.addEventListener('click', async function(e) {
+        e.stopPropagation();
+        const username = this.dataset.username;
+        const isFollowing = this.classList.contains('btn-secondary');
+        const endpoint = isFollowing ? 'unfollow' : 'follow';
+        
+        try {
+          const res = await fetch(`/users/${username}/${endpoint}`, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' }
+          });
+          
+          const data = await res.json();
+          
+          if (data.success) {
+            if (isFollowing) {
+              this.classList.remove('btn-secondary');
+              this.classList.add('btn-primary');
+              this.innerHTML = '<i class="fa-solid fa-user-plus"></i> Follow';
+            } else {
+              this.classList.remove('btn-primary');
+              this.classList.add('btn-secondary');
+              this.innerHTML = '<i class="fa-solid fa-user-check"></i> Following';
+            }
+            
+            const followersStat = document.querySelector('.stat-value');
+            if (followersStat) {
+              followersStat.textContent = data.followersCount;
+            }
+            
+            showNotification(data.message);
+          }
+        } catch (err) {
+          console.error(err);
+        }
+      });
+    }
+    
+    function showNotification(message) {
+      const existing = document.querySelector('.notification');
+      if (existing) existing.remove();
+      
+      const notif = document.createElement('div');
+      notif.className = 'notification';
+      notif.textContent = message;
+      document.body.appendChild(notif);
+      
+      setTimeout(() => {
+        notif.style.animation = 'slideIn 0.3s ease-out reverse';
+        setTimeout(() => notif.remove(), 300);
+      }, 3000);
+    }
+  </script>
+</body>
+</html>

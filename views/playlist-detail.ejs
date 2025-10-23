@@ -821,6 +821,31 @@
       transition: all 0.2s;
     }
     
+    .user-avatar {
+  cursor: pointer;
+}
+
+.user-avatar:hover {
+  transform: scale(1.1);
+  box-shadow: 0 4px 12px rgba(30, 215, 96, 0.5);
+}
+
+/* Clickable Artist/Username Links */
+.track-artist a,
+.comment-author {
+  cursor: pointer;
+  transition: color 0.2s ease;
+}
+
+.track-artist a:hover {
+  color: var(--text-primary) !important;
+  text-decoration: underline;
+}
+
+.comment-author:hover {
+  color: var(--accent-color) !important;
+}
+
     .queue-item:hover .queue-item-remove { opacity: 1; }
     .queue-item-remove:hover { color: var(--text-primary); }
   </style>
@@ -865,7 +890,7 @@
       </nav>
     </div>
     <div class="header-actions">
-      <div class="user-avatar" title="<%= user.username %>">
+      <div class="user-avatar" onclick="window.location.href='/users/<%= user.username %>'">
         <%= user.username.charAt(0).toUpperCase() %>
       </div>
       <form method="post" action="/logout" style="display:inline">

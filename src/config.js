@@ -34,7 +34,7 @@ async function connectDB() {
 
 // ==================== SCHEMAS ====================
 
-// User Schema
+// User Schema - UPDATED WITH BIO, AVATAR, STATS
 const UserSchema = new mongoose.Schema({
   name: { 
     type: String, 
@@ -58,6 +58,23 @@ const UserSchema = new mongoose.Schema({
     type: String, 
     required: true 
   },
+  bio: {
+    type: String,
+    default: '',
+    maxlength: 200
+  },
+  avatarUrl: {
+    type: String,
+    default: ''
+  },
+  followersCount: {
+    type: Number,
+    default: 0
+  },
+  followingCount: {
+    type: Number,
+    default: 0
+  },
   createdAt: { 
     type: Date, 
     default: Date.now 
@@ -75,6 +92,12 @@ const TrackSchema = new mongoose.Schema({
     type: String, 
     required: true,
     trim: true
+  },
+  userId: {
+    type: mongoose.Schema.Types.ObjectId,
+    ref: 'User',
+    required: true,
+    index: true
   },
   audioUrl: { 
     type: String, 
@@ -101,6 +124,10 @@ const TrackSchema = new mongoose.Schema({
     default: 0
   },
   playCount: {
+    type: Number,
+    default: 0
+  },
+  likes: {
     type: Number,
     default: 0
   },
@@ -208,6 +235,31 @@ const CommentSchema = new mongoose.Schema({
   }
 });
 
+// ==================== NEW: FOLLOW SCHEMA ====================
+
+const FollowSchema = new mongoose.Schema({
+  follower: {
+    type: mongoose.Schema.Types.ObjectId,
+    ref: 'User',
+    required: true,
+    index: true
+  },
+  following: {
+    type: mongoose.Schema.Types.ObjectId,
+    ref: 'User',
+    required: true,
+    index: true
+  },
+  createdAt: {
+    type: Date,
+    default: Date.now,
+    index: true
+  }
+});
+
+// Compound index để tránh duplicate follows và tối ưu queries
+FollowSchema.index({ follower: 1, following: 1 }, { unique: true });
+
 // ==================== MODELS ====================
 
 const UserCollection = mongoose.model('User', UserSchema);
@@ -215,6 +267,7 @@ const TrackCollection = mongoose.model('Track', TrackSchema);
 const PlayHistoryCollection = mongoose.model('PlayHistory', PlayHistorySchema);
 const PlaylistCollection = mongoose.model('Playlist', PlaylistSchema);
 const CommentCollection = mongoose.model('Comment', CommentSchema);
+const FollowCollection = mongoose.model('Follow', FollowSchema);
 
 // ==================== EXPORTS ====================
 
@@ -225,5 +278,6 @@ module.exports = {
   PlayHistoryCollection,
   PlaylistCollection,
   CommentCollection,
+  FollowCollection,
   mongoose
 };
