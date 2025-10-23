@@ -45,7 +45,7 @@ app.use(express.json());
 // Favicon handler
 app.get('/favicon.ico', (req, res) => res.status(204).end());
 
-// Session configuration
+// Session configuration - FIXED FOR RENDER
 const sessionSecret = process.env.SESSION_SECRET || 'dev_secret_change_in_production';
 app.use(session({
   secret: sessionSecret,
@@ -53,14 +53,18 @@ app.use(session({
   saveUninitialized: false,
   cookie: { 
     httpOnly: true, 
-    secure: process.env.NODE_ENV === 'production', // HTTPS only in production
+    secure: false, // IMPORTANT: false for Render (HTTPS is handled by proxy)
+    sameSite: 'lax',
     maxAge: 1000 * 60 * 60 * 24 * 7 // 7 days
   },
   store: MongoStore.create({
     mongoUrl: process.env.MONGO_URI || 'mongodb://127.0.0.1:27017/MusicCloud',
     dbName: 'MusicCloud',
     collectionName: 'sessions',
-    touchAfter: 24 * 3600 // Lazy session update
+    touchAfter: 24 * 3600, // Lazy session update
+    crypto: {
+      secret: sessionSecret
+    }
   })
 }));
 
@@ -76,7 +80,10 @@ app.use((req, res, next) => {
 const requireAuth = (req, res, next) => {
   if (!req.session.user) {
     req.session.flash = { type: 'warning', message: 'Vui lòng đăng nhập.' };
-    return res.redirect('/login');
+    return req.session.save((err) => {
+      if (err) console.error('Session save error:', err);
+      res.redirect('/login');
+    });
   }
   next();
 };
@@ -110,17 +117,22 @@ app.get('/', async (req, res) => {
 app.get('/signup', (req, res) => {
   if (req.session.user) {
     req.session.flash = { type: 'info', message: 'Bạn đã đăng nhập rồi.' };
-    return res.redirect('/');
+    return req.session.save((err) => {
+      if (err) console.error('Session save error:', err);
+      res.redirect('/');
+    });
   }
   res.render('signup', { title: 'Create account' });
 });
 
-// Signup handler
+// Signup handler - FIXED WITH SESSION SAVE
 app.post('/signup', async (req, res) => {
   if (req.session.user) return res.redirect('/');
 
   try {
     const { name, username, email, password } = req.body;
+    
+    console.log('📝 Signup attempt:', { name, username, email });
     
     // Validation
     if (!name || !username || !email || !password) {
@@ -128,7 +140,10 @@ app.post('/signup', async (req, res) => {
         type: 'danger', 
         message: 'Vui lòng điền đầy đủ thông tin.' 
       };
-      return res.redirect('/signup');
+      return req.session.save((err) => {
+        if (err) console.error('Session save error:', err);
+        res.redirect('/signup');
+      });
     }
     
     // Check if user exists
@@ -141,18 +156,32 @@ app.post('/signup', async (req, res) => {
         type: 'warning', 
         message: 'Email hoặc username đã tồn tại.' 
       };
-      return res.redirect('/signup');
+      return req.session.save((err) => {
+        if (err) console.error('Session save error:', err);
+        res.redirect('/signup');
+      });
     }
     
     // Create new user
     const passwordHash = await bcrypt.hash(password, SALT_ROUNDS);
-    await UserCollection.create({ name, username, email, passwordHash });
+    const newUser = await UserCollection.create({ name, username, email, passwordHash });
+    
+    console.log('✅ User created:', newUser._id);
     
     req.session.flash = { 
       type: 'success', 
       message: 'Đăng ký thành công! Vui lòng đăng nhập để tiếp tục.' 
     };
-    res.redirect('/login');
+    
+    // CRITICAL: Save session before redirect
+    req.session.save((err) => {
+      if (err) {
+        console.error('❌ Session save error:', err);
+        return res.redirect('/signup');
+      }
+      console.log('✅ Redirecting to /login');
+      res.redirect('/login');
+    });
     
   } catch (err) {
     console.error('Signup error:', err);
@@ -160,7 +189,10 @@ app.post('/signup', async (req, res) => {
       type: 'danger', 
       message: 'Đăng ký thất bại. Vui lòng thử lại.' 
     };
-    res.redirect('/signup');
+    req.session.save((err) => {
+      if (err) console.error('Session save error:', err);
+      res.redirect('/signup');
+    });
   }
 });
 
@@ -170,12 +202,14 @@ app.get('/login', (req, res) => {
   res.render('login', { title: 'Sign in' });
 });
 
-// Login handler
+// Login handler - FIXED WITH SESSION SAVE
 app.post('/login', async (req, res) => {
   if (req.session.user) return res.redirect('/profile');
   
   try {
     const { identifier, password } = req.body;
+    
+    console.log('🔐 Login attempt:', identifier);
     
     // Find user by email or username
     const user = await UserCollection.findOne({ 
@@ -183,21 +217,29 @@ app.post('/login', async (req, res) => {
     });
     
     if (!user) { 
+      console.log('❌ User not found:', identifier);
       req.session.flash = { 
         type: 'danger', 
         message: 'Sai thông tin đăng nhập.' 
       }; 
-      return res.redirect('/login'); 
+      return req.session.save((err) => {
+        if (err) console.error('Session save error:', err);
+        res.redirect('/login');
+      });
     }
     
     // Verify password
     const ok = await bcrypt.compare(password, user.passwordHash);
     if (!ok) { 
+      console.log('❌ Wrong password for:', identifier);
       req.session.flash = { 
         type: 'danger', 
         message: 'Sai thông tin đăng nhập.' 
       }; 
-      return res.redirect('/login'); 
+      return req.session.save((err) => {
+        if (err) console.error('Session save error:', err);
+        res.redirect('/login');
+      });
     }
     
     // Set session
@@ -207,7 +249,21 @@ app.post('/login', async (req, res) => {
       username: user.username 
     };
     
-    res.redirect('/profile');
+    console.log('✅ User logged in:', user.username);
+    
+    // CRITICAL: Save session before redirect
+    req.session.save((err) => {
+      if (err) {
+        console.error('❌ Session save error:', err);
+        req.session.flash = { 
+          type: 'danger', 
+          message: 'Đã xảy ra lỗi. Vui lòng thử lại.' 
+        };
+        return res.redirect('/login');
+      }
+      console.log('✅ Redirecting to /profile');
+      res.redirect('/profile');
+    });
     
   } catch (err) {
     console.error('Login error:', err);
@@ -215,7 +271,10 @@ app.post('/login', async (req, res) => {
       type: 'danger', 
       message: 'Đã xảy ra lỗi. Vui lòng thử lại.' 
     };
-    res.redirect('/login');
+    req.session.save((err) => {
+      if (err) console.error('Session save error:', err);
+      res.redirect('/login');
+    });
   }
 });
 
