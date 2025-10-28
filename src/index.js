@@ -451,12 +451,12 @@ app.get('/api/search', requireAuth, async (req, res) => {
     const { q } = req.query;
     
     if (!q || q.trim().length === 0) {
-      return res.json({ success: true, tracks: [] });
+      return res.json({ success: true, tracks: [], users: [] });
     }
     
     const query = q.trim();
     
-    // Search by title, artist, genres, or tags
+    // Tìm tracks
     const tracks = await TrackCollection.find({
       $or: [
         { title: { $regex: query, $options: 'i' } },
@@ -465,16 +465,44 @@ app.get('/api/search', requireAuth, async (req, res) => {
         { tags: { $regex: query, $options: 'i' } }
       ]
     })
-    .select('_id title artist coverUrl audioUrl genres tags')
+    .populate('userId', 'username name avatarUrl')
+    .select('_id title artist coverUrl audioUrl genres tags userId')
     .limit(20)
     .lean();
     
-    res.json({ success: true, tracks });
+    // Tìm users/artists
+    const users = await UserCollection.find({
+      $or: [
+        { username: { $regex: query, $options: 'i' } },
+        { name: { $regex: query, $options: 'i' } }
+      ]
+    })
+    .select('username name avatarUrl followersCount')
+    .limit(10)
+    .lean();
+    
+    // Đếm số bài hát của mỗi artist
+    const usersWithTrackCount = await Promise.all(
+      users.map(async (user) => {
+        const trackCount = await TrackCollection.countDocuments({ userId: user._id });
+        return {
+          ...user,
+          trackCount
+        };
+      })
+    );
+    
+    res.json({ 
+      success: true, 
+      tracks,
+      users: usersWithTrackCount
+    });
   } catch (err) {
     console.error('Search error:', err);
-    res.status(500).json({ success: false, tracks: [], error: err.message });
+    res.status(500).json({ success: false, tracks: [], users: [], error: err.message });
   }
 });
+
 
 // Get recommendations based on a track
 app.get('/api/recommendations/:trackId', requireAuth, async (req, res) => {
