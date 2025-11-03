@@ -456,7 +456,7 @@ app.get('/api/search', requireAuth, async (req, res) => {
     
     const query = q.trim();
     
-    // Tìm tracks
+    // Search tracks
     const tracks = await TrackCollection.find({
       $or: [
         { title: { $regex: query, $options: 'i' } },
@@ -470,7 +470,7 @@ app.get('/api/search', requireAuth, async (req, res) => {
     .limit(20)
     .lean();
     
-    // Tìm users/artists
+    // Search users/artists
     const users = await UserCollection.find({
       $or: [
         { username: { $regex: query, $options: 'i' } },
@@ -481,7 +481,7 @@ app.get('/api/search', requireAuth, async (req, res) => {
     .limit(10)
     .lean();
     
-    // Đếm số bài hát của mỗi artist
+    // Count tracks for each user
     const usersWithTrackCount = await Promise.all(
       users.map(async (user) => {
         const trackCount = await TrackCollection.countDocuments({ userId: user._id });
@@ -499,7 +499,12 @@ app.get('/api/search', requireAuth, async (req, res) => {
     });
   } catch (err) {
     console.error('Search error:', err);
-    res.status(500).json({ success: false, tracks: [], users: [], error: err.message });
+    res.status(500).json({ 
+      success: false, 
+      tracks: [], 
+      users: [], 
+      error: err.message 
+    });
   }
 });
 

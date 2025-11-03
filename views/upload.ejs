@@ -7,307 +7,8 @@
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&display=swap" rel="stylesheet">
-  <style>
-    * { margin: 0; padding: 0; box-sizing: border-box; }
-    body { 
-      font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; 
-      background: #000;
-      color: #fff; 
-      min-height: 100vh;
-    }
-    
-    /* Header */
-    .header {
-      position: sticky;
-      top: 0;
-      padding: 24px 60px;
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
-      z-index: 100;
-      backdrop-filter: blur(20px);
-      background: rgba(0, 0, 0, 0.8);
-      border-bottom: 1px solid rgba(255, 255, 255, 0.08);
-    }
-    .logo-link {
-      display: flex;
-      align-items: center;
-      text-decoration: none;
-      transition: transform 0.3s;
-    }
-    .logo-link:hover { transform: scale(1.05); }
-    .logo-img { height: 36px; width: auto; }
-    
-    /* Container */
-    .container {
-      max-width: 1200px;
-      margin: 0 auto;
-      padding: 60px 40px;
-    }
-    
-    /* Page header */
-    .page-header {
-      margin-bottom: 48px;
-    }
-    .page-header h1 {
-      font-size: 36px;
-      font-weight: 800;
-      margin-bottom: 12px;
-    }
-    .page-header p {
-      color: #999;
-      font-size: 15px;
-      line-height: 1.6;
-    }
-    
-    /* Upload box */
-    .upload-box {
-      border: 3px dashed rgba(255, 255, 255, 0.2);
-      border-radius: 8px;
-      padding: 120px 40px;
-      text-align: center;
-      transition: all 0.3s;
-      cursor: pointer;
-      background: rgba(255, 255, 255, 0.02);
-    }
-    .upload-box:hover {
-      border-color: rgba(255, 255, 255, 0.4);
-      background: rgba(255, 255, 255, 0.03);
-    }
-    .upload-box.dragover {
-      border-color: #fff;
-      background: rgba(255, 255, 255, 0.05);
-    }
-    
-    .upload-icon {
-      width: 80px;
-      height: 80px;
-      margin: 0 auto 32px;
-      position: relative;
-    }
-    .upload-icon svg {
-      width: 100%;
-      height: 100%;
-      fill: #666;
-    }
-    
-    .upload-text h3 {
-      font-size: 18px;
-      font-weight: 600;
-      margin-bottom: 12px;
-      color: #fff;
-    }
-    .upload-text p {
-      color: #888;
-      font-size: 14px;
-      margin-bottom: 28px;
-    }
-    
-    .choose-btn {
-      display: inline-block;
-      padding: 12px 32px;
-      background: #fff;
-      color: #000;
-      border-radius: 50px;
-      font-weight: 700;
-      font-size: 14px;
-      cursor: pointer;
-      transition: all 0.3s;
-      border: none;
-    }
-    .choose-btn:hover {
-      transform: translateY(-2px);
-      box-shadow: 0 4px 12px rgba(255, 255, 255, 0.3);
-    }
-    
-    .file-input { display: none; }
-    
-    /* Details form */
-    .details-form {
-      display: none;
-      max-width: 800px;
-    }
-    .details-form.active { display: block; }
-    
-    .form-group {
-      margin-bottom: 32px;
-    }
-    .form-group label {
-      display: block;
-      font-weight: 600;
-      font-size: 14px;
-      margin-bottom: 12px;
-      color: #ccc;
-    }
-    .form-group label .required {
-      color: #ff4444;
-      margin-left: 4px;
-    }
-    .form-group input[type="text"] {
-      width: 100%;
-      padding: 14px 18px;
-      background: rgba(255, 255, 255, 0.05);
-      border: 1px solid rgba(255, 255, 255, 0.15);
-      border-radius: 6px;
-      color: #fff;
-      font-size: 16px;
-      font-family: 'Inter', sans-serif;
-      transition: all 0.3s;
-    }
-    .form-group input[type="text"]:focus {
-      outline: none;
-      border-color: #fff;
-      background: rgba(255, 255, 255, 0.08);
-    }
-    .form-group input[type="text"]::placeholder {
-      color: #555;
-    }
-    
-    /* Image upload */
-    .image-upload {
-      display: flex;
-      gap: 24px;
-      align-items: flex-start;
-    }
-    .image-preview {
-      width: 180px;
-      height: 180px;
-      background: #111;
-      border: 2px dashed rgba(255, 255, 255, 0.2);
-      border-radius: 6px;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      overflow: hidden;
-      flex-shrink: 0;
-    }
-    .image-preview img {
-      width: 100%;
-      height: 100%;
-      object-fit: cover;
-    }
-    .image-preview.empty {
-      font-size: 48px;
-      color: #333;
-    }
-    .image-info p {
-      font-size: 13px;
-      color: #888;
-      margin-bottom: 16px;
-      line-height: 1.5;
-    }
-    .image-btn {
-      padding: 10px 24px;
-      background: rgba(255, 255, 255, 0.1);
-      border: 1px solid rgba(255, 255, 255, 0.2);
-      border-radius: 50px;
-      color: #fff;
-      font-weight: 600;
-      font-size: 14px;
-      cursor: pointer;
-      transition: all 0.3s;
-    }
-    .image-btn:hover {
-      background: rgba(255, 255, 255, 0.15);
-    }
-    
-    /* Audio info */
-    .audio-info {
-      background: rgba(255, 255, 255, 0.03);
-      border: 1px solid rgba(255, 255, 255, 0.1);
-      border-radius: 6px;
-      padding: 16px;
-      margin-bottom: 40px;
-      display: flex;
-      align-items: center;
-      gap: 12px;
-    }
-    .audio-info .icon {
-      font-size: 32px;
-    }
-    .audio-info .details {
-      flex: 1;
-    }
-    .audio-info .filename {
-      font-weight: 600;
-      font-size: 14px;
-      margin-bottom: 4px;
-    }
-    .audio-info .filesize {
-      font-size: 13px;
-      color: #888;
-    }
-    
-    /* Actions */
-    .form-actions {
-      display: flex;
-      gap: 16px;
-      margin-top: 40px;
-    }
-    .btn {
-      padding: 14px 32px;
-      border-radius: 50px;
-      font-weight: 700;
-      font-size: 15px;
-      cursor: pointer;
-      transition: all 0.3s;
-      border: none;
-      font-family: 'Inter', sans-serif;
-    }
-    .btn-primary {
-      background: #fff;
-      color: #000;
-      flex: 1;
-    }
-    .btn-primary:hover {
-      transform: translateY(-2px);
-      box-shadow: 0 4px 12px rgba(255, 255, 255, 0.3);
-    }
-    .btn-secondary {
-      background: transparent;
-      color: #888;
-      border: 1px solid rgba(255, 255, 255, 0.2);
-    }
-    .btn-secondary:hover {
-      color: #fff;
-      border-color: rgba(255, 255, 255, 0.4);
-    }
-    
-    /* Flash */
-    .flash {
-      position: fixed;
-      top: 100px;
-      left: 50%;
-      transform: translateX(-50%);
-      padding: 16px 32px;
-      border-radius: 8px;
-      font-weight: 600;
-      z-index: 1000;
-      min-width: 320px;
-      text-align: center;
-      backdrop-filter: blur(10px);
-    }
-    .flash.success {
-      background: rgba(255, 255, 255, 0.1);
-      color: #fff;
-      border: 1px solid rgba(255, 255, 255, 0.3);
-    }
-    .flash.danger {
-      background: rgba(255, 0, 0, 0.1);
-      color: #ff4444;
-      border: 1px solid rgba(255, 68, 68, 0.3);
-    }
-    
-    @media (max-width: 768px) {
-      .header { padding: 20px 24px; }
-      .logo-img { height: 28px; }
-      .container { padding: 40px 24px; }
-      .page-header h1 { font-size: 28px; }
-      .upload-box { padding: 80px 24px; }
-      .image-upload { flex-direction: column; }
-      .form-actions { flex-direction: column; }
-    }
-  </style>
+  <link rel="stylesheet" href="/public/css/upload.css">
+
 </head>
 <body>
   <header class="header">
@@ -323,28 +24,26 @@
   
   <main class="container">
     <div class="page-header">
-      <h1>Uploadez vos fichiers audio.</h1>
-      <p>Pour une qualité optimale, utilisez les formats WAV, FLAC, AIFF ou ALAC. La taille de fichier maximale est de 4 Go incompressé.</p>
+      <h1>Tải lên bài hát của bạn</h1>
+      <p>Để có chất lượng tốt nhất, sử dụng định dạng WAV, FLAC, AIFF hoặc ALAC. Kích thước tối đa 4GB.</p>
     </div>
     
-    <!-- Upload Area -->
     <div class="upload-box" id="uploadBox">
       <div class="upload-icon">
         <svg viewBox="0 0 80 80">
-          <path d="M40,10 C23,10 10,23 10,40 C10,57 23,70 40,70 C57,70 70,57 70,40 C70,23 57,10 40,10 Z M40,50 L30,40 L35,40 L35,30 L45,30 L45,40 L50,40 Z" fill="#666"/>
+          <path d="M40,10 C23,10 10,23 10,40 C10,57 23,70 40,70 C57,70 70,57 70,40 C70,23 57,10 40,10 Z M40,50 L30,40 L35,40 L35,30 L45,30 L45,40 L50,40 Z"/>
         </svg>
       </div>
       <div class="upload-text">
-        <h3>Faites glisser et déposez un fichier audio pour commencer</h3>
+        <h3>Kéo thả file nhạc vào đây để bắt đầu</h3>
         <p>hoặc</p>
       </div>
       <input type="file" id="audioFile" class="file-input" accept=".mp3,.wav,audio/*">
       <button class="choose-btn" onclick="document.getElementById('audioFile').click()">
-        Choisir des fichiers
+        Chọn file
       </button>
     </div>
     
-    <!-- Details Form -->
     <form method="post" action="/upload/new" enctype="multipart/form-data" id="detailsForm" class="details-form">
       <input type="file" name="audio" id="hiddenAudio" style="display:none;">
       
@@ -382,7 +81,7 @@
       
       <div class="form-actions">
         <button type="button" class="btn btn-secondary" onclick="window.location.href='/'">Hủy</button>
-        <button type="submit" class="btn btn-primary">Lưu</button>
+        <button type="submit" class="btn btn-primary">Tải lên</button>
       </div>
     </form>
   </main>
@@ -402,7 +101,11 @@
       e.preventDefault();
       uploadBox.classList.add('dragover');
     });
-    uploadBox.addEventListener('dragleave', () => uploadBox.classList.remove('dragover'));
+
+    uploadBox.addEventListener('dragleave', () => {
+      uploadBox.classList.remove('dragover');
+    });
+
     uploadBox.addEventListener('drop', (e) => {
       e.preventDefault();
       uploadBox.classList.remove('dragover');
@@ -442,3 +145,5 @@
   </script>
 </body>
 </html>
+
+

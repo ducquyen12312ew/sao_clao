@@ -7,1301 +7,8 @@
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
-  <style>
-    * { margin: 0; padding: 0; box-sizing: border-box; }
-    
-    :root {
-      --bg-primary: #0f0f0f;
-      --bg-secondary: #1a1a1a;
-      --bg-card: #1e1e1e;
-      --bg-card-hover: #252525;
-      --border-color: #2a2a2a;
-      --text-primary: #ffffff;
-      --text-secondary: #b3b3b3;
-      --accent-color: #ffffff;
-      --accent-hover: #e0e0e0;
-      --player-bg: #181818;
-      --gradient-start: #1a1a1a;
-      --gradient-end: #0f0f0f;
-    }
-    
-    body {
-  font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
-  background: linear-gradient(135deg, var(--gradient-start) 0%, var(--bg-primary) 40%, var(--bg-primary) 100%);
-  color: var(--text-primary);
-  overflow-x: hidden;
-  line-height: 1.6;
-  min-height: 100vh;
-}
-    
-    /* Animated background effect */
-    body::before {
-  content: '';
-  position: fixed;
-  top: -50%;
-  left: -50%;
-  width: 200%;
-  height: 200%;
-  background: radial-gradient(circle at 50% 50%, rgba(255,255,255,0.015) 0%, transparent 50%);
-  animation: rotate 30s linear infinite;
-  pointer-events: none;
-  z-index: 0;
-}
-    
-    @keyframes rotate {
-      0% { transform: rotate(0deg); }
-      100% { transform: rotate(360deg); }
-    }
-    
-    .header {
-  position: fixed;
-  top: 0; left: 0; right: 0;
-  height: 64px;
-  background: rgba(15,15,15,0.85);
-  backdrop-filter: blur(20px) saturate(180%);
-  border-bottom: 1px solid rgba(42,42,42,0.5);
-  padding: 0 32px;
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  z-index: 100;
-  box-shadow: 0 4px 12px rgba(0,0,0,0.3);
-}
-    
-   .logo img { 
-  height: 36px;
-  filter: brightness(1.2) drop-shadow(0 2px 8px rgba(255,255,255,0.15));
-}
-    
-    .nav-menu {
-      display: flex;
-      align-items: center;
-      gap: 32px;
-      margin-left: 48px;
-    }
-    
-    .nav-link {
-      color: var(--text-secondary);
-      text-decoration: none;
-      font-weight: 600;
-      font-size: 14px;
-      transition: all 0.2s;
-      display: flex;
-      align-items: center;
-      gap: 8px;
-      padding: 8px 12px;
-      border-radius: 6px;
-    }
-    
-    .nav-link:hover { 
-      color: var(--text-primary);
-      background: rgba(255, 255, 255, 0.05);
-    }
-    
-    .nav-link.active { 
-      color: var(--accent-color);
-      background: rgba(30, 215, 96, 0.1);
-    }
-    
-    .search-container {
-      flex: 1;
-      max-width: 500px;
-      margin: 0 48px;
-      position: relative;
-    }
-    
-    .search-input {
-      width: 100%;
-      padding: 12px 48px 12px 48px;
-      background: rgba(30, 30, 30, 0.8);
-      border: 1px solid transparent;
-      border-radius: 500px;
-      color: var(--text-primary);
-      font-size: 14px;
-      font-weight: 400;
-      transition: all 0.3s;
-      backdrop-filter: blur(10px);
-    }
-    
-    .search-input:focus {
-      outline: none;
-      border-color: var(--accent-color);
-      background: rgba(30, 30, 30, 0.95);
-      box-shadow: 0 0 0 3px rgba(30, 215, 96, 0.1);
-    }
-    
-    .search-icon {
-      position: absolute;
-      left: 16px;
-      top: 50%;
-      transform: translateY(-50%);
-      pointer-events: none;
-    }
-    
-    .search-icon i {
-      font-size: 16px;
-      color: var(--text-secondary);
-    }
-    
-    .search-clear {
-      position: absolute;
-      right: 16px;
-      top: 50%;
-      transform: translateY(-50%);
-      background: none;
-      border: none;
-      color: var(--text-secondary);
-      cursor: pointer;
-      padding: 4px;
-      border-radius: 50%;
-      display: none;
-      transition: all 0.2s;
-    }
-    
-    .search-clear:hover {
-      color: var(--text-primary);
-      background: rgba(255, 255, 255, 0.1);
-    }
-    
-    .search-clear.active {
-      display: block;
-    }
-    
-    .header-actions {
-      display: flex;
-      align-items: center;
-      gap: 20px;
-    }
-    
-    .user-avatar {
-      width: 36px;
-      height: 36px;
-      border-radius: 50%;
-      background: linear-gradient(135deg, var(--accent-color), #202020);
-      color: #000;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      font-weight: 700;
-      font-size: 14px;
-      cursor: pointer;
-      transition: all 0.3s;
-      box-shadow: 0 2px 8px rgba(68, 68, 68, 0.3);
-    }
-    
-    .user-avatar:hover { 
-      transform: scale(1.08);
-      box-shadow: 0 4px 12px rgba(40, 40, 40, 0.5);
-    }
-    
-    .btn-logout {
-      padding: 10px 24px;
-      background: transparent;
-      color: var(--text-primary);
-      border: 1px solid var(--text-secondary);
-      border-radius: 500px;
-      cursor: pointer;
-      font-weight: 600;
-      font-size: 13px;
-      transition: all 0.3s;
-      font-family: 'Inter', sans-serif;
-    }
-    
-    .btn-logout:hover {
-      border-color: var(--accent-color);
-      color: var(--accent-color);
-      transform: scale(1.04);
-      box-shadow: 0 0 0 3px rgba(30, 215, 96, 0.1);
-    }
-    
-    .main-layout {
-      padding-top: 64px;
-      display: flex;
-      min-height: 100vh;
-      position: relative;
-      z-index: 1;
-    }
-    
-    .content-area {
-      flex: 1;
-      padding: 40px 48px 140px;
-      overflow-y: auto;
-      background: linear-gradient(180deg, rgba(26, 77, 46, 0.3) 0%, transparent 400px);
-    }
-    
-    .section {
-      margin-bottom: 56px;
-      animation: fadeIn 0.5s ease-out;
-    }
-    
-    @keyframes fadeIn {
-      from {
-        opacity: 0;
-        transform: translateY(20px);
-      }
-      to {
-        opacity: 1;
-        transform: translateY(0);
-      }
-    }
-    
-    .section-header {
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
-      margin-bottom: 28px;
-    }
-    
-    .section-title {
-      font-size: 28px;
-      font-weight: 800;
-      letter-spacing: -0.5px;
-      background: linear-gradient(135deg, #ffffff 0%, #b3b3b3 100%);
-      -webkit-background-clip: text;
-      -webkit-text-fill-color: transparent;
-      background-clip: text;
-    }
-    
-    .view-all {
-      color: var(--text-secondary);
-      text-decoration: none;
-      font-size: 14px;
-      font-weight: 700;
-      transition: all 0.2s;
-      padding: 6px 12px;
-      border-radius: 6px;
-    }
-    
-    .view-all:hover { 
-      color: var(--accent-color);
-      background: rgba(30, 215, 96, 0.1);
-    }
-    
-    .cards-grid {
-      display: grid;
-      grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
-      gap: 24px;
-    }
-    
-    .card {
-      background: var(--bg-card);
-      padding: 20px;
-      border-radius: 12px;
-      cursor: pointer;
-      transition: all 0.3s cubic-bezier(0.25, 0.46, 0.45, 0.94);
-      position: relative;
-      border: 1px solid rgba(255, 255, 255, 0.05);
-    }
-    
-    .card:hover {
-      background: var(--bg-card-hover);
-      transform: translateY(-6px);
-      border-color: rgba(30, 215, 96, 0.3);
-      box-shadow: 0 12px 32px rgba(0, 0, 0, 0.4), 0 0 0 1px rgba(30, 215, 96, 0.2);
-    }
-    
-    .card-image {
-    position: relative;
-    margin-bottom: 20px;
-    overflow: hidden;
-    border-radius: 8px;
-    aspect-ratio: 1;
-    box-shadow: 0 8px 24px rgba(0, 0, 0, 0.5);
-    display: block;
-    text-decoration: none;
-    cursor: pointer;
-  }
-    
-    .card-image img {
-      width: 100%;
-      height: 100%;
-      object-fit: cover;
-      transition: transform 0.5s cubic-bezier(0.25, 0.46, 0.45, 0.94);
-    }
-    
-    .card:hover .card-image img { 
-      transform: scale(1.08);
-    }
-    
-     .play-btn {
-    position: absolute;
-    right: 12px;
-    bottom: 12px;
-    width: 52px;
-    height: 52px;
-    background: var(--accent-color);
-    border: none;
-    border-radius: 50%;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    opacity: 0;
-    transform: translateY(12px);
-    transition: all 0.3s cubic-bezier(0.25, 0.46, 0.45, 0.94);
-    cursor: pointer;
-    box-shadow: 0 8px 16px rgba(30, 215, 96, 0.4);
-    z-index: 10; /* Keep play button on top */
-  }
-    
-    .play-btn i {
-      font-size: 18px;
-      color: #000;
-      margin-left: 2px;
-    }
-    
-    .card:hover .play-btn {
-      opacity: 1;
-      transform: translateY(0);
-    }
-    
-    .play-btn:hover {
-      background: var(--accent-hover);
-      transform: scale(1.08);
-      box-shadow: 0 8px 24px rgba(30, 215, 96, 0.6);
-    }
-    
-    .play-btn.playing {
-      opacity: 1;
-      transform: translateY(0);
-      animation: pulse 2s infinite;
-    }
-    
-    @keyframes pulse {
-      0%, 100% { box-shadow: 0 8px 16px rgba(30, 215, 96, 0.4); }
-      50% { box-shadow: 0 8px 32px rgba(30, 215, 96, 0.8); }
-    }
-    
-    .card-title {
-      font-size: 16px;
-      font-weight: 700;
-      margin-bottom: 6px;
-      white-space: nowrap;
-      overflow: hidden;
-      text-overflow: ellipsis;
-      color: var(--text-primary);
-    }
-    
-    .card-artist {
-      font-size: 14px;
-      color: var(--text-secondary);
-      white-space: nowrap;
-      overflow: hidden;
-      text-overflow: ellipsis;
-      font-weight: 500;
-    }
-    
-    .playlist-card {
-      background: var(--bg-card);
-      padding: 20px;
-      border-radius: 12px;
-      cursor: pointer;
-      transition: all 0.3s;
-      text-decoration: none;
-      color: inherit;
-      display: block;
-      border: 1px solid rgba(255, 255, 255, 0.05);
-    }
-    
-    .playlist-card:hover {
-      background: var(--bg-card-hover);
-      transform: translateY(-6px);
-      border-color: rgba(30, 215, 96, 0.3);
-      box-shadow: 0 12px 32px rgba(0, 0, 0, 0.4);
-    }
-    
-    .playlist-cover {
-      position: relative;
-      margin-bottom: 20px;
-      border-radius: 8px;
-      aspect-ratio: 1;
-      overflow: hidden;
-      box-shadow: 0 8px 24px rgba(0, 0, 0, 0.5);
-    }
-    
-    .playlist-cover-grid {
-      display: grid;
-      grid-template-columns: 1fr 1fr;
-      grid-template-rows: 1fr 1fr;
-      width: 100%;
-      height: 100%;
-      background: var(--bg-card-hover);
-    }
-    
-    .playlist-cover-item {
-      width: 100%;
-      height: 100%;
-      background-size: cover;
-      background-position: center;
-      background-color: var(--bg-card);
-    }
-    
-    .playlist-cover-empty {
-      width: 100%;
-      height: 100%;
-      background: linear-gradient(135deg, #1a1a1a 0%, #2a2a2a 100%);
-      display: flex;
-      align-items: center;
-      justify-content: center;
-    }
-    
-    .playlist-cover-empty i {
-      font-size: 48px;
-      color: var(--text-secondary);
-    }
-    
-    .playlist-name {
-      font-size: 16px;
-      font-weight: 700;
-      margin-bottom: 6px;
-      white-space: nowrap;
-      overflow: hidden;
-      text-overflow: ellipsis;
-    }
-    
-    .playlist-count {
-      font-size: 14px;
-      color: var(--text-secondary);
-      font-weight: 500;
-    }
-    
-    .context-menu {
-      position: fixed;
-      background: rgba(40, 40, 40, 0.98);
-      backdrop-filter: blur(20px);
-      border-radius: 8px;
-      padding: 8px;
-      min-width: 220px;
-      box-shadow: 0 16px 48px rgba(0, 0, 0, 0.9);
-      z-index: 1000;
-      display: none;
-      border: 1px solid rgba(255, 255, 255, 0.1);
-    }
-    
-    .context-menu.active { display: block; }
-    
-    .context-menu-item {
-      padding: 12px 16px;
-      cursor: pointer;
-      border-radius: 6px;
-      font-size: 14px;
-      font-weight: 500;
-      display: flex;
-      align-items: center;
-      gap: 12px;
-      color: var(--text-primary);
-      transition: background 0.2s;
-      position: relative;
-    }
-    
-    .context-menu-item:hover { 
-      background: rgba(62, 62, 62, 0.8);
-    }
-    
-    .context-menu-item i {
-      font-size: 16px;
-      width: 20px;
-      color: var(--text-secondary);
-    }
-    
-    .context-menu-divider {
-      height: 1px;
-      background: rgba(62, 62, 62, 0.8);
-      margin: 6px 0;
-    }
-    
-    .context-submenu {
-      position: absolute;
-      left: 100%;
-      top: 0;
-      background: rgba(40, 40, 40, 0.98);
-      backdrop-filter: blur(20px);
-      border-radius: 8px;
-      padding: 8px;
-      min-width: 200px;
-      box-shadow: 0 16px 48px rgba(0, 0, 0, 0.9);
-      display: none;
-      max-height: 300px;
-      overflow-y: auto;
-      border: 1px solid rgba(255, 255, 255, 0.1);
-    }
-    
-    .context-menu-item:hover .context-submenu { display: block; }
-    
-    .submenu-item {
-      padding: 10px 14px;
-      cursor: pointer;
-      border-radius: 6px;
-      font-size: 14px;
-      color: var(--text-primary);
-      transition: background 0.2s;
-    }
-    
-    .submenu-item:hover { background: rgba(62, 62, 62, 0.8); }
-    
-    .submenu-item.create-new {
-      color: var(--accent-color);
-      font-weight: 600;
-      border-bottom: 1px solid rgba(62, 62, 62, 0.8);
-      margin-bottom: 4px;
-    }
-    
-    .modal {
-      position: fixed;
-      top: 0;
-      left: 0;
-      right: 0;
-      bottom: 0;
-      background: rgba(0, 0, 0, 0.85);
-      backdrop-filter: blur(10px);
-      display: none;
-      align-items: center;
-      justify-content: center;
-      z-index: 2000;
-    }
-    
-    .modal.active { display: flex; }
-    
-    .modal-content {
-      background: var(--bg-card);
-      border-radius: 12px;
-      padding: 32px;
-      width: 90%;
-      max-width: 500px;
-      box-shadow: 0 20px 60px rgba(0, 0, 0, 0.9);
-      border: 1px solid rgba(255, 255, 255, 0.1);
-    }
-    
-    .modal-title {
-      font-size: 24px;
-      font-weight: 800;
-      margin-bottom: 24px;
-    }
-    
-    .form-group { margin-bottom: 20px; }
-    
-    .form-label {
-      display: block;
-      font-size: 14px;
-      font-weight: 600;
-      margin-bottom: 8px;
-    }
-    
-    .form-input {
-      width: 100%;
-      padding: 12px 16px;
-      background: var(--bg-secondary);
-      border: 1px solid var(--border-color);
-      border-radius: 8px;
-      color: var(--text-primary);
-      font-size: 14px;
-      font-family: 'Inter', sans-serif;
-      transition: all 0.2s;
-    }
-    
-    .form-input:focus {
-      outline: none;
-      border-color: var(--accent-color);
-      box-shadow: 0 0 0 3px rgba(30, 215, 96, 0.1);
-    }
-    
-    .form-textarea {
-      min-height: 100px;
-      resize: vertical;
-    }
-    
-    .modal-footer {
-      display: flex;
-      gap: 12px;
-      justify-content: flex-end;
-      margin-top: 24px;
-    }
-    
-    .btn {
-      padding: 12px 24px;
-      border-radius: 500px;
-      font-weight: 700;
-      font-size: 14px;
-      cursor: pointer;
-      border: none;
-      font-family: 'Inter', sans-serif;
-      transition: all 0.2s;
-    }
-    
-    .btn-primary {
-      background: var(--accent-color);
-      color: #000;
-    }
-    
-    .btn-primary:hover {
-      background: var(--accent-hover);
-      transform: scale(1.04);
-      box-shadow: 0 4px 12px rgba(30, 215, 96, 0.4);
-    }
-    
-    .btn-secondary {
-      background: transparent;
-      color: var(--text-primary);
-      border: 1px solid var(--text-secondary);
-    }
-    
-    .btn-secondary:hover { 
-      border-color: var(--text-primary);
-      background: rgba(255, 255, 255, 0.05);
-    }
-    
-    .music-player {
-      position: fixed;
-      bottom: 0;
-      left: 0;
-      right: 0;
-      background: rgba(24, 24, 24, 0.95);
-      backdrop-filter: blur(20px);
-      border-top: 1px solid rgba(42, 42, 42, 0.8);
-      padding: 16px 24px;
-      display: none;
-      z-index: 1000;
-      box-shadow: 0 -4px 12px rgba(0, 0, 0, 0.3);
-    }
-    
-    .music-player.active { display: block; }
-    
-    .player-wrapper {
-      display: flex;
-      align-items: center;
-      gap: 24px;
-      max-width: 1800px;
-      margin: 0 auto;
-    }
-    
-    .player-left {
-      display: flex;
-      align-items: center;
-      gap: 16px;
-      min-width: 280px;
-    }
-    
-    .player-thumb {
-      width: 64px;
-      height: 64px;
-      border-radius: 6px;
-      overflow: hidden;
-      background: var(--bg-card);
-      flex-shrink: 0;
-      box-shadow: 0 4px 12px rgba(0, 0, 0, 0.5);
-    }
-    
-    .player-thumb img {
-      width: 100%;
-      height: 100%;
-      object-fit: cover;
-    }
-    
-    .player-info {
-      flex: 1;
-      min-width: 0;
-    }
-    
-    .player-title {
-      font-size: 15px;
-      font-weight: 600;
-      white-space: nowrap;
-      overflow: hidden;
-      text-overflow: ellipsis;
-      margin-bottom: 4px;
-    }
-    
-    .player-artist {
-      font-size: 13px;
-      color: var(--text-secondary);
-      white-space: nowrap;
-      overflow: hidden;
-      text-overflow: ellipsis;
-    }
-    
-    .player-center {
-      flex: 1;
-      display: flex;
-      flex-direction: column;
-      align-items: center;
-      gap: 12px;
-      max-width: 800px;
-    }
-    
-    .player-buttons {
-      display: flex;
-      align-items: center;
-      gap: 20px;
-    }
-    
-    .control-btn {
-      background: none;
-      border: none;
-      color: var(--text-secondary);
-      cursor: pointer;
-      transition: all 0.2s;
-      font-size: 18px;
-      padding: 8px;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      border-radius: 50%;
-    }
-    
-    .control-btn:hover {
-      color: var(--text-primary);
-      transform: scale(1.08);
-    }
-    
-    .control-btn.active { color: var(--accent-color); }
-    
-    .control-btn.repeat-one::after {
-      content: '1';
-      position: absolute;
-      font-size: 9px;
-      font-weight: 900;
-    }
-    
-    .control-btn.play {
-      width: 40px;
-      height: 40px;
-      background: var(--text-primary);
-      border-radius: 50%;
-      color: #000;
-      font-size: 16px;
-    }
-    
-    .control-btn.play:hover { transform: scale(1.08); }
-    
-    .player-progress-wrapper {
-      width: 100%;
-      display: flex;
-      align-items: center;
-      gap: 12px;
-    }
-    
-    .time {
-      font-size: 12px;
-      color: var(--text-secondary);
-      min-width: 45px;
-      text-align: center;
-      font-weight: 500;
-    }
-    
-    .progress-bar {
-      flex: 1;
-      height: 4px;
-      background: #4d4d4d;
-      border-radius: 2px;
-      cursor: pointer;
-      position: relative;
-      transition: height 0.2s;
-    }
-    
-    .progress-bar:hover { height: 6px; }
-    
-    .progress-fill {
-      height: 100%;
-      background: var(--text-primary);
-      border-radius: 2px;
-      position: relative;
-    }
-    
-    .progress-fill::after {
-      content: '';
-      position: absolute;
-      right: 0;
-      top: 50%;
-      transform: translateY(-50%);
-      width: 12px;
-      height: 12px;
-      background: var(--text-primary);
-      border-radius: 50%;
-      opacity: 0;
-      transition: opacity 0.2s;
-    }
-    
-    .progress-bar:hover .progress-fill::after { opacity: 1; }
-    
-    .player-right {
-      display: flex;
-      align-items: center;
-      gap: 16px;
-      min-width: 200px;
-      justify-content: flex-end;
-    }
-    
-    .volume-control {
-      display: flex;
-      align-items: center;
-      gap: 10px;
-    }
-    
-    .volume-icon {
-      cursor: pointer;
-      font-size: 16px;
-      color: var(--text-secondary);
-      transition: color 0.2s;
-    }
-    
-    .volume-icon:hover { color: var(--text-primary); }
-    
-    .volume-slider {
-      width: 100px;
-      height: 4px;
-      -webkit-appearance: none;
-      appearance: none;
-      background: #4d4d4d;
-      border-radius: 2px;
-      cursor: pointer;
-    }
-    
-    .volume-slider::-webkit-slider-thumb {
-      -webkit-appearance: none;
-      appearance: none;
-      width: 12px;
-      height: 12px;
-      background: var(--text-primary);
-      border-radius: 50%;
-      cursor: pointer;
-      opacity: 0;
-      transition: opacity 0.2s;
-    }
-    
-    .volume-control:hover .volume-slider::-webkit-slider-thumb { opacity: 1; }
-    
-    .volume-slider::-moz-range-thumb {
-      width: 12px;
-      height: 12px;
-      background: var(--text-primary);
-      border-radius: 50%;
-      border: none;
-      cursor: pointer;
-    }
-    
-    .queue-toggle {
-      background: none;
-      border: none;
-      color: var(--text-secondary);
-      cursor: pointer;
-      font-size: 16px;
-      padding: 8px;
-      position: relative;
-      transition: color 0.2s;
-    }
-    
-    .queue-toggle:hover { color: var(--text-primary); }
-    
-    .queue-count {
-      position: absolute;
-      top: 2px;
-      right: 0;
-      background: var(--accent-color);
-      color: #000;
-      font-size: 10px;
-      font-weight: 900;
-      padding: 2px 5px;
-      border-radius: 10px;
-      min-width: 18px;
-      text-align: center;
-    }
-    
-    .queue-panel {
-      position: fixed;
-      right: -420px;
-      top: 64px;
-      bottom: 97px;
-      width: 420px;
-      background: var(--bg-secondary);
-      border-left: 1px solid var(--border-color);
-      transition: right 0.3s cubic-bezier(0.25, 0.46, 0.45, 0.94);
-      z-index: 99;
-      display: flex;
-      flex-direction: column;
-    }
-    
-    .queue-panel.active { right: 0; }
-    
-    .queue-header {
-      padding: 28px 24px;
-      border-bottom: 1px solid var(--border-color);
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
-    }
-    
-    .queue-title {
-      font-size: 22px;
-      font-weight: 800;
-    }
-    
-    .queue-clear {
-      padding: 8px 20px;
-      background: transparent;
-      color: var(--text-secondary);
-      border: 1px solid var(--text-secondary);
-      border-radius: 500px;
-      cursor: pointer;
-      font-size: 12px;
-      font-weight: 700;
-      font-family: 'Inter', sans-serif;
-    }
-    
-    .queue-clear:hover {
-      color: var(--text-primary);
-      border-color: var(--text-primary);
-    }
-    
-    .queue-list {
-      flex: 1;
-      overflow-y: auto;
-      padding: 16px;
-    }
-    
-    .queue-item {
-      display: flex;
-      align-items: center;
-      gap: 12px;
-      padding: 10px 12px;
-      border-radius: 6px;
-      cursor: pointer;
-      transition: background 0.2s;
-      position: relative;
-    }
-    
-    .queue-item:hover { background: var(--bg-card); }
-    
-    .queue-item.current::before {
-      content: '';
-      position: absolute;
-      left: 0;
-      top: 50%;
-      transform: translateY(-50%);
-      width: 3px;
-      height: 24px;
-      background: var(--accent-color);
-      border-radius: 0 2px 2px 0;
-    }
-    
-    .queue-item-thumb {
-      width: 52px;
-      height: 52px;
-      border-radius: 4px;
-      overflow: hidden;
-      background: var(--bg-card);
-      flex-shrink: 0;
-    }
-    
-    .queue-item-thumb img {
-      width: 100%;
-      height: 100%;
-      object-fit: cover;
-    }
-    
-    .queue-item-info {
-      flex: 1;
-      min-width: 0;
-    }
-    
-    .queue-item-title {
-      font-size: 14px;
-      font-weight: 600;
-      white-space: nowrap;
-      overflow: hidden;
-      text-overflow: ellipsis;
-    }
-    
-    .queue-item-artist {
-      font-size: 13px;
-      color: var(--text-secondary);
-      white-space: nowrap;
-      overflow: hidden;
-      text-overflow: ellipsis;
-    }
-    
-    .queue-item-remove {
-      background: none;
-      border: none;
-      color: var(--text-secondary);
-      cursor: pointer;
-      padding: 8px;
-      opacity: 0;
-      transition: all 0.2s;
-    }
-    
-    .queue-item:hover .queue-item-remove { opacity: 1; }
-    .queue-item-remove:hover { color: var(--text-primary); }
-    
-    .right-sidebar {
-      width: 0;
-      background: var(--bg-secondary);
-      border-left: 1px solid var(--border-color);
-      padding: 0;
-      position: relative;
-      transition: width 0.3s, padding 0.3s;
-      overflow: hidden;
-      flex-shrink: 0;
-    }
-    
-    .right-sidebar.active {
-      width: 380px;
-      padding: 28px 24px;
-    }
-    
-    .resize-handle {
-      position: absolute;
-      left: 0;
-      top: 0;
-      bottom: 0;
-      width: 8px;
-      cursor: col-resize;
-      background: transparent;
-      z-index: 100;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-    }
-    
-    .resize-handle::before {
-      content: '';
-      width: 2px;
-      height: 48px;
-      background: var(--border-color);
-      border-radius: 2px;
-      transition: all 0.2s;
-    }
-    
-    .resize-handle:hover::before {
-      background: var(--accent-color);
-      width: 3px;
-      height: 64px;
-    }
-    
-    .sidebar-toggle {
-      position: fixed;
-      right: 20px;
-      top: 50%;
-      transform: translateY(-50%);
-      background: var(--bg-card);
-      border: 1px solid var(--border-color);
-      border-radius: 8px;
-      padding: 12px 10px;
-      cursor: pointer;
-      z-index: 98;
-      transition: all 0.3s;
-      box-shadow: 0 4px 12px rgba(0, 0, 0, 0.5);
-    }
-    
-    .sidebar-toggle:hover {
-      background: var(--bg-card-hover);
-      border-color: var(--accent-color);
-      transform: translateY(-50%) scale(1.1);
-    }
-    
-    .sidebar-toggle i {
-      font-size: 18px;
-      color: var(--text-secondary);
-      transition: color 0.2s;
-    }
-    
-    .sidebar-toggle:hover i {
-      color: var(--accent-color);
-    }
-    
-    .sidebar-title {
-      font-size: 20px;
-      font-weight: 800;
-      margin-bottom: 24px;
-    }
-    
-    .now-playing-card {
-      background: var(--bg-card);
-      padding: 20px;
-      border-radius: 8px;
-    }
-    
-    .now-playing-image {
-      width: 100%;
-      aspect-ratio: 1;
-      border-radius: 6px;
-      overflow: hidden;
-      background: var(--bg-card-hover);
-      margin-bottom: 20px;
-      box-shadow: 0 12px 32px rgba(0, 0, 0, 0.5);
-    }
-    
-    .now-playing-image img {
-      width: 100%;
-      height: 100%;
-      object-fit: cover;
-    }
-    
-    .now-playing-title {
-      font-size: 18px;
-      font-weight: 700;
-      margin-bottom: 6px;
-    }
-    
-    .now-playing-artist {
-      font-size: 15px;
-      color: var(--text-secondary);
-    }
-    
-    .empty-state {
-      text-align: center;
-      padding: 100px 20px;
-    }
-    
-    .empty-state h3 {
-      font-size: 28px;
-      font-weight: 800;
-      margin-bottom: 16px;
-    }
-    
-    .empty-state p {
-      color: var(--text-secondary);
-      font-size: 16px;
-    }
-    
-    .user-avatar {
-  cursor: pointer;
-}
+  <link rel="stylesheet" href="/public/css/profile.css">
 
-.user-avatar:hover {
-  transform: scale(1.1);
-  box-shadow: 0 4px 12px rgba(30, 215, 96, 0.5);
-}
-
-
-.track-artist a,
-.comment-author {
-  cursor: pointer;
-  transition: color 0.2s ease;
-}
-
-.track-artist a:hover {
-  color: var(--text-primary) !important;
-  text-decoration: underline;
-}
-
-.search-section-title {
-  padding: 12px 16px 8px;
-  font-size: 12px;
-  font-weight: 700;
-  text-transform: uppercase;
-  letter-spacing: 0.5px;
-  color: var(--text-secondary);
-  background: var(--bg-card);
-  border-top: 1px solid var(--border-color);
-}
-
-.search-section-title:first-child {
-  border-top: none;
-}
-
-/* Artist item styling */
-.search-artist-item {
-  background: rgba(255, 255, 255, 0.02);
-}
-
-.search-artist-item:hover {
-  background: rgba(255, 255, 255, 0.06);
-}
-
-/* Artist avatar trong search */
-.search-dropdown-cover.artist-avatar {
-  border-radius: 50%;
-  overflow: hidden;
-}
-
-.avatar-placeholder {
-  width: 100%;
-  height: 100%;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  background: linear-gradient(135deg, #667eea, #764ba2);
-  color: white;
-  font-weight: 700;
-  font-size: 20px;
-}
-.upload-btn {
-  height: 40px;
-  padding: 0 18px;
-  background: linear-gradient(135deg, #ff5500, #ff8800);
-  border: none;
-  border-radius: 20px;
-  color: white;
-  font-size: 14px;
-  font-weight: 600;
-  cursor: pointer;
-  transition: all 0.3s ease;
-  display: flex;
-  align-items: center;
-  gap: 8px;
-  font-family: 'Inter', sans-serif;
-  box-shadow: 0 2px 8px rgba(255, 85, 0, 0.3);
-}
-
-.upload-btn:hover {
-  background: linear-gradient(135deg, #ff6600, #ff9900);
-  transform: translateY(-2px);
-  box-shadow: 0 4px 12px rgba(255, 85, 0, 0.4);
-}
-
-.upload-btn:active {
-  transform: translateY(0);
-}
-
-.upload-btn i {
-  font-size: 16px;
-}
-
-/* Badge cho artist */
-.search-dropdown-badge {
-  width: 32px;
-  height: 32px;
-  border-radius: 50%;
-  background: rgba(255, 255, 255, 0.1);
-  color: var(--text-secondary);
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  font-size: 14px;
-  flex-shrink: 0;
-}
-
-/* Loading animation */
-@keyframes spin {
-  from { transform: rotate(0deg); }
-  to { transform: rotate(360deg); }
-}
-
-.search-dropdown-loading i {
-  animation: spin 1s linear infinite;
-}
-
-.comment-author:hover {
-  color: var(--accent-color) !important;
-}
-    ::-webkit-scrollbar { width: 12px; }
-    ::-webkit-scrollbar-track { background: transparent; }
-    ::-webkit-scrollbar-thumb { background: #4d4d4d; border-radius: 6px; }
-    ::-webkit-scrollbar-thumb:hover { background: #5d5d5d; }
-    
-    @media (max-width: 1200px) {
-      .right-sidebar { display: none !important; }
-      .resize-handle { display: none; }
-    }
-    
-    @media (max-width: 768px) {
-      .header { padding: 16px 24px; }
-      .nav-menu { display: none; }
-      .search-container { display: none; }
-      .content-area { padding: 32px 24px 140px; }
-      .cards-grid { grid-template-columns: repeat(2, 1fr); }
-      .player-right { display: none; }
-    }
-  </style>
 </head>
 <body>
   <div class="context-menu" id="contextMenu">
@@ -1362,6 +69,7 @@
       <button class="search-clear" id="searchClear">
         <i class="fa-solid fa-xmark"></i>
       </button>
+       <div id="searchDropdown" class="search-dropdown"></div>
     </div>
     <div class="header-actions">
   <button class="upload-btn" onclick="window.location.href='/upload'">
@@ -1369,9 +77,11 @@
     <span class="btn-text">Upload</span>
   </button>
 
-  <div class="user-avatar" onclick="window.location.href='/users/<%= user.username %>'">
-    <%= user.username.charAt(0).toUpperCase() %>
-  </div>
+  <a href="/users/<%= user.username %>" class="user-avatar-link">
+    <div class="user-avatar">
+      <%= user.username.charAt(0).toUpperCase() %>
+    </div>
+  </a>
 </div>
       <form method="post" action="/logout" style="display:inline">
         <button type="submit" class="btn-logout">Đăng xuất</button>
@@ -1566,170 +276,86 @@
   <audio id="audioPlayer"></audio>
   
   <script src="/public/js/player.js"></script>
+  
   <script>
-  // ============================================
-  // SIDEBAR MANAGEMENT
-  // ============================================
-  
   function toggleSidebar() {
-    const sidebar = document.getElementById('rightSidebar');
-    const toggle = document.getElementById('sidebarToggle');
-    const icon = toggle?.querySelector('i');
-    
-    if (!sidebar) return;
-    
-    sidebar.classList.toggle('active');
-    
-    if (icon) {
-      if (sidebar.classList.contains('active')) {
-        icon.className = 'fa-solid fa-chevron-right';
-      } else {
-        icon.className = 'fa-solid fa-chevron-left';
-      }
+  const sidebar = document.getElementById('rightSidebar');
+  const toggle = document.getElementById('sidebarToggle');
+  const icon = toggle?.querySelector('i');
+  
+  if (!sidebar) return;
+  
+  sidebar.classList.toggle('active');
+  
+  if (icon) {
+    if (sidebar.classList.contains('active')) {
+      icon.className = 'fa-solid fa-chevron-right';
+    } else {
+      icon.className = 'fa-solid fa-chevron-left';
     }
   }
-  
-  function initResizeSidebar() {
-    const resizeHandle = document.getElementById('resizeHandle');
-    const rightSidebar = document.getElementById('rightSidebar');
-    
-    if (!resizeHandle || !rightSidebar) return;
-    
-    let isResizing = false;
+}
 
-    resizeHandle.addEventListener('mousedown', (e) => {
-      isResizing = true;
-      document.body.style.cursor = 'col-resize';
-      document.body.style.userSelect = 'none';
-      rightSidebar.style.transition = 'none';
-    });
+function initResizeSidebar() {
+  const resizeHandle = document.getElementById('resizeHandle');
+  const rightSidebar = document.getElementById('rightSidebar');
+  
+  if (!resizeHandle || !rightSidebar) return;
+  
+  let isResizing = false;
 
-    document.addEventListener('mousemove', (e) => {
-      if (!isResizing) return;
-      const newWidth = Math.min(Math.max(window.innerWidth - e.clientX, 320), 600);
-      rightSidebar.style.width = newWidth + 'px';
-    });
+  resizeHandle.addEventListener('mousedown', (e) => {
+    isResizing = true;
+    document.body.style.cursor = 'col-resize';
+    document.body.style.userSelect = 'none';
+    rightSidebar.style.transition = 'none';
+  });
 
-    document.addEventListener('mouseup', () => {
-      if (isResizing) {
-        isResizing = false;
-        document.body.style.cursor = '';
-        document.body.style.userSelect = '';
-        rightSidebar.style.transition = '';
-      }
-    });
-  }
-  
-  // ============================================
-  // SEARCH FUNCTIONALITY
-  // ============================================
-  
-  function initSearch() {
-    const searchInput = document.getElementById('searchInput');
-    const searchClear = document.getElementById('searchClear');
-    
-    if (!searchInput) return;
-    
-    let searchTimeout;
-    
-    // Input handler
-    searchInput.addEventListener('input', async (e) => {
-      clearTimeout(searchTimeout);
-      const query = e.target.value.trim();
-      
-      // Show/hide clear button
-      if (searchClear) {
-        searchClear.classList.toggle('active', query.length > 0);
-      }
-      
-      if (!query) {
-        clearSearch();
-        return;
-      }
-      
-      searchTimeout = setTimeout(async () => {
-        await performSearch(query);
-      }, 300);
-    });
-    
-    // Clear button handler
-    if (searchClear) {
-      searchClear.addEventListener('click', () => {
-        searchInput.value = '';
-        searchClear.classList.remove('active');
-        clearSearch();
-        searchInput.focus();
-      });
+  document.addEventListener('mousemove', (e) => {
+    if (!isResizing) return;
+    const newWidth = Math.min(Math.max(window.innerWidth - e.clientX, 320), 600);
+    rightSidebar.style.width = newWidth + 'px';
+  });
+
+  document.addEventListener('mouseup', () => {
+    if (isResizing) {
+      isResizing = false;
+      document.body.style.cursor = '';
+      document.body.style.userSelect = '';
+      rightSidebar.style.transition = '';
     }
-    
-    // ESC key handler
-    searchInput.addEventListener('keydown', (e) => {
-      if (e.key === 'Escape') {
-        searchInput.value = '';
-        if (searchClear) searchClear.classList.remove('active');
-        clearSearch();
-        searchInput.blur();
-      }
-    });
-  }
-  
-  function clearSearch() {
-    // Remove search results section
-    const existingResults = document.getElementById('search-results-section');
-    if (existingResults) {
-      existingResults.remove();
-    }
-    
-    // Show all original sections
-    const originalSections = [
-      'recently-played-section',
-      'recommendations-section',
-      'playlists-section'
-    ];
-    
-    originalSections.forEach(id => {
-      const section = document.getElementById(id);
-      if (section) {
-        section.style.display = 'block';
-      }
-    });
-  }
-  
-  async function performSearch(query) {
-    try {
-      const res = await fetch(`/api/search?q=${encodeURIComponent(query)}`);
-      const data = await res.json();
-      
-      if (data.success && data.tracks) {
-        displaySearchResults(data.tracks, query);
-      }
-    } catch (err) {
-      console.error('Search error:', err);
-    }
-  }
-  
-  function initImprovedSearch() {
-  console.log('🔍 Initializing improved search with artists...');
-  
+  });
+}
+
+function initSearch() {
   const searchInput = document.getElementById('searchInput');
   const searchClear = document.getElementById('searchClear');
-  const searchDropdown = document.getElementById('searchDropdown');
+  let searchDropdown = document.getElementById('searchDropdown');
   
-  if (!searchInput || !searchClear || !searchDropdown) {
-    console.error('❌ Search elements not found!');
+  if (!searchInput || !searchClear) {
     return;
+  }
+  
+  if (!searchDropdown) {
+    searchDropdown = document.createElement('div');
+    searchDropdown.id = 'searchDropdown';
+    searchDropdown.className = 'search-dropdown';
+    
+    const searchContainer = document.querySelector('.search-container');
+    if (searchContainer) {
+      searchContainer.appendChild(searchDropdown);
+    } else {
+      return;
+    }
   }
   
   let searchTimeout;
   
-  // Input handler
   searchInput.addEventListener('input', async (e) => {
     const query = e.target.value.trim();
     
-    // Show/hide clear button
     searchClear.classList.toggle('active', query.length > 0);
     
-    // Clear previous timeout
     clearTimeout(searchTimeout);
     
     if (query.length < 2) {
@@ -1737,11 +363,9 @@
       return;
     }
     
-    // Show loading
-    searchDropdown.innerHTML = '<div class="search-dropdown-loading"><i class="fa-solid fa-spinner"></i> Đang tìm kiếm...</div>';
+    searchDropdown.innerHTML = '<div class="search-dropdown-loading"><i class="fa-solid fa-spinner fa-spin"></i> Đang tìm kiếm...</div>';
     searchDropdown.classList.add('active');
     
-    // Debounce search
     searchTimeout = setTimeout(async () => {
       try {
         const url = `/api/search?q=${encodeURIComponent(query)}`;
@@ -1749,18 +373,16 @@
         const data = await res.json();
         
         if (data.success) {
-          displayImprovedSearchResults(data.users || [], data.tracks || [], query);
+          displaySearchResults(data.users || [], data.tracks || [], query);
         } else {
           searchDropdown.innerHTML = '<div class="search-dropdown-empty">Không tìm thấy kết quả</div>';
         }
       } catch (err) {
-        console.error('❌ Search error:', err);
         searchDropdown.innerHTML = '<div class="search-dropdown-empty">Lỗi khi tìm kiếm</div>';
       }
     }, 300);
   });
   
-  // Clear search
   searchClear.addEventListener('click', () => {
     searchInput.value = '';
     searchClear.classList.remove('active');
@@ -1768,23 +390,32 @@
     searchInput.focus();
   });
   
-  // Close dropdown when clicking outside
   document.addEventListener('click', (e) => {
-    if (!e.target.closest('.search-bar')) {
+    if (!e.target.closest('.search-container')) {
       searchDropdown.classList.remove('active');
     }
   });
   
-  // Focus shows dropdown if has results
   searchInput.addEventListener('focus', () => {
     if (searchInput.value.trim().length >= 2 && searchDropdown.children.length > 0) {
       searchDropdown.classList.add('active');
     }
   });
+  
+  searchInput.addEventListener('keydown', (e) => {
+    if (e.key === 'Escape') {
+      searchInput.value = '';
+      searchClear.classList.remove('active');
+      searchDropdown.classList.remove('active');
+      searchInput.blur();
+    }
+  });
 }
 
-function displayImprovedSearchResults(users, tracks, query) {
+function displaySearchResults(users, tracks, query) {
   const searchDropdown = document.getElementById('searchDropdown');
+  
+  if (!searchDropdown) return;
   
   if (users.length === 0 && tracks.length === 0) {
     searchDropdown.innerHTML = '<div class="search-dropdown-empty">Không tìm thấy kết quả</div>';
@@ -1793,7 +424,6 @@ function displayImprovedSearchResults(users, tracks, query) {
   
   let html = '';
   
-  // Hiển thị Artists/Users trước
   if (users.length > 0) {
     html += '<div class="search-section-title">Nghệ sĩ</div>';
     
@@ -1808,7 +438,7 @@ function displayImprovedSearchResults(users, tracks, query) {
           </div>
           <div class="search-dropdown-info">
             <div class="search-dropdown-title">${user.name || user.username}</div>
-            <div class="search-dropdown-artist">@${user.username} • ${user.trackCount || 0} bài hát • ${user.followersCount || 0} followers</div>
+            <div class="search-dropdown-artist">@${user.username} • ${user.trackCount || 0} bài hát</div>
           </div>
           <div class="search-dropdown-badge">
             <i class="fa-solid fa-user"></i>
@@ -1818,21 +448,24 @@ function displayImprovedSearchResults(users, tracks, query) {
     });
   }
   
-  // Hiển thị Tracks
   if (tracks.length > 0) {
     html += '<div class="search-section-title">Bài hát</div>';
     
     tracks.slice(0, 8).forEach(track => {
+      const trackTitle = track.title.replace(/'/g, "\\'").replace(/"/g, '&quot;');
+      const trackArtist = (track.artist || 'Unknown Artist').replace(/'/g, "\\'").replace(/"/g, '&quot;');
+      const trackCover = track.coverUrl || 'https://images.unsplash.com/photo-1514525253161-7a46d19cd819?w=100';
+      
       html += `
         <a href="/track/${track._id}" class="search-dropdown-item">
           <div class="search-dropdown-cover">
-            <img src="${track.coverUrl || 'https://images.unsplash.com/photo-1514525253161-7a46d19cd819?w=100'}" alt="${track.title}">
+            <img src="${trackCover}" alt="${track.title}">
           </div>
           <div class="search-dropdown-info">
             <div class="search-dropdown-title">${track.title}</div>
             <div class="search-dropdown-artist">${track.artist || 'Unknown Artist'}</div>
           </div>
-          <div class="search-dropdown-play" onclick="event.preventDefault(); event.stopPropagation(); playTrackFromSearch('${track._id}', '${track.title.replace(/'/g, "\\'")}', '${(track.artist || 'Unknown').replace(/'/g, "\\'")}', '${track.coverUrl || ''}', '${track.audioUrl}')">
+          <div class="search-dropdown-play" onclick="event.preventDefault(); event.stopPropagation(); playTrackFromSearch('${track._id}', '${trackTitle}', '${trackArtist}', '${trackCover}', '${track.audioUrl}')">
             <i class="fa-solid fa-play"></i>
           </div>
         </a>
@@ -1843,97 +476,33 @@ function displayImprovedSearchResults(users, tracks, query) {
   searchDropdown.innerHTML = html;
 }
 
-// Play track from search dropdown
+window.playTrack = function(id, title, artist, cover, audioUrl) {
+  if (window.player) {
+    window.player.playTrack({ id, title, artist, cover, audioUrl });
+  }
+};
+
 window.playTrackFromSearch = function(id, title, artist, cover, audioUrl) {
   if (window.player) {
     window.player.playTrack({ id, title, artist, cover, audioUrl });
   }
 };
 
-// Initialize when DOM is ready
-if (document.readyState === 'loading') {
-  document.addEventListener('DOMContentLoaded', initImprovedSearch);
-} else {
-  initImprovedSearch();
-}
+async function loadPlaylists() {
+  try {
+    const res = await fetch('/api/user/playlists');
+    const data = await res.json();
     
-    // Remove existing search results
-    const existingResults = document.getElementById('search-results-section');
-    if (existingResults) {
-      existingResults.remove();
-    }
+    if (!data.success || !data.playlists) return;
     
-    // Create search results section
-    const contentArea = document.querySelector('.content-area');
-    const resultsSection = document.createElement('section');
-    resultsSection.id = 'search-results-section';
-    resultsSection.className = 'section';
-    
-    resultsSection.innerHTML = `
-      <div class="section-header">
-        <h2 class="section-title">Kết quả tìm kiếm cho "${query}"</h2>
-        <span class="view-all">${tracks.length} bài hát</span>
-      </div>
-      ${tracks.length > 0 ? `
-        <div class="cards-grid">
-          ${tracks.map(track => `
-            <div class="card" data-track-id="${track._id}">
-              <div class="card-image">
-                <img src="${track.coverUrl || 'https://images.unsplash.com/photo-1470225620780-dba8ba36b745?w=400'}" alt="${track.title}">
-                <button class="play-btn" onclick="window.playTrack('${track._id}', '${track.title.replace(/'/g, "\\'")}', '${(track.artist || 'Unknown').replace(/'/g, "\\'")}', '${track.coverUrl || ''}', '${track.audioUrl}')">
-                  <i class="fa-solid fa-play"></i>
-                </button>
-              </div>
-              <div class="card-info">
-                <div class="card-title">${track.title}</div>
-                <div class="card-artist">${track.artist || 'Unknown Artist'}</div>
-              </div>
-            </div>
-          `).join('')}
-        </div>
-      ` : `
-        <div class="empty-state">
-          <h3>Không tìm thấy kết quả</h3>
-          <p>Thử tìm kiếm với từ khóa khác</p>
-        </div>
-      `}
-    `;
-    
-    contentArea.insertBefore(resultsSection, contentArea.firstChild);
-  }
-  
-  // ============================================
-  // CONTEXT MENU & PLAYLIST MANAGEMENT
-  // ============================================
-  
-  window.contextTrack = null;
-  let userPlaylists = [];
-  
-  async function loadPlaylists() {
-    try {
-      const res = await fetch('/api/playlists');
-      const data = await res.json();
-      if (data.success) {
-        userPlaylists = data.playlists;
-        updatePlaylistSubmenu();
-      }
-    } catch (err) {
-      console.error('Error loading playlists:', err);
-    }
-  }
-  
-  function updatePlaylistSubmenu() {
     const submenu = document.getElementById('playlistSubmenu');
     if (!submenu) return;
     
     const createNew = submenu.querySelector('.create-new');
-    
     submenu.innerHTML = '';
-    if (createNew) {
-      submenu.appendChild(createNew);
-    }
+    if (createNew) submenu.appendChild(createNew);
     
-    userPlaylists.forEach(playlist => {
+    data.playlists.forEach(playlist => {
       const item = document.createElement('div');
       item.className = 'submenu-item';
       item.textContent = playlist.name;
@@ -1943,263 +512,237 @@ if (document.readyState === 'loading') {
       };
       submenu.appendChild(item);
     });
+  } catch (err) {
+    console.error('Load playlists error:', err);
+  }
+}
+
+function showContextMenu(e, id, title, artist, cover, audioUrl) {
+  e.preventDefault();
+  e.stopPropagation();
+  
+  const menu = document.getElementById('contextMenu');
+  if (!menu) return;
+  
+  window.contextTrack = { 
+    id: id, 
+    title: title, 
+    artist: artist, 
+    cover: cover, 
+    audioUrl: audioUrl 
+  };
+  
+  menu.style.left = e.pageX + 'px';
+  menu.style.top = e.pageY + 'px';
+  menu.classList.add('active');
+  
+  loadPlaylists();
+  
+  setTimeout(() => {
+    document.addEventListener('click', closeContextMenu);
+  }, 10);
+}
+
+function closeContextMenu() {
+  const menu = document.getElementById('contextMenu');
+  if (!menu) return;
+  
+  menu.classList.remove('active');
+  document.removeEventListener('click', closeContextMenu);
+}
+
+function addToQueue(track) {
+  if (!track) {
+    showNotification('Lỗi: Không có bài hát');
+    return;
   }
   
-  function showContextMenu(e, id, title, artist, cover, audioUrl) {
-    e.preventDefault();
-    e.stopPropagation();
-    
-    const menu = document.getElementById('contextMenu');
-    if (!menu) return;
-    
-    window.contextTrack = { 
-      id: id, 
-      title: title, 
-      artist: artist, 
-      cover: cover, 
-      audioUrl: audioUrl 
-    };
-    
-    menu.style.left = e.pageX + 'px';
-    menu.style.top = e.pageY + 'px';
-    menu.classList.add('active');
-    
-    loadPlaylists();
-    
-    setTimeout(() => {
-      document.addEventListener('click', closeContextMenu);
-    }, 10);
+  if (!window.player) {
+    showNotification('Lỗi: Player chưa sẵn sàng');
+    return;
   }
   
-  function closeContextMenu() {
-    const menu = document.getElementById('contextMenu');
-    if (!menu) return;
-    
-    menu.classList.remove('active');
-    document.removeEventListener('click', closeContextMenu);
+  const success = window.player.addToQueue(track);
+  
+  if (success) {
+    showNotification('Đã thêm vào hàng đợi');
+  } else {
+    showNotification('Bài hát đã có trong hàng đợi');
   }
   
-  // ============================================
-  // QUEUE MANAGEMENT
-  // ============================================
-  
-  function addToQueue(track) {
-    if (!track) {
-      console.error('No track provided');
-      showNotification('Lỗi: Không có bài hát');
-      return;
-    }
-    
-    if (!window.player) {
-      console.error('Player not initialized');
-      showNotification('Lỗi: Player chưa sẵn sàng');
-      return;
-    }
-    
-    const success = window.player.addToQueue(track);
-    
-    if (success) {
-      showNotification('Đã thêm vào hàng đợi');
-    } else {
-      showNotification('Bài hát đã có trong hàng đợi');
-    }
-    
-    closeContextMenu();
+  closeContextMenu();
+}
+
+async function addToPlaylist(playlistId) {
+  if (!window.contextTrack) {
+    showNotification('Lỗi: Không có bài hát được chọn');
+    return;
   }
   
-  // ============================================
-  // PLAYLIST OPERATIONS
-  // ============================================
-  
-  async function addToPlaylist(playlistId) {
-    if (!window.contextTrack) {
-      showNotification('Lỗi: Không có bài hát được chọn');
-      return;
-    }
-    
-    try {
-      const res = await fetch(`/playlists/${playlistId}/add-track`, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ trackId: window.contextTrack.id })
-      });
-      
-      const data = await res.json();
-      
-      if (data.success) {
-        showNotification(data.message || 'Đã thêm vào playlist');
-      } else {
-        showNotification(data.message || 'Thêm thất bại');
-      }
-    } catch (err) {
-      console.error('Error adding to playlist:', err);
-      showNotification('Có lỗi xảy ra');
-    }
-  }
-  
-  function openCreatePlaylistModal() {
-    closeContextMenu();
-    const modal = document.getElementById('createPlaylistModal');
-    const input = document.getElementById('playlistName');
-    
-    if (modal) modal.classList.add('active');
-    if (input) {
-      input.focus();
-      input.value = '';
-    }
-    
-    const descInput = document.getElementById('playlistDescription');
-    if (descInput) descInput.value = '';
-  }
-  
-  function closeCreatePlaylistModal() {
-    const modal = document.getElementById('createPlaylistModal');
-    const nameInput = document.getElementById('playlistName');
-    const descInput = document.getElementById('playlistDescription');
-    
-    if (modal) modal.classList.remove('active');
-    if (nameInput) nameInput.value = '';
-    if (descInput) descInput.value = '';
-  }
-  
-  async function createPlaylist() {
-    const nameInput = document.getElementById('playlistName');
-    const descInput = document.getElementById('playlistDescription');
-    
-    const name = nameInput?.value.trim();
-    const description = descInput?.value.trim();
-    
-    if (!name) {
-      showNotification('Vui lòng nhập tên playlist');
-      return;
-    }
-    
-    try {
-      const res = await fetch('/playlists/create', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ name, description: description || '' })
-      });
-      
-      const data = await res.json();
-      
-      if (data.success) {
-        showNotification('Tạo playlist thành công');
-        closeCreatePlaylistModal();
-        
-        if (window.contextTrack) {
-          await addToPlaylist(data.playlist._id);
-        }
-        
-        setTimeout(() => location.reload(), 1000);
-      } else {
-        showNotification(data.message || 'Tạo playlist thất bại');
-      }
-    } catch (err) {
-      console.error('Error creating playlist:', err);
-      showNotification('Có lỗi xảy ra');
-    }
-  }
-  
-  // ============================================
-  // NOTIFICATION SYSTEM
-  // ============================================
-  
-  function showNotification(message) {
-    const existingNotifs = document.querySelectorAll('.custom-notification');
-    existingNotifs.forEach(n => n.remove());
-    
-    const notif = document.createElement('div');
-    notif.className = 'custom-notification';
-    notif.style.cssText = `
-      position: fixed;
-      bottom: 120px;
-      left: 50%;
-      transform: translateX(-50%);
-      background: rgba(40, 40, 40, 0.98);
-      backdrop-filter: blur(20px);
-      color: #fff;
-      padding: 16px 28px;
-      border-radius: 8px;
-      font-size: 14px;
-      font-weight: 600;
-      z-index: 10000;
-      box-shadow: 0 8px 24px rgba(0,0,0,0.8);
-      border: 1px solid rgba(30, 215, 96, 0.3);
-      animation: slideUp 0.3s ease-out;
-    `;
-    notif.textContent = message;
-    document.body.appendChild(notif);
-    
-    setTimeout(() => {
-      notif.style.transition = 'opacity 0.3s, transform 0.3s';
-      notif.style.opacity = '0';
-      notif.style.transform = 'translateX(-50%) translateY(10px)';
-      setTimeout(() => notif.remove(), 300);
-    }, 2500);
-  }
-  
-  if (!document.getElementById('notif-animations')) {
-    const style = document.createElement('style');
-    style.id = 'notif-animations';
-    style.textContent = `
-      @keyframes slideUp {
-        from {
-          opacity: 0;
-          transform: translateX(-50%) translateY(20px);
-        }
-        to {
-          opacity: 1;
-          transform: translateX(-50%) translateY(0);
-        }
-      }
-    `;
-    document.head.appendChild(style);
-  }
-  
-  // ============================================
-  // EVENT LISTENERS
-  // ============================================
-  
-  function initEventListeners() {
-    document.addEventListener('keydown', (e) => {
-      if (e.key === 'Escape') {
-        closeCreatePlaylistModal();
-      }
+  try {
+    const res = await fetch(`/playlists/${playlistId}/add-track`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ trackId: window.contextTrack.id })
     });
     
-    const playlistNameInput = document.getElementById('playlistName');
-    if (playlistNameInput) {
-      playlistNameInput.addEventListener('keypress', (e) => {
-        if (e.key === 'Enter') {
-          createPlaylist();
-        }
-      });
+    const data = await res.json();
+    
+    if (data.success) {
+      showNotification(data.message || 'Đã thêm vào playlist');
+    } else {
+      showNotification(data.message || 'Thêm thất bại');
     }
+  } catch (err) {
+    showNotification('Có lỗi xảy ra');
+  }
+}
+
+function openCreatePlaylistModal() {
+  closeContextMenu();
+  const modal = document.getElementById('createPlaylistModal');
+  const input = document.getElementById('playlistName');
+  
+  if (modal) modal.classList.add('active');
+  if (input) {
+    input.focus();
+    input.value = '';
   }
   
-  // ============================================
-  // INITIALIZATION
-  // ============================================
+  const descInput = document.getElementById('playlistDescription');
+  if (descInput) descInput.value = '';
+}
+
+function closeCreatePlaylistModal() {
+  const modal = document.getElementById('createPlaylistModal');
+  const nameInput = document.getElementById('playlistName');
+  const descInput = document.getElementById('playlistDescription');
   
-  console.log('Profile script loaded');
+  if (modal) modal.classList.remove('active');
+  if (nameInput) nameInput.value = '';
+  if (descInput) descInput.value = '';
+}
+
+async function createPlaylist() {
+  const nameInput = document.getElementById('playlistName');
+  const descInput = document.getElementById('playlistDescription');
   
-  window.addEventListener('DOMContentLoaded', () => {
-    console.log('DOM loaded, initializing...');
+  const name = nameInput?.value.trim();
+  const description = descInput?.value.trim();
+  
+  if (!name) {
+    showNotification('Vui lòng nhập tên playlist');
+    return;
+  }
+  
+  try {
+    const res = await fetch('/playlists/create', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ name, description: description || '' })
+    });
     
-    initResizeSidebar();
-    initSearch();
-    initEventListeners();
+    const data = await res.json();
     
-    const checkPlayer = setInterval(() => {
-      if (window.player) {
-        console.log('Player ready:', window.player);
-        clearInterval(checkPlayer);
+    if (data.success) {
+      showNotification('Tạo playlist thành công');
+      closeCreatePlaylistModal();
+      
+      if (window.contextTrack) {
+        await addToPlaylist(data.playlist._id);
       }
-    }, 100);
-    
-    setTimeout(() => clearInterval(checkPlayer), 5000);
+      
+      setTimeout(() => location.reload(), 1000);
+    } else {
+      showNotification(data.message || 'Tạo playlist thất bại');
+    }
+  } catch (err) {
+    showNotification('Có lỗi xảy ra');
+  }
+}
+
+function showNotification(message) {
+  const existingNotifs = document.querySelectorAll('.custom-notification');
+  existingNotifs.forEach(n => n.remove());
+  
+  const notif = document.createElement('div');
+  notif.className = 'custom-notification';
+  notif.style.cssText = `
+    position: fixed;
+    bottom: 120px;
+    left: 50%;
+    transform: translateX(-50%);
+    background: rgba(40, 40, 40, 0.98);
+    backdrop-filter: blur(20px);
+    color: #fff;
+    padding: 16px 28px;
+    border-radius: 8px;
+    font-size: 14px;
+    font-weight: 600;
+    z-index: 10000;
+    box-shadow: 0 8px 24px rgba(0,0,0,0.8);
+    border: 1px solid rgba(30, 215, 96, 0.3);
+    animation: slideUp 0.3s ease-out;
+  `;
+  notif.textContent = message;
+  document.body.appendChild(notif);
+  
+  setTimeout(() => {
+    notif.style.transition = 'opacity 0.3s, transform 0.3s';
+    notif.style.opacity = '0';
+    notif.style.transform = 'translateX(-50%) translateY(10px)';
+    setTimeout(() => notif.remove(), 300);
+  }, 2500);
+}
+
+if (!document.getElementById('notif-animations')) {
+  const style = document.createElement('style');
+  style.id = 'notif-animations';
+  style.textContent = `
+    @keyframes slideUp {
+      from {
+        opacity: 0;
+        transform: translateX(-50%) translateY(20px);
+      }
+      to {
+        opacity: 1;
+        transform: translateX(-50%) translateY(0);
+      }
+    }
+  `;
+  document.head.appendChild(style);
+}
+
+function initEventListeners() {
+  document.addEventListener('keydown', (e) => {
+    if (e.key === 'Escape') {
+      closeCreatePlaylistModal();
+    }
   });
+  
+  const playlistNameInput = document.getElementById('playlistName');
+  if (playlistNameInput) {
+    playlistNameInput.addEventListener('keypress', (e) => {
+      if (e.key === 'Enter') {
+        createPlaylist();
+      }
+    });
+  }
+}
+
+window.addEventListener('DOMContentLoaded', () => {
+  initResizeSidebar();
+  initSearch();
+  initEventListeners();
+  
+  const checkPlayer = setInterval(() => {
+    if (window.player) {
+      clearInterval(checkPlayer);
+    }
+  }, 100);
+  
+  setTimeout(() => clearInterval(checkPlayer), 5000);
+});
 </script>
 </body>
 </html>

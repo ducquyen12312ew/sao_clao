@@ -7,1391 +7,7 @@
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
-  <style>
-    * { margin: 0; padding: 0; box-sizing: border-box; }
-    
-    :root {
-      --bg-primary: #000000;
-      --bg-secondary: #0a0a0a;
-      --bg-card: #121212;
-      --text-primary: #ffffff;
-      --text-secondary: #b3b3b3;
-      --border-color: #282828;
-    }
-    
-    body {
-      font-family: 'Inter', sans-serif;
-      background: var(--bg-primary);
-      color: var(--text-primary);
-      line-height: 1.6;
-      padding-bottom: 100px;
-    }
-    
-    .header {
-      position: fixed;
-      top: 0;
-      left: 0;
-      right: 0;
-      height: 64px;
-      background: rgba(0, 0, 0, 0.95);
-      backdrop-filter: blur(20px);
-      border-bottom: 1px solid var(--border-color);
-      padding: 0 32px;
-      display: flex;
-      align-items: center;
-      justify-content: space-between;
-      gap: 24px;
-      z-index: 100;
-    }
-
-    .header-left {
-      display: flex;
-      align-items: center;
-      gap: 24px;
-    }
-
-    .header-center {
-      flex: 1;
-      max-width: 600px;
-      position: relative;
-    }
-
-    .header-right {
-      display: flex;
-      align-items: center;
-      gap: 20px;
-    }
-    
-    .back-btn {
-      width: 40px;
-      height: 40px;
-      border-radius: 50%;
-      background: rgba(255, 255, 255, 0.1);
-      border: none;
-      color: var(--text-primary);
-      cursor: pointer;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      transition: all 0.3s;
-    }
-    
-    .back-btn:hover {
-      background: rgba(255, 255, 255, 0.15);
-      transform: scale(1.05);
-    }
-
-    .logo {
-      font-size: 20px;
-      font-weight: 900;
-      letter-spacing: -0.5px;
-      text-decoration: none;
-      color: var(--text-primary);
-      transition: opacity 0.2s;
-    }
-
-    .logo:hover {
-      opacity: 0.8;
-    }
-
-    .nav-menu {
-      display: flex;
-      gap: 24px;
-      align-items: center;
-    }
-
-    .nav-link {
-      color: var(--text-secondary);
-      text-decoration: none;
-      font-size: 14px;
-      font-weight: 600;
-      transition: color 0.2s;
-      white-space: nowrap;
-    }
-
-    .nav-link:hover,
-    .nav-link.active {
-      color: var(--text-primary);
-    }
-
-    .track-artist a:hover {
-  color: var(--text-primary) !important;
-}
-
-    .search-bar {
-      width: 100%;
-      height: 40px;
-      background: rgba(255, 255, 255, 0.08);
-      border: 1px solid var(--border-color);
-      border-radius: 20px;
-      display: flex;
-      align-items: center;
-      padding: 0 16px;
-      gap: 12px;
-      transition: all 0.2s;
-      position: relative;
-    }
-
-    .search-bar:focus-within {
-      background: rgba(255, 255, 255, 0.12);
-      border-color: var(--text-primary);
-      border-radius: 20px 20px 0 0;
-    }
-
-    .search-bar i {
-      color: var(--text-secondary);
-      font-size: 14px;
-      flex-shrink: 0;
-    }
-
-    .search-input {
-      flex: 1;
-      background: none;
-      border: none;
-      outline: none;
-      color: var(--text-primary);
-      font-size: 14px;
-      font-family: 'Inter', sans-serif;
-      width: 100%;
-    }
-
-    .search-input::placeholder {
-      color: var(--text-secondary);
-    }
-
-    .search-clear {
-      background: none;
-      border: none;
-      color: var(--text-secondary);
-      cursor: pointer;
-      padding: 4px;
-      border-radius: 50%;
-      display: none;
-      transition: all 0.2s;
-      flex-shrink: 0;
-    }
-
-    .search-clear:hover {
-      color: var(--text-primary);
-      background: rgba(255, 255, 255, 0.1);
-    }
-
-    .search-clear.active {
-      display: block;
-    }
-
-    .search-dropdown {
-      position: absolute;
-      top: calc(100% + 1px);
-      left: 0;
-      right: 0;
-      background: var(--bg-card);
-      border: 1px solid var(--border-color);
-      border-top: none;
-      border-radius: 0 0 12px 12px;
-      max-height: 400px;
-      overflow-y: auto;
-      box-shadow: 0 8px 24px rgba(0, 0, 0, 0.6);
-      display: none;
-      z-index: 1001;
-    }
-
-    .search-dropdown.active {
-      display: block !important;
-    }
-
-    .search-dropdown::-webkit-scrollbar {
-      width: 6px;
-    }
-
-    .search-dropdown::-webkit-scrollbar-track {
-      background: transparent;
-    }
-
-    .search-dropdown::-webkit-scrollbar-thumb {
-      background: var(--border-color);
-      border-radius: 3px;
-    }
-
-    .search-dropdown-item {
-      display: flex;
-      align-items: center;
-      gap: 12px;
-      padding: 12px 16px;
-      cursor: pointer;
-      transition: all 0.2s;
-      text-decoration: none;
-      color: inherit;
-    }
-
-    .search-dropdown-item:hover {
-      background: rgba(255, 255, 255, 0.08);
-    }
-
-    .search-dropdown-cover {
-      width: 48px;
-      height: 48px;
-      border-radius: 6px;
-      overflow: hidden;
-      background: var(--bg-secondary);
-      flex-shrink: 0;
-    }
-
-    .search-dropdown-cover img {
-      width: 100%;
-      height: 100%;
-      object-fit: cover;
-    }
-
-    .search-dropdown-info {
-      flex: 1;
-      min-width: 0;
-    }
-
-    .search-dropdown-title {
-      font-size: 14px;
-      font-weight: 600;
-      white-space: nowrap;
-      overflow: hidden;
-      text-overflow: ellipsis;
-      margin-bottom: 4px;
-    }
-
-    .search-dropdown-artist {
-      font-size: 12px;
-      color: var(--text-secondary);
-      white-space: nowrap;
-      overflow: hidden;
-      text-overflow: ellipsis;
-    }
-
-    .search-dropdown-play {
-      width: 32px;
-      height: 32px;
-      border-radius: 50%;
-      background: var(--text-primary);
-      color: #000;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      opacity: 0;
-      transition: all 0.2s;
-      flex-shrink: 0;
-    }
-
-    .search-dropdown-item:hover .search-dropdown-play {
-      opacity: 1;
-    }
-
-    .search-dropdown-empty {
-      padding: 32px 16px;
-      text-align: center;
-      color: var(--text-secondary);
-      font-size: 14px;
-    }
-
-    .search-dropdown-loading {
-      padding: 20px;
-      text-align: center;
-      color: var(--text-secondary);
-      font-size: 14px;
-    }
-
-    .search-dropdown-loading i {
-      animation: spin 1s linear infinite;
-    }
-
-    @keyframes spin {
-      from { transform: rotate(0deg); }
-      to { transform: rotate(360deg); }
-    }
-
-    .header-actions {
-      display: flex;
-      align-items: center;
-      gap: 12px;
-    }
-
-    .header-btn {
-      height: 36px;
-      padding: 0 16px;
-      background: rgba(255, 255, 255, 0.1);
-      border: 1px solid var(--border-color);
-      border-radius: 18px;
-      color: var(--text-primary);
-      font-size: 13px;
-      font-weight: 600;
-      cursor: pointer;
-      transition: all 0.2s;
-      display: flex;
-      align-items: center;
-      gap: 8px;
-      font-family: 'Inter', sans-serif;
-    }
-
-    .header-btn:hover {
-      background: rgba(255, 255, 255, 0.15);
-      transform: translateY(-1px);
-    }
-
-    .header-btn.primary {
-      background: var(--text-primary);
-      color: #000;
-      border-color: var(--text-primary);
-    }
-
-    .header-btn.primary:hover {
-      background: var(--text-secondary);
-    }
-
-    .user-menu {
-      position: relative;
-    }
-
-    .user-avatar {
-      width: 36px;
-      height: 36px;
-      border-radius: 50%;
-      background: linear-gradient(135deg, #667eea, #764ba2);
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      color: white;
-      font-weight: 700;
-      font-size: 14px;
-      cursor: pointer;
-      transition: all 0.2s;
-      border: 2px solid transparent;
-    }
-
-    .user-avatar:hover {
-      border-color: var(--text-primary);
-      transform: scale(1.05);
-    }
-
-    .user-dropdown {
-      position: absolute;
-      top: calc(100% + 8px);
-      right: 0;
-      background: var(--bg-card);
-      border: 1px solid var(--border-color);
-      border-radius: 8px;
-      min-width: 200px;
-      box-shadow: 0 8px 24px rgba(0, 0, 0, 0.6);
-      opacity: 0;
-      visibility: hidden;
-      transform: translateY(-10px);
-      transition: all 0.2s;
-      z-index: 1000;
-    }
-
-    .user-menu:hover .user-dropdown {
-      opacity: 1;
-      visibility: visible;
-      transform: translateY(0);
-    }
-
-    .dropdown-header {
-      padding: 16px;
-      border-bottom: 1px solid var(--border-color);
-    }
-
-    .dropdown-user-name {
-      font-weight: 700;
-      font-size: 14px;
-      margin-bottom: 4px;
-    }
-
-    .dropdown-user-email {
-      font-size: 12px;
-      color: var(--text-secondary);
-    }
-
-    .dropdown-menu {
-      padding: 8px 0;
-    }
-
-    .dropdown-item {
-      display: flex;
-      align-items: center;
-      gap: 12px;
-      padding: 12px 16px;
-      color: var(--text-primary);
-      text-decoration: none;
-      font-size: 14px;
-      transition: all 0.2s;
-      cursor: pointer;
-    }
-
-    .dropdown-item:hover {
-      background: rgba(255, 255, 255, 0.05);
-    }
-
-    .dropdown-item i {
-      width: 16px;
-      color: var(--text-secondary);
-    }
-
-    .dropdown-divider {
-      height: 1px;
-      background: var(--border-color);
-      margin: 8px 0;
-    }
-    
-    .header-title {
-      font-size: 18px;
-      font-weight: 700;
-    }
-    
-    .container {
-      max-width: 1800px;
-      margin: 0 auto;
-      padding: 100px 40px 40px;
-      display: grid;
-      grid-template-columns: 1fr 350px;
-      gap: 40px;
-    }
-
-    .main-content {
-      min-width: 0;
-    }
-
-    .sidebar {
-      position: sticky;
-      top: 84px;
-      height: fit-content;
-      max-height: calc(100vh - 200px);
-      overflow-y: auto;
-    }
-
-    .comment-author:hover {
-  color: var(--accent-color) !important;
-}
-    .sidebar::-webkit-scrollbar {
-      width: 6px;
-    }
-
-    .user-avatar {
-  cursor: pointer;
-}
-
-.user-avatar:hover {
-  transform: scale(1.1);
-  box-shadow: 0 4px 12px rgba(30, 215, 96, 0.5);
-}
-
-/* Clickable Artist/Username Links */
-.track-artist a,
-.comment-author {
-  cursor: pointer;
-  transition: color 0.2s ease;
-}
-
-.track-artist a:hover {
-  color: var(--text-primary) !important;
-  text-decoration: underline;
-}
-
-.comment-author:hover {
-  color: var(--accent-color) !important;
-}
-    .sidebar::-webkit-scrollbar-track {
-      background: transparent;
-    }
-
-    .sidebar::-webkit-scrollbar-thumb {
-      background: var(--border-color);
-      border-radius: 3px;
-    }
-
-    .sidebar::-webkit-scrollbar-thumb:hover {
-      background: var(--text-secondary);
-    }
-    
-    .hero-section {
-      display: grid;
-      grid-template-columns: 1fr 400px;
-      gap: 48px;
-      margin-bottom: 48px;
-      background: rgba(255, 255, 255, 0.02);
-      padding: 40px;
-      border-radius: 16px;
-      border: 1px solid var(--border-color);
-    }
-    
-    .player-section {
-      display: flex;
-      flex-direction: column;
-      gap: 24px;
-    }
-    
-    .track-header {
-      display: flex;
-      align-items: center;
-      gap: 16px;
-    }
-    
-    .play-button {
-      width: 64px;
-      height: 64px;
-      border-radius: 50%;
-      background: var(--text-primary);
-      border: none;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      cursor: pointer;
-      transition: all 0.3s;
-      box-shadow: 0 8px 24px rgba(255, 255, 255, 0.2);
-    }
-    
-    .play-button:hover {
-      transform: scale(1.08);
-      box-shadow: 0 12px 32px rgba(255, 255, 255, 0.3);
-    }
-    
-    .play-button i {
-      font-size: 24px;
-      color: #000;
-      margin-left: 3px;
-    }
-    
-    .play-button.playing i {
-      margin-left: 0;
-    }
-    
-    .track-info h1 {
-      font-size: 32px;
-      font-weight: 800;
-      margin-bottom: 8px;
-    }
-    
-    .track-artist {
-      font-size: 18px;
-      color: var(--text-secondary);
-      font-weight: 500;
-      margin-bottom: 12px;
-    }
-    
-    .track-genres {
-      display: flex;
-      gap: 8px;
-      flex-wrap: wrap;
-    }
-    
-    .genre-tag {
-      background: rgba(255, 255, 255, 0.1);
-      color: var(--text-primary);
-      padding: 4px 12px;
-      border-radius: 12px;
-      font-size: 12px;
-      font-weight: 600;
-      border: 1px solid rgba(255, 255, 255, 0.2);
-    }
-    
-    .track-meta {
-      display: flex;
-      align-items: center;
-      gap: 16px;
-      color: var(--text-secondary);
-      font-size: 14px;
-    }
-    
-    .meta-item {
-      display: flex;
-      align-items: center;
-      gap: 8px;
-    }
-    
-    .waveform-container {
-      position: relative;
-      height: 120px;
-      background: rgba(255, 255, 255, 0.05);
-      border-radius: 12px;
-      overflow: hidden;
-      border: 1px solid var(--border-color);
-      cursor: pointer;
-      transition: all 0.2s;
-    }
-
-    .waveform-container:hover {
-      background: rgba(255, 255, 255, 0.08);
-    }
-    
-    .waveform {
-      width: 100%;
-      height: 100%;
-      display: flex;
-      align-items: center;
-      justify-content: flex-start;
-      gap: 2px;
-      padding: 0 8px;
-      position: relative;
-    }
-    
-    .waveform-bar {
-      flex: 1;
-      min-width: 2px;
-      background: rgba(255, 255, 255, 0.25);
-      border-radius: 2px;
-      transition: background 0.15s ease;
-      position: relative;
-    }
-    
-    .waveform-bar.played {
-      background: var(--text-primary);
-    }
-
-    .waveform-bar:hover {
-      background: rgba(255, 255, 255, 0.5);
-    }
-
-    .waveform-progress {
-      position: absolute;
-      left: 0;
-      top: 0;
-      bottom: 0;
-      background: linear-gradient(to right, rgba(255, 255, 255, 0.15), transparent);
-      pointer-events: none;
-      transition: width 0.1s linear;
-    }
-
-    .waveform-progress::after {
-      content: '';
-      position: absolute;
-      right: 0;
-      top: 0;
-      bottom: 0;
-      width: 2px;
-      background: var(--text-primary);
-      box-shadow: 0 0 8px rgba(255, 255, 255, 0.5);
-    }
-    
-    .time-display {
-      display: flex;
-      justify-content: space-between;
-      color: var(--text-secondary);
-      font-size: 12px;
-      font-weight: 600;
-      margin-top: 12px;
-    }
-    
-    .action-buttons {
-      display: flex;
-      gap: 16px;
-      flex-wrap: wrap;
-    }
-    
-    .action-btn {
-      padding: 12px 24px;
-      border-radius: 500px;
-      border: 1px solid var(--border-color);
-      background: transparent;
-      color: var(--text-secondary);
-      cursor: pointer;
-      display: flex;
-      align-items: center;
-      gap: 8px;
-      font-size: 14px;
-      font-weight: 600;
-      transition: all 0.3s;
-      font-family: 'Inter', sans-serif;
-    }
-    
-    .action-btn:hover {
-      border-color: var(--text-primary);
-      color: var(--text-primary);
-      transform: translateY(-2px);
-    }
-    
-    .action-btn.liked {
-      color: #ff4444;
-      border-color: #ff4444;
-    }
-    
-    .cover-section {
-      position: relative;
-    }
-    
-    .cover-image {
-      width: 100%;
-      aspect-ratio: 1;
-      border-radius: 12px;
-      overflow: hidden;
-      box-shadow: 0 16px 48px rgba(0, 0, 0, 0.6);
-      border: 1px solid var(--border-color);
-    }
-    
-    .cover-image img {
-      width: 100%;
-      height: 100%;
-      object-fit: cover;
-    }
-    
-    .stats {
-      display: flex;
-      justify-content: space-around;
-      margin-top: 24px;
-      padding: 20px;
-      background: rgba(255, 255, 255, 0.05);
-      border-radius: 12px;
-      border: 1px solid var(--border-color);
-    }
-    
-    .stat-item {
-      text-align: center;
-    }
-    
-    .stat-value {
-      font-size: 24px;
-      font-weight: 800;
-      color: var(--text-primary);
-      display: block;
-    }
-    
-    .stat-label {
-      font-size: 13px;
-      color: var(--text-secondary);
-      font-weight: 500;
-    }
-    
-    .comments-section {
-      background: var(--bg-card);
-      border-radius: 16px;
-      padding: 32px;
-      border: 1px solid var(--border-color);
-    }
-    
-    .comments-header {
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
-      margin-bottom: 32px;
-    }
-    
-    .comments-title {
-      font-size: 24px;
-      font-weight: 800;
-    }
-    
-    .comment-input-section {
-      display: flex;
-      gap: 16px;
-      margin-bottom: 32px;
-      padding-bottom: 32px;
-      border-bottom: 1px solid var(--border-color);
-    }
-    
-    .user-avatar {
-      width: 48px;
-      height: 48px;
-      border-radius: 50%;
-      background: linear-gradient(135deg, #ffffff, #b3b3b3);
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      font-weight: 700;
-      color: #000;
-      flex-shrink: 0;
-    }
-    
-    .comment-input-wrapper {
-      flex: 1;
-      display: flex;
-      gap: 12px;
-    }
-    
-    .comment-input {
-      flex: 1;
-      background: rgba(255, 255, 255, 0.05);
-      border: 1px solid var(--border-color);
-      border-radius: 500px;
-      padding: 12px 24px;
-      color: var(--text-primary);
-      font-size: 14px;
-      font-family: 'Inter', sans-serif;
-      transition: all 0.3s;
-    }
-    
-    .comment-input:focus {
-      outline: none;
-      border-color: var(--text-primary);
-      background: rgba(255, 255, 255, 0.08);
-    }
-    
-    .comment-submit {
-      padding: 12px 32px;
-      background: var(--text-primary);
-      border: none;
-      border-radius: 500px;
-      color: #000;
-      font-weight: 700;
-      cursor: pointer;
-      transition: all 0.3s;
-      font-family: 'Inter', sans-serif;
-    }
-    
-    .comment-submit:hover {
-      transform: scale(1.05);
-      box-shadow: 0 4px 12px rgba(255, 255, 255, 0.3);
-    }
-    
-    .comments-list {
-      display: flex;
-      flex-direction: column;
-      gap: 24px;
-    }
-    
-    .comment {
-      display: flex;
-      gap: 16px;
-    }
-    
-    .comment-avatar {
-      width: 40px;
-      height: 40px;
-      border-radius: 50%;
-      background: linear-gradient(135deg, #667eea, #764ba2);
-      flex-shrink: 0;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      color: #fff;
-      font-weight: 700;
-    }
-    
-    .comment-content {
-      flex: 1;
-    }
-    
-    .comment-header {
-      display: flex;
-      align-items: center;
-      gap: 12px;
-      margin-bottom: 8px;
-    }
-    
-    .comment-author {
-      font-weight: 700;
-      font-size: 14px;
-    }
-    
-    .comment-time {
-      font-size: 13px;
-      color: var(--text-secondary);
-    }
-    
-    .comment-text {
-      font-size: 14px;
-      color: var(--text-secondary);
-      line-height: 1.6;
-      margin-bottom: 12px;
-    }
-    
-    .comment-actions {
-      display: flex;
-      gap: 20px;
-    }
-    
-    .comment-action {
-      background: none;
-      border: none;
-      color: var(--text-secondary);
-      cursor: pointer;
-      font-size: 13px;
-      font-weight: 600;
-      display: flex;
-      align-items: center;
-      gap: 6px;
-      transition: all 0.2s;
-      font-family: 'Inter', sans-serif;
-    }
-    
-    .comment-action:hover {
-      color: var(--text-primary);
-    }
-    
-    .empty-comments {
-      text-align: center;
-      padding: 60px 20px;
-      color: var(--text-secondary);
-    }
-
-    /* SIDEBAR STYLES */
-    .sidebar-section {
-      background: var(--bg-card);
-      border-radius: 12px;
-      padding: 24px;
-      border: 1px solid var(--border-color);
-      margin-bottom: 24px;
-    }
-
-    .sidebar-header {
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
-      margin-bottom: 20px;
-    }
-
-    .sidebar-title {
-      font-size: 16px;
-      font-weight: 800;
-      text-transform: uppercase;
-      letter-spacing: 0.5px;
-    }
-
-    .view-all {
-      color: var(--text-secondary);
-      text-decoration: none;
-      font-size: 13px;
-      font-weight: 600;
-      transition: color 0.2s;
-    }
-
-    .view-all:hover {
-      color: var(--text-primary);
-    }
-
-    .related-track {
-      display: flex;
-      gap: 12px;
-      padding: 12px;
-      border-radius: 8px;
-      transition: all 0.2s;
-      cursor: pointer;
-      margin-bottom: 8px;
-    }
-
-    .related-track:hover {
-      background: rgba(255, 255, 255, 0.05);
-    }
-
-    .related-track-cover {
-      width: 56px;
-      height: 56px;
-      border-radius: 6px;
-      overflow: hidden;
-      flex-shrink: 0;
-      position: relative;
-      background: var(--bg-secondary);
-    }
-
-    .related-track-cover img {
-      width: 100%;
-      height: 100%;
-      object-fit: cover;
-    }
-
-    .related-track-play {
-      position: absolute;
-      inset: 0;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      background: rgba(0, 0, 0, 0.6);
-      opacity: 0;
-      transition: opacity 0.2s;
-    }
-
-    .related-track:hover .related-track-play {
-      opacity: 1;
-    }
-
-    .related-track-play i {
-      color: white;
-      font-size: 20px;
-    }
-
-    .related-track-info {
-      flex: 1;
-      min-width: 0;
-    }
-
-    .related-track-title {
-      font-size: 14px;
-      font-weight: 600;
-      white-space: nowrap;
-      overflow: hidden;
-      text-overflow: ellipsis;
-      margin-bottom: 4px;
-    }
-
-    .related-track-artist {
-      font-size: 12px;
-      color: var(--text-secondary);
-      white-space: nowrap;
-      overflow: hidden;
-      text-overflow: ellipsis;
-      margin-bottom: 6px;
-    }
-
-    .related-track-stats {
-      display: flex;
-      gap: 12px;
-      font-size: 11px;
-      color: var(--text-secondary);
-    }
-
-    .related-track-stat {
-      display: flex;
-      align-items: center;
-      gap: 4px;
-    }
-
-    .playlist-item {
-      display: flex;
-      gap: 12px;
-      padding: 12px;
-      border-radius: 8px;
-      transition: all 0.2s;
-      cursor: pointer;
-      margin-bottom: 8px;
-      text-decoration: none;
-      color: inherit;
-    }
-
-    .playlist-item:hover {
-      background: rgba(255, 255, 255, 0.05);
-    }
-
-    .playlist-cover {
-      width: 56px;
-      height: 56px;
-      border-radius: 6px;
-      overflow: hidden;
-      flex-shrink: 0;
-      background: var(--bg-secondary);
-    }
-
-    .playlist-cover img {
-      width: 100%;
-      height: 100%;
-      object-fit: cover;
-    }
-
-    .playlist-info {
-      flex: 1;
-      min-width: 0;
-    }
-
-    .playlist-name {
-      font-size: 14px;
-      font-weight: 600;
-      white-space: nowrap;
-      overflow: hidden;
-      text-overflow: ellipsis;
-      margin-bottom: 4px;
-    }
-
-    .playlist-author {
-      font-size: 12px;
-      color: var(--text-secondary);
-      white-space: nowrap;
-      overflow: hidden;
-      text-overflow: ellipsis;
-    }
-
-    /* MUSIC PLAYER - Fixed Bottom */
-    .music-player {
-      position: fixed;
-      bottom: 0;
-      left: 0;
-      right: 0;
-      background: rgba(18, 18, 18, 0.98);
-      backdrop-filter: blur(20px);
-      border-top: 1px solid var(--border-color);
-      padding: 16px 24px;
-      display: none;
-      z-index: 1000;
-      box-shadow: 0 -4px 12px rgba(0, 0, 0, 0.5);
-    }
-    
-    .music-player.active { display: block; }
-    
-    .player-wrapper {
-      display: flex;
-      align-items: center;
-      gap: 24px;
-      max-width: 1800px;
-      margin: 0 auto;
-    }
-    
-    .player-left {
-      display: flex;
-      align-items: center;
-      gap: 16px;
-      min-width: 280px;
-    }
-    
-    .player-thumb {
-      width: 56px;
-      height: 56px;
-      border-radius: 6px;
-      overflow: hidden;
-      background: var(--bg-card);
-      flex-shrink: 0;
-      box-shadow: 0 4px 12px rgba(0, 0, 0, 0.5);
-    }
-    
-    .player-thumb img {
-      width: 100%;
-      height: 100%;
-      object-fit: cover;
-    }
-    
-    .player-info {
-      flex: 1;
-      min-width: 0;
-    }
-    
-    .player-title {
-      font-size: 14px;
-      font-weight: 600;
-      white-space: nowrap;
-      overflow: hidden;
-      text-overflow: ellipsis;
-      margin-bottom: 4px;
-    }
-    
-    .player-artist {
-      font-size: 12px;
-      color: var(--text-secondary);
-      white-space: nowrap;
-      overflow: hidden;
-      text-overflow: ellipsis;
-    }
-    
-    .player-center {
-      flex: 1;
-      display: flex;
-      flex-direction: column;
-      align-items: center;
-      gap: 12px;
-      max-width: 800px;
-    }
-    
-    .player-buttons {
-      display: flex;
-      align-items: center;
-      gap: 20px;
-    }
-    
-    .control-btn {
-      background: none;
-      border: none;
-      color: var(--text-secondary);
-      cursor: pointer;
-      transition: all 0.2s;
-      font-size: 18px;
-      padding: 8px;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      border-radius: 50%;
-    }
-    
-    .control-btn:hover {
-      color: var(--text-primary);
-      transform: scale(1.08);
-    }
-    
-    .control-btn.active { color: var(--text-primary); }
-    
-    .control-btn.repeat-one::after {
-      content: '1';
-      position: absolute;
-      font-size: 9px;
-      font-weight: 900;
-    }
-    
-    .control-btn.play {
-      width: 40px;
-      height: 40px;
-      background: var(--text-primary);
-      border-radius: 50%;
-      color: #000;
-      font-size: 16px;
-    }
-    
-    .control-btn.play:hover {
-      transform: scale(1.08);
-    }
-    
-    .player-progress-wrapper {
-      width: 100%;
-      display: flex;
-      align-items: center;
-      gap: 12px;
-    }
-    
-    .time {
-      font-size: 12px;
-      color: var(--text-secondary);
-      min-width: 45px;
-      text-align: center;
-      font-weight: 500;
-    }
-    
-    .progress-bar {
-      flex: 1;
-      height: 4px;
-      background: #4d4d4d;
-      border-radius: 2px;
-      cursor: pointer;
-      position: relative;
-      transition: height 0.2s;
-    }
-    
-    .progress-bar:hover { height: 6px; }
-    
-    .progress-fill {
-      height: 100%;
-      background: var(--text-primary);
-      border-radius: 2px;
-      position: relative;
-    }
-    
-    .progress-fill::after {
-      content: '';
-      position: absolute;
-      right: 0;
-      top: 50%;
-      transform: translateY(-50%);
-      width: 12px;
-      height: 12px;
-      background: var(--text-primary);
-      border-radius: 50%;
-      opacity: 0;
-      transition: opacity 0.2s;
-    }
-    
-    .progress-bar:hover .progress-fill::after { opacity: 1; }
-    
-    .player-right {
-      display: flex;
-      align-items: center;
-      gap: 16px;
-      min-width: 200px;
-      justify-content: flex-end;
-    }
-    
-    .volume-control {
-      display: flex;
-      align-items: center;
-      gap: 10px;
-    }
-    
-    .volume-icon {
-      cursor: pointer;
-      font-size: 16px;
-      color: var(--text-secondary);
-      transition: color 0.2s;
-    }
-    
-    .volume-icon:hover { color: var(--text-primary); }
-    
-    .volume-slider {
-      width: 100px;
-      height: 4px;
-      -webkit-appearance: none;
-      appearance: none;
-      background: #4d4d4d;
-      border-radius: 2px;
-      cursor: pointer;
-    }
-    
-    .volume-slider::-webkit-slider-thumb {
-      -webkit-appearance: none;
-      appearance: none;
-      width: 12px;
-      height: 12px;
-      background: var(--text-primary);
-      border-radius: 50%;
-      cursor: pointer;
-      opacity: 0;
-      transition: opacity 0.2s;
-    }
-    
-    .volume-control:hover .volume-slider::-webkit-slider-thumb { opacity: 1; }
-    
-    .queue-toggle {
-      background: none;
-      border: none;
-      color: var(--text-secondary);
-      cursor: pointer;
-      font-size: 16px;
-      padding: 8px;
-      position: relative;
-      transition: color 0.2s;
-    }
-    
-    .queue-toggle:hover { color: var(--text-primary); }
-    
-    .queue-count {
-      position: absolute;
-      top: 0;
-      right: 0;
-      background: var(--text-primary);
-      color: #000;
-      font-size: 10px;
-      font-weight: 700;
-      padding: 2px 5px;
-      border-radius: 10px;
-      min-width: 16px;
-      text-align: center;
-    }
-    
-    @media (max-width: 968px) {
-      .header {
-        padding: 0 16px;
-      }
-
-      .header-center {
-        display: none;
-      }
-
-      .nav-menu {
-        display: none;
-      }
-
-      .header-actions {
-        gap: 8px;
-      }
-
-      .header-btn span {
-        display: none;
-      }
-
-      .container {
-        grid-template-columns: 1fr;
-        padding: 100px 20px 40px;
-      }
-
-      .sidebar {
-        position: relative;
-        top: 0;
-        max-height: none;
-      }
-
-      .hero-section {
-        grid-template-columns: 1fr;
-      }
-      
-      .cover-section {
-        order: -1;
-      }
-
-      .player-wrapper {
-        flex-wrap: wrap;
-      }
-
-      .player-right {
-        order: 3;
-        width: 100%;
-        justify-content: center;
-      }
-    }
-  </style>
+  <link rel="stylesheet" href="/public/css/track.css">
 </head>
 <body>
   <header class="header">
@@ -1726,483 +342,332 @@
   <script src="/public/js/player.js"></script>
   <script>
     const trackData = {
-      id: '<%= track._id %>',
-      title: '<%= track.title %>',
-      artist: '<%= track.artist || "Unknown" %>',
-      cover: '<%= track.coverUrl || "" %>',
-      audioUrl: '<%= track.audioUrl %>'
-    };
+  id: document.querySelector('[data-track-id]')?.dataset.trackId || '',
+  title: '',
+  artist: '',
+  cover: '',
+  audioUrl: ''
+};
 
-    // SEARCH FUNCTION - Define first before using
-    function initSearch() {
-      console.log('🔍 Initializing search...'); // DEBUG
-      
-      const searchInput = document.getElementById('searchInput');
-      const searchClear = document.getElementById('searchClear');
-      const searchDropdown = document.getElementById('searchDropdown');
-      
-      console.log('Search elements:', { searchInput, searchClear, searchDropdown }); // DEBUG
-      
-      if (!searchInput || !searchClear || !searchDropdown) {
-        console.error('❌ Search elements not found!');
-        return;
-      }
-      
-      let searchTimeout;
-      
-      // Input handler - live search
-      searchInput.addEventListener('input', async (e) => {
-        const query = e.target.value.trim();
-        
-        console.log('📝 Search input:', query); // DEBUG
-        
-        // Show/hide clear button
-        searchClear.classList.toggle('active', query.length > 0);
-        
-        // Clear previous timeout
-        clearTimeout(searchTimeout);
-        
-        if (query.length < 2) {
-          searchDropdown.classList.remove('active');
-          console.log('⚠️ Query too short, hiding dropdown');
-          return;
-        }
-        
-        // Show loading
-        searchDropdown.innerHTML = '<div class="search-dropdown-loading"><i class="fa-solid fa-spinner"></i> Searching...</div>';
-        searchDropdown.classList.add('active');
-        console.log('✅ Dropdown shown with loading state');
-        
-        // Debounce search
-        searchTimeout = setTimeout(async () => {
-          try {
-            const url = `/api/search?q=${encodeURIComponent(query)}`;
-            console.log('🌐 Fetching:', url); // DEBUG
-            
-            const res = await fetch(url);
-            console.log('📥 Response status:', res.status); // DEBUG
-            
-            const data = await res.json();
-            console.log('📦 Response data:', data); // DEBUG
-            
-            if (data.success && data.tracks && data.tracks.length > 0) {
-              displaySearchResults(data.tracks);
-            } else {
-              searchDropdown.innerHTML = '<div class="search-dropdown-empty">No results found</div>';
-              console.log('⚠️ No results');
-            }
-          } catch (err) {
-            console.error('❌ Search error:', err);
-            searchDropdown.innerHTML = '<div class="search-dropdown-empty">Error searching. Please try again.</div>';
-          }
-        }, 300);
-      });
-
-      // Clear search
-      searchClear.addEventListener('click', () => {
-        console.log('🗑️ Clearing search');
-        searchInput.value = '';
-        searchClear.classList.remove('active');
-        searchDropdown.classList.remove('active');
-        searchInput.focus();
-      });
-
-      // Close dropdown when clicking outside
-      document.addEventListener('click', (e) => {
-        if (!e.target.closest('.search-bar')) {
-          searchDropdown.classList.remove('active');
-          console.log('👆 Clicked outside, closing dropdown');
-        }
-      });
-
-      // Focus shows dropdown if has results
-      searchInput.addEventListener('focus', () => {
-        if (searchInput.value.trim().length >= 2 && searchDropdown.children.length > 0) {
-          searchDropdown.classList.add('active');
-          console.log('👁️ Focus - showing dropdown');
-        }
-      });
-
-      function displaySearchResults(tracks) {
-        console.log('🎵 Displaying', tracks.length, 'tracks'); // DEBUG
-        
-        if (!tracks || tracks.length === 0) {
-          searchDropdown.innerHTML = '<div class="search-dropdown-empty">No tracks found</div>';
-          return;
-        }
-
-        const html = tracks.slice(0, 8).map(track => `
-          <a href="/track/${track._id}" class="search-dropdown-item">
-            <div class="search-dropdown-cover">
-              <img src="${track.coverUrl || 'https://images.unsplash.com/photo-1514525253161-7a46d19cd819?w=100'}" alt="${track.title}">
-            </div>
-            <div class="search-dropdown-info">
-              <div class="search-dropdown-title">${track.title}</div>
-              <div class="search-dropdown-artist">${track.artist || 'Unknown Artist'}</div>
-            </div>
-            <div class="search-dropdown-play" onclick="event.preventDefault(); event.stopPropagation(); playTrackFromSearch('${track._id}', '${track.title.replace(/'/g, "\\'")}', '${(track.artist || 'Unknown').replace(/'/g, "\\'")}', '${track.coverUrl || ''}', '${track.audioUrl}')">
-              <i class="fa-solid fa-play"></i>
-            </div>
-          </a>
-        `).join('');
-
-        searchDropdown.innerHTML = html;
-        console.log('✅ Results displayed');
-      }
-
-      // Play track from search dropdown
-      window.playTrackFromSearch = function(id, title, artist, cover, audioUrl) {
-        console.log('▶️ Playing from search:', title);
-        if (window.player) {
-          window.player.playTrack({ id, title, artist, cover, audioUrl });
-        }
-      };
-
-      console.log('✅ Search initialized successfully');
+function initSearch() {
+  const searchInput = document.getElementById('searchInput');
+  const searchClear = document.getElementById('searchClear');
+  const searchDropdown = document.getElementById('searchDropdown');
+  
+  if (!searchInput || !searchClear || !searchDropdown) return;
+  
+  let searchTimeout;
+  
+  searchInput.addEventListener('input', async (e) => {
+    const query = e.target.value.trim();
+    
+    searchClear.classList.toggle('active', query.length > 0);
+    clearTimeout(searchTimeout);
+    
+    if (query.length < 2) {
+      searchDropdown.classList.remove('active');
+      return;
     }
     
-    // Wait for player to be ready
-    const initDetailPage = () => {
-      if (!window.player) {
-        setTimeout(initDetailPage, 100);
-        return;
-      }
-
-      console.log('✅ Initializing detail page...'); // DEBUG
-      
-      const mainPlayBtn = document.getElementById('mainPlayBtn');
-      const currentTimeEl = document.getElementById('currentTime');
-      const durationEl = document.getElementById('duration');
-      const waveform = document.getElementById('waveform');
-      const waveformContainer = document.querySelector('.waveform-container');
-      
-      // SEARCH FUNCTIONALITY - Initialize here
-      initSearch();
-      
-      // Generate waveform bars (like SoundCloud)
-      const totalBars = 150; // More bars for smoother look
-      const bars = [];
-      
-      // Create random heights to simulate real waveform
-      for (let i = 0; i < totalBars; i++) {
-        const bar = document.createElement('div');
-        bar.className = 'waveform-bar';
-        
-        // Generate natural looking waveform pattern
-        const baseHeight = 30 + Math.random() * 40;
-        const variation = Math.sin(i / 10) * 20;
-        const randomness = Math.random() * 15;
-        const height = Math.max(15, Math.min(90, baseHeight + variation + randomness));
-        
-        bar.style.height = height + '%';
-        bars.push(bar);
-        waveform.appendChild(bar);
-      }
-
-      // Add progress overlay
-      const progressOverlay = document.createElement('div');
-      progressOverlay.className = 'waveform-progress';
-      progressOverlay.style.width = '0%';
-      waveformContainer.appendChild(progressOverlay);
-      
-      // Click to seek on waveform
-      waveformContainer.addEventListener('click', (e) => {
-        if (!window.player.currentTrack || window.player.currentTrack.id !== trackData.id) {
-          // If not playing this track, start playing it first
-          window.player.playTrack(trackData);
-          setTimeout(() => {
-            seekWaveform(e);
-          }, 200);
-        } else {
-          seekWaveform(e);
-        }
-      });
-
-      function seekWaveform(e) {
-        const audio = window.player.audio;
-        if (!audio.duration) return;
-        
-        const rect = waveformContainer.getBoundingClientRect();
-        const clickX = e.clientX - rect.left;
-        const percentage = Math.max(0, Math.min(1, clickX / rect.width));
-        const newTime = percentage * audio.duration;
-        
-        audio.currentTime = newTime;
-        
-        // Force immediate visual update
-        updateWaveformProgress();
-        updateUI();
-      }
-
-      // Hover effect on bars
-      bars.forEach((bar, index) => {
-        bar.addEventListener('mouseenter', () => {
-          if (window.player.currentTrack?.id === trackData.id) {
-            const audio = window.player.audio;
-            if (audio.duration) {
-              const hoverTime = (index / totalBars) * audio.duration;
-              // Could show tooltip with time here
-            }
-          }
-        });
-      });
-      
-      // Main play button
-      mainPlayBtn.addEventListener('click', () => {
-        if (window.player.currentTrack?.id === trackData.id) {
-          window.player.togglePlay();
-        } else {
-          window.player.playTrack(trackData);
-        }
-        // Force immediate update
-        setTimeout(() => {
-          updateUI();
-          updateWaveformProgress();
-        }, 50);
-      });
-      
-      // Sync with global player
-      const audio = window.player.audio;
-      
-      const updateWaveformProgress = () => {
-        const isCurrentTrack = window.player.currentTrack?.id === trackData.id;
-        
-        if (isCurrentTrack && audio.duration) {
-          const percentage = (audio.currentTime / audio.duration) * 100;
-          progressOverlay.style.width = percentage + '%';
-          
-          // Update bar colors based on progress
-          bars.forEach((bar, index) => {
-            const barPercentage = (index / totalBars) * 100;
-            if (barPercentage <= percentage) {
-              bar.classList.add('played');
-            } else {
-              bar.classList.remove('played');
-            }
-          });
-        }
-      };
-      
-      const updateUI = () => {
-        const isCurrentTrack = window.player.currentTrack?.id === trackData.id;
-        const isPlaying = !audio.paused;
-        
-        // Update play button
-        const icon = mainPlayBtn.querySelector('i');
-        if (isCurrentTrack && isPlaying) {
-          icon.className = 'fa-solid fa-pause';
-          mainPlayBtn.classList.add('playing');
-        } else {
-          icon.className = 'fa-solid fa-play';
-          mainPlayBtn.classList.remove('playing');
-        }
-        
-        // Update time if this is current track
-        if (isCurrentTrack) {
-          currentTimeEl.textContent = formatTime(audio.currentTime);
-          durationEl.textContent = formatTime(audio.duration);
-          updateWaveformProgress();
-        }
-      };
-      
-      // Listen to audio events
-      audio.addEventListener('play', updateUI);
-      audio.addEventListener('pause', updateUI);
-      audio.addEventListener('timeupdate', () => {
-        updateUI();
-        updateWaveformProgress();
-      });
-      audio.addEventListener('loadedmetadata', () => {
-        updateUI();
-        updateWaveformProgress();
-      });
-      audio.addEventListener('seeked', updateWaveformProgress);
-      
-      // Periodic sync to ensure everything stays in sync
-      setInterval(() => {
-        const isCurrentTrack = window.player.currentTrack?.id === trackData.id;
-        if (isCurrentTrack) {
-          updateUI();
-          updateWaveformProgress();
-        }
-      }, 100);
-      
-      // Initial UI update
-      updateUI();
-      updateWaveformProgress();
-      
-      function formatTime(seconds) {
-        if (isNaN(seconds)) return '0:00';
-        const mins = Math.floor(seconds / 60);
-        const secs = Math.floor(seconds % 60);
-        return `${mins}:${secs.toString().padStart(2, '0')}`;
-      }
-      
-      // Like button
-      document.getElementById('likeBtn').addEventListener('click', async function() {
-        const trackId = this.dataset.trackId;
-        try {
-          const res = await fetch(`/api/tracks/${trackId}/like`, { method: 'POST' });
-          const data = await res.json();
-          if (data.success) {
-            this.classList.toggle('liked');
-            const icon = this.querySelector('i');
-            icon.className = this.classList.contains('liked') ? 'fa-solid fa-heart' : 'fa-regular fa-heart';
-            document.getElementById('likeCount').textContent = data.likes;
-          }
-        } catch (err) {
-          console.error(err);
-        }
-      });
-      
-      // Add to queue
-      document.getElementById('addToQueueBtn').addEventListener('click', () => {
-        window.player.addToQueue(trackData);
-      });
-      
-      // Submit comment
-      document.getElementById('submitComment').addEventListener('click', async function() {
-        const text = document.getElementById('commentInput').value.trim();
-        if (!text) return;
-        
-        try {
-          const res = await fetch('/api/tracks/<%= track._id %>/comments', {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ text })
-          });
-          
-          const data = await res.json();
-          if (data.success) {
-            location.reload();
-          }
-        } catch (err) {
-          console.error(err);
-        }
-      });
-      
-      document.getElementById('commentInput').addEventListener('keypress', (e) => {
-        if (e.key === 'Enter') {
-          document.getElementById('submitComment').click();
-        }
-      });
-
-      // Search functionality with live dropdown
-      const searchInput = document.getElementById('searchInput');
-      const searchClear = document.getElementById('searchClear');
-      const searchDropdown = document.getElementById('searchDropdown');
-      
-      let searchTimeout;
-      
-      if (searchInput && searchClear && searchDropdown) {
-        // Input handler - live search
-        searchInput.addEventListener('input', async (e) => {
-          const query = e.target.value.trim();
-          
-          console.log('Search input:', query); // DEBUG
-          
-          // Show/hide clear button
-          searchClear.classList.toggle('active', query.length > 0);
-          
-          // Clear previous timeout
-          clearTimeout(searchTimeout);
-          
-          if (query.length < 2) {
-            searchDropdown.classList.remove('active');
-            return;
-          }
-          
-          // Show loading
-          searchDropdown.innerHTML = '<div class="search-dropdown-loading"><i class="fa-solid fa-spinner"></i> Searching...</div>';
-          searchDropdown.classList.add('active');
-          
-          console.log('Starting search for:', query); // DEBUG
-          
-          // Debounce search
-          searchTimeout = setTimeout(async () => {
-            try {
-              const url = `/api/search?q=${encodeURIComponent(query)}`;
-              console.log('Fetching:', url); // DEBUG
-              
-              const res = await fetch(url);
-              console.log('Response status:', res.status); // DEBUG
-              
-              const data = await res.json();
-              console.log('Response data:', data); // DEBUG
-              
-              if (data.success && data.tracks) {
-                displaySearchResults(data.tracks);
-              } else {
-                searchDropdown.innerHTML = '<div class="search-dropdown-empty">No results found</div>';
-              }
-            } catch (err) {
-              console.error('Search error:', err);
-              searchDropdown.innerHTML = '<div class="search-dropdown-empty">Error searching. Please try again.</div>';
-            }
-          }, 300);
-        });
-
-        // Clear search
-        searchClear.addEventListener('click', () => {
-          searchInput.value = '';
-          searchClear.classList.remove('active');
-          searchDropdown.classList.remove('active');
-          searchInput.focus();
-        });
-
-        // Close dropdown when clicking outside
-        document.addEventListener('click', (e) => {
-          if (!e.target.closest('.search-bar')) {
-            searchDropdown.classList.remove('active');
-          }
-        });
-
-        // Focus shows dropdown if has results
-        searchInput.addEventListener('focus', () => {
-          if (searchInput.value.trim().length >= 2 && searchDropdown.children.length > 0) {
-            searchDropdown.classList.add('active');
-          }
-        });
-      }
-
-      function displaySearchResults(tracks) {
-        if (!tracks || tracks.length === 0) {
-          searchDropdown.innerHTML = '<div class="search-dropdown-empty">No tracks found</div>';
-          return;
-        }
-
-        const html = tracks.slice(0, 8).map(track => `
-          <a href="/tracks/${track._id}" class="search-dropdown-item">
-            <div class="search-dropdown-cover">
-              <img src="${track.coverUrl || 'https://images.unsplash.com/photo-1514525253161-7a46d19cd819?w=100'}" alt="${track.title}">
-            </div>
-            <div class="search-dropdown-info">
-              <div class="search-dropdown-title">${track.title}</div>
-              <div class="search-dropdown-artist">${track.artist || 'Unknown Artist'}</div>
-            </div>
-            <div class="search-dropdown-play" onclick="event.preventDefault(); event.stopPropagation(); playTrackFromSearch('${track._id}', '${track.title.replace(/'/g, "\\'")}', '${(track.artist || 'Unknown').replace(/'/g, "\\'")}', '${track.coverUrl || ''}', '${track.audioUrl}')">
-              <i class="fa-solid fa-play"></i>
-            </div>
-          </a>
-        `).join('');
-
-        searchDropdown.innerHTML = html;
-      }
-
-      // Play track from search dropdown
-      window.playTrackFromSearch = function(id, title, artist, cover, audioUrl) {
-        if (window.player) {
-          window.player.playTrack({ id, title, artist, cover, audioUrl });
-        }
-      };
-    };
+    searchDropdown.innerHTML = '<div class="search-dropdown-loading"><i class="fa-solid fa-spinner"></i> Đang tìm kiếm...</div>';
+    searchDropdown.classList.add('active');
     
-    // Initialize when DOM is ready
-    if (document.readyState === 'loading') {
-      document.addEventListener('DOMContentLoaded', initDetailPage);
+    searchTimeout = setTimeout(async () => {
+      try {
+        const res = await fetch(`/api/search?q=${encodeURIComponent(query)}`);
+        const data = await res.json();
+        
+        if (data.success && data.tracks && data.tracks.length > 0) {
+          displaySearchResults(data.tracks);
+        } else {
+          searchDropdown.innerHTML = '<div class="search-dropdown-empty">Không tìm thấy kết quả</div>';
+        }
+      } catch (err) {
+        searchDropdown.innerHTML = '<div class="search-dropdown-empty">Lỗi khi tìm kiếm</div>';
+      }
+    }, 300);
+  });
+  
+  searchClear.addEventListener('click', () => {
+    searchInput.value = '';
+    searchClear.classList.remove('active');
+    searchDropdown.classList.remove('active');
+    searchInput.focus();
+  });
+  
+  document.addEventListener('click', (e) => {
+    if (!e.target.closest('.search-bar')) {
+      searchDropdown.classList.remove('active');
+    }
+  });
+  
+  searchInput.addEventListener('focus', () => {
+    if (searchInput.value.trim().length >= 2 && searchDropdown.children.length > 0) {
+      searchDropdown.classList.add('active');
+    }
+  });
+  
+  function displaySearchResults(tracks) {
+    if (!tracks || tracks.length === 0) {
+      searchDropdown.innerHTML = '<div class="search-dropdown-empty">Không tìm thấy bài hát</div>';
+      return;
+    }
+    
+    const html = tracks.slice(0, 8).map(track => `
+      <a href="/track/${track._id}" class="search-dropdown-item">
+        <div class="search-dropdown-cover">
+          <img src="${track.coverUrl || 'https://images.unsplash.com/photo-1514525253161-7a46d19cd819?w=100'}" alt="${track.title}">
+        </div>
+        <div class="search-dropdown-info">
+          <div class="search-dropdown-title">${track.title}</div>
+          <div class="search-dropdown-artist">${track.artist || 'Unknown Artist'}</div>
+        </div>
+        <div class="search-dropdown-play" onclick="event.preventDefault(); event.stopPropagation(); playTrackFromSearch('${track._id}', '${track.title.replace(/'/g, "\\'")}', '${(track.artist || 'Unknown').replace(/'/g, "\\'")}', '${track.coverUrl || ''}', '${track.audioUrl}')">
+          <i class="fa-solid fa-play"></i>
+        </div>
+      </a>
+    `).join('');
+    
+    searchDropdown.innerHTML = html;
+  }
+}
+
+window.playTrackFromSearch = function(id, title, artist, cover, audioUrl) {
+  if (window.player) {
+    window.player.playTrack({ id, title, artist, cover, audioUrl });
+  }
+};
+
+function initWaveform() {
+  const waveform = document.getElementById('waveform');
+  const waveformContainer = document.querySelector('.waveform-container');
+  
+  if (!waveform || !waveformContainer) return;
+  
+  const totalBars = 150;
+  const bars = [];
+  
+  for (let i = 0; i < totalBars; i++) {
+    const bar = document.createElement('div');
+    bar.className = 'waveform-bar';
+    
+    const baseHeight = 30 + Math.random() * 40;
+    const variation = Math.sin(i / 10) * 20;
+    const randomness = Math.random() * 15;
+    const height = Math.max(15, Math.min(90, baseHeight + variation + randomness));
+    
+    bar.style.height = height + '%';
+    bars.push(bar);
+    waveform.appendChild(bar);
+  }
+  
+  const progressOverlay = document.createElement('div');
+  progressOverlay.className = 'waveform-progress';
+  progressOverlay.style.width = '0%';
+  waveformContainer.appendChild(progressOverlay);
+  
+  waveformContainer.addEventListener('click', (e) => {
+    if (!window.player.currentTrack || window.player.currentTrack.id !== trackData.id) {
+      window.player.playTrack(trackData);
+      setTimeout(() => seekWaveform(e), 200);
     } else {
-      initDetailPage();
+      seekWaveform(e);
     }
+  });
+  
+  function seekWaveform(e) {
+    const audio = window.player.audio;
+    if (!audio.duration) return;
+    
+    const rect = waveformContainer.getBoundingClientRect();
+    const clickX = e.clientX - rect.left;
+    const percentage = Math.max(0, Math.min(1, clickX / rect.width));
+    const newTime = percentage * audio.duration;
+    
+    audio.currentTime = newTime;
+    updateWaveformProgress();
+    updateUI();
+  }
+  
+  function updateWaveformProgress() {
+    const isCurrentTrack = window.player.currentTrack?.id === trackData.id;
+    
+    if (isCurrentTrack && window.player.audio.duration) {
+      const percentage = (window.player.audio.currentTime / window.player.audio.duration) * 100;
+      progressOverlay.style.width = percentage + '%';
+      
+      bars.forEach((bar, index) => {
+        const barPercentage = (index / totalBars) * 100;
+        if (barPercentage <= percentage) {
+          bar.classList.add('played');
+        } else {
+          bar.classList.remove('played');
+        }
+      });
+    }
+  }
+  
+  return { updateWaveformProgress };
+}
+
+function initPlayerUI() {
+  const mainPlayBtn = document.getElementById('mainPlayBtn');
+  const currentTimeEl = document.getElementById('currentTime');
+  const durationEl = document.getElementById('duration');
+  
+  if (!mainPlayBtn) return null;
+  
+  mainPlayBtn.addEventListener('click', () => {
+    if (window.player.currentTrack?.id === trackData.id) {
+      window.player.togglePlay();
+    } else {
+      window.player.playTrack(trackData);
+    }
+    setTimeout(() => {
+      updateUI();
+      if (window.waveformUpdater) window.waveformUpdater.updateWaveformProgress();
+    }, 50);
+  });
+  
+  function updateUI() {
+    const audio = window.player.audio;
+    const isCurrentTrack = window.player.currentTrack?.id === trackData.id;
+    const isPlaying = !audio.paused;
+    
+    const icon = mainPlayBtn.querySelector('i');
+    if (isCurrentTrack && isPlaying) {
+      icon.className = 'fa-solid fa-pause';
+      mainPlayBtn.classList.add('playing');
+    } else {
+      icon.className = 'fa-solid fa-play';
+      mainPlayBtn.classList.remove('playing');
+    }
+    
+    if (isCurrentTrack && currentTimeEl && durationEl) {
+      currentTimeEl.textContent = formatTime(audio.currentTime);
+      durationEl.textContent = formatTime(audio.duration);
+    }
+  }
+  
+  function formatTime(seconds) {
+    if (isNaN(seconds)) return '0:00';
+    const mins = Math.floor(seconds / 60);
+    const secs = Math.floor(seconds % 60);
+    return `${mins}:${secs.toString().padStart(2, '0')}`;
+  }
+  
+  return { updateUI };
+}
+
+function initActions() {
+  const likeBtn = document.getElementById('likeBtn');
+  const addToQueueBtn = document.getElementById('addToQueueBtn');
+  const submitComment = document.getElementById('submitComment');
+  const commentInput = document.getElementById('commentInput');
+  
+  if (likeBtn) {
+    likeBtn.addEventListener('click', async function() {
+      const trackId = this.dataset.trackId;
+      try {
+        const res = await fetch(`/api/tracks/${trackId}/like`, { method: 'POST' });
+        const data = await res.json();
+        if (data.success) {
+          this.classList.toggle('liked');
+          const icon = this.querySelector('i');
+          icon.className = this.classList.contains('liked') ? 'fa-solid fa-heart' : 'fa-regular fa-heart';
+          document.getElementById('likeCount').textContent = data.likes;
+        }
+      } catch (err) {
+        console.error(err);
+      }
+    });
+  }
+  
+  if (addToQueueBtn) {
+    addToQueueBtn.addEventListener('click', () => {
+      window.player.addToQueue(trackData);
+    });
+  }
+  
+  if (submitComment && commentInput) {
+    submitComment.addEventListener('click', async function() {
+      const text = commentInput.value.trim();
+      if (!text) return;
+      
+      try {
+        const res = await fetch(`/api/tracks/${trackData.id}/comments`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ text })
+        });
+        
+        const data = await res.json();
+        if (data.success) {
+          location.reload();
+        }
+      } catch (err) {
+        console.error(err);
+      }
+    });
+    
+    commentInput.addEventListener('keypress', (e) => {
+      if (e.key === 'Enter') {
+        submitComment.click();
+      }
+    });
+  }
+}
+
+function initDetailPage() {
+  if (!window.player) {
+    setTimeout(initDetailPage, 100);
+    return;
+  }
+  
+  initSearch();
+  
+  const waveformUpdater = initWaveform();
+  if (waveformUpdater) {
+    window.waveformUpdater = waveformUpdater;
+  }
+  
+  const playerUI = initPlayerUI();
+  
+  if (playerUI && waveformUpdater) {
+    const audio = window.player.audio;
+    
+    audio.addEventListener('play', playerUI.updateUI);
+    audio.addEventListener('pause', playerUI.updateUI);
+    audio.addEventListener('timeupdate', () => {
+      playerUI.updateUI();
+      waveformUpdater.updateWaveformProgress();
+    });
+    audio.addEventListener('loadedmetadata', () => {
+      playerUI.updateUI();
+      waveformUpdater.updateWaveformProgress();
+    });
+    audio.addEventListener('seeked', waveformUpdater.updateWaveformProgress);
+    
+    setInterval(() => {
+      const isCurrentTrack = window.player.currentTrack?.id === trackData.id;
+      if (isCurrentTrack) {
+        playerUI.updateUI();
+        waveformUpdater.updateWaveformProgress();
+      }
+    }, 100);
+    
+    playerUI.updateUI();
+    waveformUpdater.updateWaveformProgress();
+  }
+  
+  initActions();
+}
+
+if (document.readyState === 'loading') {
+  document.addEventListener('DOMContentLoaded', initDetailPage);
+} else {
+  initDetailPage();
+}
   </script>
 </body>
 </html>
