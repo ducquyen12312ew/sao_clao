@@ -3,7 +3,7 @@
   "version": "1.0.0",
   "private": true,
   "scripts": {
-    "start": "node start.js"
+    "start": "node src/start.js"
   },
   "dependencies": {
     "bcrypt": "^5.1.1",
