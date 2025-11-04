@@ -1,39 +1,34 @@
+// seed-admins.js
 const bcrypt = require('bcrypt');
-const { connectDB, UserCollection } = require('./config');
+const mongoose = require('mongoose');
+const { MONGO_URI } = require('./config'); // export MONGO_URI từ config.js của bạn
+const User = require('./models/User');     // model User của bạn
 
-async function seedAdmins() {
-  try {
-    await connectDB();
+async function runSeed() {
+  const rawPassword = process.env.ADMIN_PASSWORD || 'admin123';
+  const passwordHash = await bcrypt.hash(rawPassword, 10);
 
-    const admins = [
-      { username: 'admin1', name: 'Admin One', email: 'admin1@saoclao.com' },
-      { username: 'admin2', name: 'Admin Two', email: 'admin2@saoclao.com' },
-      { username: 'admin3', name: 'Admin Three', email: 'admin3@saoclao.com' }
-    ];
+  const admins = [
+    { username: 'admin1', name: 'Admin One', email: 'admin1@saoclao.com' },
+    { username: 'admin2', name: 'Admin Two', email: 'admin2@saoclao.com' },
+    { username: 'admin3', name: 'Admin Three', email: 'admin3@saoclao.com' }
+  ];
 
-    const passwordHash = await bcrypt.hash('admin123', 10);
-
-    for (const admin of admins) {
-      const exists = await UserCollection.findOne({ username: admin.username });
-      
-      if (!exists) {
-        await UserCollection.create({
-          ...admin,
-          passwordHash,
-          role: 'admin'
-        });
-        console.log(`Created admin: ${admin.username}`);
-      } else {
-        console.log(`Admin ${admin.username} already exists`);
-      }
-    }
-
-    console.log('Admin seeding completed');
-    process.exit(0);
-  } catch (err) {
-    console.error('Seed error:', err);
-    process.exit(1);
+  for (const a of admins) {
+    await User.findOneAndUpdate(
+      { username: a.username },
+      { $set: { name: a.name, email: a.email, passwordHash, role: 'admin' } },
+      { upsert: true, new: true, setDefaultsOnInsert: true }
+    );
+    console.log(`✓ upserted admin: ${a.username}`);
   }
 }
 
-seedAdmins();
+async function seedAdmins() {
+  if (!process.env.MONGO_URI && !MONGO_URI) throw new Error('Missing MONGO_URI');
+  await mongoose.connect(process.env.MONGO_URI || MONGO_URI);
+  await runSeed();
+  await mongoose.connection.close();
+}
+
+module.exports = { seedAdmins, runSeed };
