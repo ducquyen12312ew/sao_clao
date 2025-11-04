@@ -1,10 +1,9 @@
 const mongoose = require('mongoose');
 require('dotenv').config();
 
-// MongoDB URI with fallback
 const mongoURI = process.env.MONGO_URI || 'mongodb://127.0.0.1:27017/MusicCloud';
 
-// Connect to MongoDB with proper error handling
+// Kết nối MongoDB
 async function connectDB() {
   try {
     await mongoose.connect(mongoURI, {
@@ -12,29 +11,15 @@ async function connectDB() {
       socketTimeoutMS: 45000,
     });
     
-    console.log('✅ MongoDB connected successfully');
-    console.log(`📁 Database: ${mongoose.connection.db.databaseName}`);
-    console.log(`🔗 Host: ${mongoose.connection.host}`);
-    
-    // Handle connection events
-    mongoose.connection.on('error', (err) => {
-      console.error('❌ MongoDB connection error:', err);
-    });
-    
-    mongoose.connection.on('disconnected', () => {
-      console.warn('⚠️ MongoDB disconnected');
-    });
+    console.log(`MongoDB: ${mongoose.connection.host}`);
     
   } catch (error) {
-    console.error('❌ MongoDB connection failed:', error.message);
-    console.error('Full error:', error);
-    throw error; // Throw để index.js xử lý
+    console.error('MongoDB connection failed:', error.message);
+    throw error;
   }
 }
 
-// ==================== SCHEMAS ====================
-
-// User Schema - UPDATED WITH BIO, AVATAR, STATS
+// User Schema
 const UserSchema = new mongoose.Schema({
   name: { 
     type: String, 
@@ -81,7 +66,7 @@ const UserSchema = new mongoose.Schema({
   }
 });
 
-// Track Schema with Genres, Tags, Mood
+// Track Schema
 const TrackSchema = new mongoose.Schema({
   title: { 
     type: String, 
@@ -137,7 +122,6 @@ const TrackSchema = new mongoose.Schema({
   }
 });
 
-// Add text index for search functionality
 TrackSchema.index({ title: 'text', artist: 'text', genres: 'text', tags: 'text' });
 
 // Play History Schema
@@ -161,7 +145,6 @@ const PlayHistorySchema = new mongoose.Schema({
   }
 });
 
-// Compound index for efficient queries
 PlayHistorySchema.index({ userId: 1, playedAt: -1 });
 
 // Playlist Schema
@@ -199,7 +182,6 @@ const PlaylistSchema = new mongoose.Schema({
   }
 });
 
-// Update timestamp on save
 PlaylistSchema.pre('save', function(next) {
   this.updatedAt = Date.now();
   next();
@@ -235,8 +217,7 @@ const CommentSchema = new mongoose.Schema({
   }
 });
 
-// ==================== NEW: FOLLOW SCHEMA ====================
-
+// Follow Schema
 const FollowSchema = new mongoose.Schema({
   follower: {
     type: mongoose.Schema.Types.ObjectId,
@@ -257,11 +238,9 @@ const FollowSchema = new mongoose.Schema({
   }
 });
 
-// Compound index để tránh duplicate follows và tối ưu queries
 FollowSchema.index({ follower: 1, following: 1 }, { unique: true });
 
-// ==================== MODELS ====================
-
+// Models
 const UserCollection = mongoose.model('User', UserSchema);
 const TrackCollection = mongoose.model('Track', TrackSchema);
 const PlayHistoryCollection = mongoose.model('PlayHistory', PlayHistorySchema);
@@ -269,8 +248,7 @@ const PlaylistCollection = mongoose.model('Playlist', PlaylistSchema);
 const CommentCollection = mongoose.model('Comment', CommentSchema);
 const FollowCollection = mongoose.model('Follow', FollowSchema);
 
-// ==================== EXPORTS ====================
-
+// Export
 module.exports = {
   connectDB,
   UserCollection,

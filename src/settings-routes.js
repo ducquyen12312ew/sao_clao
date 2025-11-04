@@ -6,8 +6,6 @@ const { UserCollection } = require('./config');
 
 const router = express.Router();
 
-console.log('📝 Settings routes loaded!');
-// Authentication middleware
 const requireAuth = (req, res, next) => {
   if (!req.session.user) {
     req.session.flash = { type: 'warning', message: 'Vui lòng đăng nhập.' };
