@@ -197,6 +197,12 @@ const doLogout = (req, res) => {
 app.get('/logout', doLogout);
 app.post('/logout', doLogout);
 
+// Mount routes
+app.use('/upload', uploadRoutes);
+app.use('/playlists', playlistRoutes);
+app.use('/users', userRoutes);  
+app.use('/settings', settingsRoutes);
+
 // Trang profile với gợi ý thông minh
 app.get(['/me', '/profile'], requireAuth, async (req, res) => {
   try {
@@ -613,11 +619,6 @@ app.post('/api/tracks/:id/comments', requireAuth, async (req, res) => {
   }
 });
 
-// Mount routes
-app.use('/upload', uploadRoutes);
-app.use('/playlists', playlistRoutes);
-app.use('/users', userRoutes);
-app.use('/settings', settingsRoutes);
 
 // 404 handler
 app.use((req, res) => {

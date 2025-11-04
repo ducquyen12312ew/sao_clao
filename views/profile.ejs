@@ -78,9 +78,11 @@
       </button>
 
       <a href="/users/<%= user.username %>" class="user-avatar-link">
-        <div class="user-avatar">
-          <%= user.username.charAt(0).toUpperCase() %>
-        </div>
+        <a href="/users/<%= user.username %>" style="text-decoration: none;">
+  <div class="user-avatar">
+    <%= user.username.charAt(0).toUpperCase() %>
+  </div>
+</a>
       </a>
       
       <form method="post" action="/logout" style="display:inline; margin-left: 12px;">
