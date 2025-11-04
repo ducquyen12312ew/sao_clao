@@ -10,281 +10,268 @@
   <link rel="stylesheet" href="/public/css/track.css">
 </head>
 <body>
+  <!-- HEADER -->
   <header class="header">
-    <div class="header-left">
-      <button class="back-btn" onclick="window.history.back()">
-        <i class="fa-solid fa-arrow-left"></i>
-      </button>
-      <a href="/" class="logo">SAOCLAO</a>
+    <div style="display: flex; align-items: center;">
+      <div class="logo">
+        <a href="/">
+          <img src="/public/img/saoclao.png" alt="SAOCLAO">
+        </a>
+      </div>
       <nav class="nav-menu">
-        <a href="/" class="nav-link">Home</a>
-        <a href="/tracks" class="nav-link active">Tracks</a>
-        <a href="/playlists" class="nav-link">Playlists</a>
-        <a href="/artists" class="nav-link">Artists</a>
+        <a href="/profile" class="nav-link">
+          <i class="fa-solid fa-house"></i> Trang chủ
+        </a>
+        <a href="/playlists" class="nav-link">
+          <i class="fa-solid fa-music"></i> Playlist của tôi
+        </a>
       </nav>
     </div>
-
-    <div class="header-center">
-      <div class="search-bar">
+    
+    <div class="search-container">
+      <div class="search-icon">
         <i class="fa-solid fa-magnifying-glass"></i>
-        <input type="text" class="search-input" placeholder="Search for tracks, artists, playlists..." id="searchInput" autocomplete="off">
-        <button class="search-clear" id="searchClear">
-          <i class="fa-solid fa-xmark"></i>
-        </button>
-        <div class="search-dropdown" id="searchDropdown"></div>
       </div>
+      <input type="text" class="search-input" id="searchInput" placeholder="Tìm bài hát, nghệ sĩ...">
+      <button class="search-clear" id="searchClear">
+        <i class="fa-solid fa-xmark"></i>
+      </button>
+      <div id="searchDropdown" class="search-dropdown"></div>
     </div>
+    
+    <div class="header-actions">
+      <button class="upload-btn" onclick="window.location.href='/upload'">
+        <i class="fa-solid fa-cloud-arrow-up"></i>
+        <span class="btn-text">Upload</span>
+      </button>
 
-    <div class="header-right">
-      <div class="header-actions">
-        <button class="header-btn" onclick="window.location.href='/upload'">
-          <i class="fa-solid fa-cloud-arrow-up"></i>
-          <span>Upload</span>
-        </button>
-        <button class="header-btn primary" onclick="window.location.href='/create-playlist'">
-          <i class="fa-solid fa-plus"></i>
-          <span>Create</span>
-        </button>
-      </div>
-
-      <div class="user-menu">
-        <div class="user-avatar" onclick="window.location.href='/users/<%= user.username %>'">
-  <%= user.username.charAt(0).toUpperCase() %>
-</div>
-        <div class="user-dropdown">
-          <div class="dropdown-header">
-            <div class="dropdown-user-name"><%= user.username %></div>
-            <div class="dropdown-user-email"><%= user.email %></div>
-          </div>
-          <div class="dropdown-menu">
-            <a href="/profile" class="dropdown-item">
-              <i class="fa-solid fa-user"></i>
-              <span>Profile</span>
-            </a>
-            <a href="/likes" class="dropdown-item">
-              <i class="fa-solid fa-heart"></i>
-              <span>Liked Tracks</span>
-            </a>
-            <a href="/playlists" class="dropdown-item">
-              <i class="fa-solid fa-list"></i>
-              <span>My Playlists</span>
-            </a>
-            <a href="/settings" class="dropdown-item">
-              <i class="fa-solid fa-gear"></i>
-              <span>Settings</span>
-            </a>
-            <div class="dropdown-divider"></div>
-            <a href="/logout" class="dropdown-item">
-              <i class="fa-solid fa-arrow-right-from-bracket"></i>
-              <span>Sign out</span>
-            </a>
-          </div>
+      <a href="/users/<%= user.username %>" style="text-decoration: none;">
+        <div class="user-avatar">
+          <% if (user.avatarUrl) { %>
+            <img src="<%= user.avatarUrl %>" alt="<%= user.username %>">
+          <% } else { %>
+            <%= user.username.charAt(0).toUpperCase() %>
+          <% } %>
         </div>
-      </div>
+      </a>
+      
+      <form method="post" action="/logout" style="display:inline; margin-left: 12px;">
+        <button type="submit" class="btn-logout">Đăng xuất</button>
+      </form>
     </div>
   </header>
 
   <div class="container">
     <div class="main-content">
+      <!-- HERO SECTION -->
       <div class="hero-section">
-      <div class="player-section">
-        <div class="track-header">
-          <button class="play-button" id="mainPlayBtn">
-            <i class="fa-solid fa-play"></i>
-          </button>
-          <div class="track-info">
-            <h1><%= track.title %></h1>
-            <div class="track-artist">
-  <% if (track.userId && track.userId.username) { %>
-    <a href="/users/<%= track.userId.username %>" style="color: var(--text-secondary); text-decoration: none; transition: color 0.2s;">
-      <%= track.artist || 'Unknown Artist' %>
-    </a>
-  <% } else { %>
-    <%= track.artist || 'Unknown Artist' %>
-  <% } %>
-</div>
-            <% if (track.genres && track.genres.length > 0) { %>
-              <div class="track-genres">
-                <% track.genres.slice(0, 3).forEach(genre => { %>
-                  <span class="genre-tag">#<%= genre %></span>
-                <% }) %>
+        <div class="player-section">
+          <div class="track-header">
+            <button class="play-button" id="mainPlayBtn">
+              <i class="fa-solid fa-play"></i>
+            </button>
+            <div class="track-info">
+              <h1><%= track.title %></h1>
+              <div class="track-artist">
+                <% if (track.userId && track.userId.username) { %>
+                  <a href="/users/<%= track.userId.username %>" style="color: var(--text-secondary); text-decoration: none; transition: color 0.2s;">
+                    <%= track.artist || 'Unknown Artist' %>
+                  </a>
+                <% } else { %>
+                  <%= track.artist || 'Unknown Artist' %>
+                <% } %>
               </div>
+              <% if (track.genres && track.genres.length > 0) { %>
+                <div class="track-genres">
+                  <% track.genres.slice(0, 3).forEach(genre => { %>
+                    <span class="genre-tag">#<%= genre %></span>
+                  <% }) %>
+                </div>
+              <% } %>
+            </div>
+          </div>
+          
+          <div class="track-meta">
+            <div class="meta-item">
+              <i class="fa-regular fa-clock"></i>
+              <span><%= new Date(track.createdAt).toLocaleDateString('vi-VN') %></span>
+            </div>
+          </div>
+          
+          <div class="waveform-container">
+            <div class="waveform" id="waveform"></div>
+          </div>
+          <div class="time-display">
+            <span id="currentTime">0:00</span>
+            <span id="duration">0:00</span>
+          </div>
+          
+          <div class="action-buttons">
+            <button class="action-btn" id="likeBtn" data-track-id="<%= track._id %>">
+              <i class="fa-regular fa-heart"></i>
+              <span id="likeCount"><%= track.likes || 0 %></span>
+            </button>
+            <button class="action-btn" id="addToQueueBtn">
+              <i class="fa-solid fa-list"></i>
+              <span>Add to Queue</span>
+            </button>
+            <button class="action-btn">
+              <i class="fa-solid fa-share"></i>
+              <span>Share</span>
+            </button>
+          </div>
+        </div>
+        
+        <div class="cover-section">
+          <div class="cover-image">
+            <img src="<%= track.coverUrl || 'https://images.unsplash.com/photo-1514525253161-7a46d19cd819?w=500' %>" alt="<%= track.title %>">
+          </div>
+          <div class="stats">
+            <div class="stat-item">
+              <span class="stat-value" id="playCount">0</span>
+              <span class="stat-label">Plays</span>
+            </div>
+            <div class="stat-item">
+              <span class="stat-value"><%= track.likes || 0 %></span>
+              <span class="stat-label">Likes</span>
+            </div>
+            <div class="stat-item">
+              <span class="stat-value"><%= comments.length %></span>
+              <span class="stat-label">Comments</span>
+            </div>
+          </div>
+        </div>
+      </div>
+      
+      <!-- COMMENTS SECTION -->
+      <div class="comments-section">
+        <div class="comments-header">
+          <h2 class="comments-title">Comments (<%= comments.length %>)</h2>
+        </div>
+        
+        <div class="comment-input-section">
+          <div class="user-avatar">
+            <% if (user.avatarUrl) { %>
+              <img src="<%= user.avatarUrl %>" alt="<%= user.username %>">
+            <% } else { %>
+              <%= user.username.charAt(0).toUpperCase() %>
             <% } %>
           </div>
-        </div>
-        
-        <div class="track-meta">
-          <div class="meta-item">
-            <i class="fa-regular fa-clock"></i>
-            <span><%= new Date(track.createdAt).toLocaleDateString('vi-VN') %></span>
+          <div class="comment-input-wrapper">
+            <input type="text" class="comment-input" placeholder="Write a comment..." id="commentInput">
+            <button class="comment-submit" id="submitComment">
+              <i class="fa-solid fa-paper-plane"></i>
+            </button>
           </div>
         </div>
         
-        <div class="waveform-container">
-          <div class="waveform" id="waveform"></div>
-        </div>
-        <div class="time-display">
-          <span id="currentTime">0:00</span>
-          <span id="duration">0:00</span>
-        </div>
-        
-        <div class="action-buttons">
-          <button class="action-btn" id="likeBtn" data-track-id="<%= track._id %>">
-            <i class="fa-regular fa-heart"></i>
-            <span id="likeCount"><%= track.likes || 0 %></span>
-          </button>
-          <button class="action-btn" id="addToQueueBtn">
-            <i class="fa-solid fa-list"></i>
-            <span>Add to Queue</span>
-          </button>
-          <button class="action-btn">
-            <i class="fa-solid fa-share"></i>
-            <span>Share</span>
-          </button>
-        </div>
-      </div>
-      
-      <div class="cover-section">
-        <div class="cover-image">
-          <img src="<%= track.coverUrl || 'https://images.unsplash.com/photo-1514525253161-7a46d19cd819?w=500' %>" alt="<%= track.title %>">
-        </div>
-        <div class="stats">
-          <div class="stat-item">
-            <span class="stat-value" id="playCount">0</span>
-            <span class="stat-label">Plays</span>
-          </div>
-          <div class="stat-item">
-            <span class="stat-value"><%= track.likes || 0 %></span>
-            <span class="stat-label">Likes</span>
-          </div>
-          <div class="stat-item">
-            <span class="stat-value"><%= comments.length %></span>
-            <span class="stat-label">Comments</span>
-          </div>
-        </div>
-      </div>
-    </div>
-    
-    <div class="comments-section">
-      <div class="comments-header">
-        <h2 class="comments-title">Comments (<%= comments.length %>)</h2>
-      </div>
-      
-      <div class="comment-input-section">
-        <div class="user-avatar"><%= user.username.charAt(0).toUpperCase() %></div>
-        <div class="comment-input-wrapper">
-          <input type="text" class="comment-input" placeholder="Write a comment..." id="commentInput">
-          <button class="comment-submit" id="submitComment">
-            <i class="fa-solid fa-paper-plane"></i>
-          </button>
-        </div>
-      </div>
-      
-      <div class="comments-list" id="commentsList">
-        <% if (comments.length > 0) { %>
-          <% comments.forEach(comment => { %>
-            <div class="comment">
-              <div class="comment-avatar">
-                <%= comment.userId.username.charAt(0).toUpperCase() %>
-              </div>
-              <div class="comment-content">
-                <div class="comment-header">
-                  <a href="/users/<%= comment.userId.username %>" class="comment-author" style="text-decoration: none; color: var(--text-primary); transition: color 0.2s;">
-  <%= comment.userId.username %>
-</a>
-                  <span class="comment-time"><%= new Date(comment.createdAt).toLocaleString('vi-VN') %></span>
+        <div class="comments-list" id="commentsList">
+          <% if (comments.length > 0) { %>
+            <% comments.forEach(comment => { %>
+              <div class="comment">
+                <div class="comment-avatar">
+                  <% if (comment.userId.avatarUrl) { %>
+                    <img src="<%= comment.userId.avatarUrl %>" alt="<%= comment.userId.username %>">
+                  <% } else { %>
+                    <%= comment.userId.username.charAt(0).toUpperCase() %>
+                  <% } %>
                 </div>
-                <p class="comment-text"><%= comment.text %></p>
-                <div class="comment-actions">
-                  <button class="comment-action">
-                    <i class="fa-regular fa-heart"></i>
-                    <span><%= comment.likes || 0 %></span>
-                  </button>
+                <div class="comment-content">
+                  <div class="comment-header">
+                    <a href="/users/<%= comment.userId.username %>" class="comment-author" style="text-decoration: none; color: var(--text-primary); transition: color 0.2s;">
+                      <%= comment.userId.username %>
+                    </a>
+                    <span class="comment-time"><%= new Date(comment.createdAt).toLocaleString('vi-VN') %></span>
+                  </div>
+                  <p class="comment-text"><%= comment.text %></p>
+                  <div class="comment-actions">
+                    <button class="comment-action">
+                      <i class="fa-regular fa-heart"></i>
+                      <span><%= comment.likes || 0 %></span>
+                    </button>
+                  </div>
                 </div>
               </div>
+            <% }) %>
+          <% } else { %>
+            <div class="empty-comments">
+              <p>No comments yet. Be the first to comment!</p>
             </div>
-          <% }) %>
-        <% } else { %>
-          <div class="empty-comments">
-            <p>No comments yet. Be the first to comment!</p>
-          </div>
-        <% } %>
+          <% } %>
+        </div>
       </div>
     </div>
-  </div>
 
-  <!-- SIDEBAR -->
-  <aside class="sidebar">
-    <!-- Related Tracks Section -->
-    <div class="sidebar-section">
-      <div class="sidebar-header">
-        <h3 class="sidebar-title">Bài hát liên quan</h3>
-        <a href="#" class="view-all">View all</a>
-      </div>
-      <div id="relatedTracks">
-        <!-- Related tracks will be loaded here -->
-        <% if (typeof relatedTracks !== 'undefined' && relatedTracks.length > 0) { %>
-          <% relatedTracks.slice(0, 5).forEach(relatedTrack => { %>
-            <div class="related-track" onclick="window.location.href='/tracks/<%= relatedTrack._id %>'">
-              <div class="related-track-cover">
-                <img src="<%= relatedTrack.coverUrl || 'https://images.unsplash.com/photo-1514525253161-7a46d19cd819?w=200' %>" alt="<%= relatedTrack.title %>">
-                <div class="related-track-play">
-                  <i class="fa-solid fa-play"></i>
-                </div>
-              </div>
-              <div class="related-track-info">
-                <div class="related-track-title"><%= relatedTrack.title %></div>
-                <div class="related-track-artist"><%= relatedTrack.artist || 'Unknown Artist' %></div>
-                <div class="related-track-stats">
-                  <span class="related-track-stat">
+    <!-- SIDEBAR -->
+    <aside class="sidebar">
+      <!-- Related Tracks Section -->
+      <div class="sidebar-section">
+        <div class="sidebar-header">
+          <h3 class="sidebar-title">Bài hát liên quan</h3>
+          <a href="#" class="view-all">View all</a>
+        </div>
+        <div id="relatedTracks">
+          <% if (typeof relatedTracks !== 'undefined' && relatedTracks.length > 0) { %>
+            <% relatedTracks.slice(0, 5).forEach(relatedTrack => { %>
+              <div class="related-track" onclick="window.location.href='/track/<%= relatedTrack._id %>'">
+                <div class="related-track-cover">
+                  <img src="<%= relatedTrack.coverUrl || 'https://images.unsplash.com/photo-1514525253161-7a46d19cd819?w=200' %>" alt="<%= relatedTrack.title %>">
+                  <div class="related-track-play">
                     <i class="fa-solid fa-play"></i>
-                    <%= relatedTrack.plays || 0 %>
-                  </span>
-                  <span class="related-track-stat">
-                    <i class="fa-solid fa-heart"></i>
-                    <%= relatedTrack.likes || 0 %>
-                  </span>
+                  </div>
+                </div>
+                <div class="related-track-info">
+                  <div class="related-track-title"><%= relatedTrack.title %></div>
+                  <div class="related-track-artist"><%= relatedTrack.artist || 'Unknown Artist' %></div>
+                  <div class="related-track-stats">
+                    <span class="related-track-stat">
+                      <i class="fa-solid fa-play"></i>
+                      <%= relatedTrack.plays || 0 %>
+                    </span>
+                    <span class="related-track-stat">
+                      <i class="fa-solid fa-heart"></i>
+                      <%= relatedTrack.likes || 0 %>
+                    </span>
+                  </div>
                 </div>
               </div>
-            </div>
-          <% }) %>
-        <% } else { %>
-          <p style="color: var(--text-secondary); font-size: 13px; text-align: center; padding: 20px 0;">
-            Không có bài hát liên quan
-          </p>
-        <% } %>
+            <% }) %>
+          <% } else { %>
+            <p style="color: var(--text-secondary); font-size: 13px; text-align: center; padding: 20px 0;">
+              Không có bài hát liên quan
+            </p>
+          <% } %>
+        </div>
       </div>
-    </div>
 
-    <!-- In Playlists Section -->
-    <div class="sidebar-section">
-      <div class="sidebar-header">
-        <h3 class="sidebar-title">In Playlists</h3>
-        <a href="/playlists" class="view-all">View all</a>
+      <!-- In Playlists Section -->
+      <div class="sidebar-section">
+        <div class="sidebar-header">
+          <h3 class="sidebar-title">In Playlists</h3>
+          <a href="/playlists" class="view-all">View all</a>
+        </div>
+        <div id="inPlaylists">
+          <% if (typeof playlists !== 'undefined' && playlists.length > 0) { %>
+            <% playlists.slice(0, 3).forEach(playlist => { %>
+              <a href="/playlists/<%= playlist._id %>" class="playlist-item">
+                <div class="playlist-cover">
+                  <img src="<%= playlist.coverUrl || 'https://images.unsplash.com/photo-1470225620780-dba8ba36b745?w=200' %>" alt="<%= playlist.name %>">
+                </div>
+                <div class="playlist-info">
+                  <div class="playlist-name"><%= playlist.name %></div>
+                  <div class="playlist-author"><%= playlist.userId?.username || 'Unknown' %></div>
+                </div>
+              </a>
+            <% }) %>
+          <% } else { %>
+            <p style="color: var(--text-secondary); font-size: 13px; text-align: center; padding: 20px 0;">
+              Chưa có playlist nào
+            </p>
+          <% } %>
+        </div>
       </div>
-      <div id="inPlaylists">
-        <!-- Playlists containing this track -->
-        <% if (typeof playlists !== 'undefined' && playlists.length > 0) { %>
-          <% playlists.slice(0, 3).forEach(playlist => { %>
-            <a href="/playlists/<%= playlist._id %>" class="playlist-item">
-              <div class="playlist-cover">
-                <img src="<%= playlist.coverUrl || 'https://images.unsplash.com/photo-1470225620780-dba8ba36b745?w=200' %>" alt="<%= playlist.name %>">
-              </div>
-              <div class="playlist-info">
-                <div class="playlist-name"><%= playlist.name %></div>
-                <div class="playlist-author"><%= playlist.userId?.username || 'Unknown' %></div>
-              </div>
-            </a>
-          <% }) %>
-        <% } else { %>
-          <p style="color: var(--text-secondary); font-size: 13px; text-align: center; padding: 20px 0;">
-            Chưa có playlist nào
-          </p>
-        <% } %>
-      </div>
-    </div>
-  </aside>
-</div>
+    </aside>
+  </div>
   
   <!-- MUSIC PLAYER - Fixed Bottom -->
   <div class="music-player" id="musicPlayer">
@@ -341,14 +328,16 @@
   
   <script src="/public/js/player.js"></script>
   <script>
-    const trackData = {
-  id: document.querySelector('[data-track-id]')?.dataset.trackId || '',
-  title: '',
-  artist: '',
-  cover: '',
-  audioUrl: ''
+// Track data
+const trackData = {
+  id: '<%= track._id %>',
+  title: '<%= track.title.replace(/'/g, "\\'") %>',
+  artist: '<%= (track.artist || "Unknown Artist").replace(/'/g, "\\'") %>',
+  cover: '<%= track.coverUrl || "" %>',
+  audioUrl: '<%= track.audioUrl %>'
 };
 
+// Search functionality
 function initSearch() {
   const searchInput = document.getElementById('searchInput');
   const searchClear = document.getElementById('searchClear');
@@ -369,7 +358,7 @@ function initSearch() {
       return;
     }
     
-    searchDropdown.innerHTML = '<div class="search-dropdown-loading"><i class="fa-solid fa-spinner"></i> Đang tìm kiếm...</div>';
+    searchDropdown.innerHTML = '<div class="search-dropdown-loading"><i class="fa-solid fa-spinner fa-spin"></i> Đang tìm kiếm...</div>';
     searchDropdown.classList.add('active');
     
     searchTimeout = setTimeout(async () => {
@@ -377,12 +366,13 @@ function initSearch() {
         const res = await fetch(`/api/search?q=${encodeURIComponent(query)}`);
         const data = await res.json();
         
-        if (data.success && data.tracks && data.tracks.length > 0) {
-          displaySearchResults(data.tracks);
+        if (data.success) {
+          displaySearchResults(data.users || [], data.tracks || [], query);
         } else {
           searchDropdown.innerHTML = '<div class="search-dropdown-empty">Không tìm thấy kết quả</div>';
         }
       } catch (err) {
+        console.error('Search error:', err);
         searchDropdown.innerHTML = '<div class="search-dropdown-empty">Lỗi khi tìm kiếm</div>';
       }
     }, 300);
@@ -396,7 +386,7 @@ function initSearch() {
   });
   
   document.addEventListener('click', (e) => {
-    if (!e.target.closest('.search-bar')) {
+    if (!e.target.closest('.search-container')) {
       searchDropdown.classList.remove('active');
     }
   });
@@ -407,29 +397,81 @@ function initSearch() {
     }
   });
   
-  function displaySearchResults(tracks) {
-    if (!tracks || tracks.length === 0) {
-      searchDropdown.innerHTML = '<div class="search-dropdown-empty">Không tìm thấy bài hát</div>';
-      return;
+  searchInput.addEventListener('keydown', (e) => {
+    if (e.key === 'Escape') {
+      searchInput.value = '';
+      searchClear.classList.remove('active');
+      searchDropdown.classList.remove('active');
+      searchInput.blur();
     }
-    
-    const html = tracks.slice(0, 8).map(track => `
-      <a href="/track/${track._id}" class="search-dropdown-item">
-        <div class="search-dropdown-cover">
-          <img src="${track.coverUrl || 'https://images.unsplash.com/photo-1514525253161-7a46d19cd819?w=100'}" alt="${track.title}">
-        </div>
-        <div class="search-dropdown-info">
-          <div class="search-dropdown-title">${track.title}</div>
-          <div class="search-dropdown-artist">${track.artist || 'Unknown Artist'}</div>
-        </div>
-        <div class="search-dropdown-play" onclick="event.preventDefault(); event.stopPropagation(); playTrackFromSearch('${track._id}', '${track.title.replace(/'/g, "\\'")}', '${(track.artist || 'Unknown').replace(/'/g, "\\'")}', '${track.coverUrl || ''}', '${track.audioUrl}')">
-          <i class="fa-solid fa-play"></i>
-        </div>
-      </a>
-    `).join('');
-    
-    searchDropdown.innerHTML = html;
+  });
+}
+
+function displaySearchResults(users, tracks, query) {
+  const searchDropdown = document.getElementById('searchDropdown');
+  
+  if (!searchDropdown) return;
+  
+  if (users.length === 0 && tracks.length === 0) {
+    searchDropdown.innerHTML = '<div class="search-dropdown-empty">Không tìm thấy kết quả</div>';
+    return;
   }
+  
+  let html = '';
+  
+  // Display users
+  if (users.length > 0) {
+    html += '<div class="search-section-title">Nghệ sĩ</div>';
+    
+    users.slice(0, 5).forEach(user => {
+      const avatarHtml = user.avatarUrl 
+        ? `<img src="${user.avatarUrl}" alt="${user.username}">`
+        : `<div class="avatar-placeholder">${user.username.charAt(0).toUpperCase()}</div>`;
+      
+      html += `
+        <a href="/users/${user.username}" class="search-dropdown-item search-artist-item">
+          <div class="search-dropdown-cover artist-avatar">
+            ${avatarHtml}
+          </div>
+          <div class="search-dropdown-info">
+            <div class="search-dropdown-title">${user.name || user.username}</div>
+            <div class="search-dropdown-artist">@${user.username} • ${user.trackCount || 0} bài hát</div>
+          </div>
+          <div class="search-dropdown-badge">
+            <i class="fa-solid fa-user"></i>
+          </div>
+        </a>
+      `;
+    });
+  }
+  
+  // Display tracks
+  if (tracks.length > 0) {
+    html += '<div class="search-section-title">Bài hát</div>';
+    
+    tracks.slice(0, 8).forEach(track => {
+      const trackTitle = track.title.replace(/'/g, "\\'").replace(/"/g, '&quot;');
+      const trackArtist = (track.artist || 'Unknown Artist').replace(/'/g, "\\'").replace(/"/g, '&quot;');
+      const trackCover = track.coverUrl || 'https://images.unsplash.com/photo-1514525253161-7a46d19cd819?w=100';
+      
+      html += `
+        <a href="/track/${track._id}" class="search-dropdown-item">
+          <div class="search-dropdown-cover">
+            <img src="${trackCover}" alt="${track.title}">
+          </div>
+          <div class="search-dropdown-info">
+            <div class="search-dropdown-title">${track.title}</div>
+            <div class="search-dropdown-artist">${track.artist || 'Unknown Artist'}</div>
+          </div>
+          <div class="search-dropdown-play" onclick="event.preventDefault(); event.stopPropagation(); playTrackFromSearch('${track._id}', '${trackTitle}', '${trackArtist}', '${trackCover}', '${track.audioUrl}')">
+            <i class="fa-solid fa-play"></i>
+          </div>
+        </a>
+      `;
+    });
+  }
+  
+  searchDropdown.innerHTML = html;
 }
 
 window.playTrackFromSearch = function(id, title, artist, cover, audioUrl) {
@@ -438,6 +480,7 @@ window.playTrackFromSearch = function(id, title, artist, cover, audioUrl) {
   }
 };
 
+// Waveform
 function initWaveform() {
   const waveform = document.getElementById('waveform');
   const waveformContainer = document.querySelector('.waveform-container');
@@ -486,7 +529,6 @@ function initWaveform() {
     
     audio.currentTime = newTime;
     updateWaveformProgress();
-    updateUI();
   }
   
   function updateWaveformProgress() {
@@ -510,6 +552,7 @@ function initWaveform() {
   return { updateWaveformProgress };
 }
 
+// Player UI
 function initPlayerUI() {
   const mainPlayBtn = document.getElementById('mainPlayBtn');
   const currentTimeEl = document.getElementById('currentTime');
@@ -559,6 +602,7 @@ function initPlayerUI() {
   return { updateUI };
 }
 
+// Actions
 function initActions() {
   const likeBtn = document.getElementById('likeBtn');
   const addToQueueBtn = document.getElementById('addToQueueBtn');
@@ -585,7 +629,9 @@ function initActions() {
   
   if (addToQueueBtn) {
     addToQueueBtn.addEventListener('click', () => {
-      window.player.addToQueue(trackData);
+      if (window.player) {
+        window.player.addToQueue(trackData);
+      }
     });
   }
   
@@ -618,11 +664,15 @@ function initActions() {
   }
 }
 
+// Init page
 function initDetailPage() {
   if (!window.player) {
     setTimeout(initDetailPage, 100);
     return;
   }
+  
+  console.log('Initializing track detail page...');
+  console.log('Track data:', trackData);
   
   initSearch();
   
@@ -661,6 +711,8 @@ function initDetailPage() {
   }
   
   initActions();
+  
+  console.log('Track detail page initialized');
 }
 
 if (document.readyState === 'loading') {

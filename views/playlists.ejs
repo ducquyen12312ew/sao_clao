@@ -45,9 +45,15 @@
       </nav>
     </div>
     <div class="header-actions">
-      <div class="user-avatar" onclick="window.location.href='/users/<%= user.username %>'">
-        <%= user.username.charAt(0).toUpperCase() %>
-      </div>
+ <a href="/users/<%= user.username %>" style="text-decoration: none;">
+        <div class="user-avatar">
+          <% if (user.avatarUrl) { %>
+            <img src="<%= user.avatarUrl %>" alt="<%= user.username %>">
+          <% } else { %>
+            <%= user.username.charAt(0).toUpperCase() %>
+          <% } %>
+        </div>
+      </a>
       <form method="post" action="/logout" style="display:inline">
         <button type="submit" class="btn-logout">Đăng xuất</button>
       </form>

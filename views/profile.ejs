@@ -77,13 +77,15 @@
         <span class="btn-text">Upload</span>
       </button>
 
-      <a href="/users/<%= user.username %>" class="user-avatar-link">
-        <a href="/users/<%= user.username %>" style="text-decoration: none;">
+     <a href="/users/<%= user.username %>" style="text-decoration: none;">
   <div class="user-avatar">
-    <%= user.username.charAt(0).toUpperCase() %>
+    <% if (user.avatarUrl) { %>
+      <img src="<%= user.avatarUrl %>" alt="<%= user.username %>">
+    <% } else { %>
+      <%= user.username.charAt(0).toUpperCase() %>
+    <% } %>
   </div>
 </a>
-      </a>
       
       <form method="post" action="/logout" style="display:inline; margin-left: 12px;">
         <button type="submit" class="btn-logout">Đăng xuất</button>
@@ -540,28 +542,30 @@ function displaySearchResults(users, tracks, query) {
   
   let html = '';
   
+
   if (users.length > 0) {
     html += '<div class="search-section-title">Nghệ sĩ</div>';
     
-    users.slice(0, 5).forEach(user => {
-      html += `
-        <a href="/users/${user.username}" class="search-dropdown-item search-artist-item">
-          <div class="search-dropdown-cover artist-avatar">
-            ${user.avatarUrl 
-              ? `<img src="${user.avatarUrl}" alt="${user.username}">` 
-              : `<div class="avatar-placeholder">${user.username.charAt(0).toUpperCase()}</div>`
-            }
-          </div>
-          <div class="search-dropdown-info">
-            <div class="search-dropdown-title">${user.name || user.username}</div>
-            <div class="search-dropdown-artist">@${user.username} • ${user.trackCount || 0} bài hát</div>
-          </div>
-          <div class="search-dropdown-badge">
-            <i class="fa-solid fa-user"></i>
-          </div>
-        </a>
-      `;
-    });
+   users.slice(0, 5).forEach(user => {
+  const avatarHtml = user.avatarUrl 
+    ? `<img src="${user.avatarUrl}" alt="${user.username}">`
+    : `<div class="avatar-placeholder">${user.username.charAt(0).toUpperCase()}</div>`;
+  
+  html += `
+    <a href="/users/${user.username}" class="search-dropdown-item search-artist-item">
+      <div class="search-dropdown-cover artist-avatar">
+        ${avatarHtml}
+      </div>
+      <div class="search-dropdown-info">
+        <div class="search-dropdown-title">${user.name || user.username}</div>
+        <div class="search-dropdown-artist">@${user.username} • ${user.trackCount || 0} bài hát</div>
+      </div>
+      <div class="search-dropdown-badge">
+        <i class="fa-solid fa-user"></i>
+      </div>
+    </a>
+  `;
+});
   }
   
   if (tracks.length > 0) {
