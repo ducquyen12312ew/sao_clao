@@ -1,0 +1,79 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title><%= title %></title>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="/public/css/admin.css">
+</head>
+<body>
+  <div class="admin-layout">
+    <aside class="sidebar">
+      <div class="logo">BẢNG QUẢN TRỊ SAOCLAO</div>
+      <nav class="nav">
+        <a href="/admin/dashboard" class="nav-item">Bảng điều khiển</a>
+        <a href="/admin/tracks" class="nav-item">Bài nhạc</a>
+        <a href="/admin/comments" class="nav-item active">Bình luận</a>
+        <a href="/" class="nav-item">Quay lại trang chính</a>
+      </nav>
+      <div class="user-info">
+        <div class="user-name"><%= user.name %></div>
+        <div class="user-role">Quản trị viên</div>
+      </div>
+    </aside>
+
+    <main class="content">
+      <header class="header">
+        <h1>Quản lý bình luận</h1>
+      </header>
+
+      <div class="table-container">
+        <table class="data-table">
+          <thead>
+            <tr>
+              <th>Người dùng</th>
+              <th>Bài nhạc</th>
+              <th>Nội dung bình luận</th>
+              <th>Ngày tạo</th>
+              <th>Thao tác</th>
+            </tr>
+          </thead>
+          <tbody>
+            <% if (comments.length === 0) { %>
+              <tr>
+                <td colspan="5" class="empty">Không tìm thấy bình luận nào</td>
+              </tr>
+            <% } else { %>
+              <% comments.forEach(comment => { %>
+                <tr>
+                  <td><%= comment.userId.username %></td>
+                  <td><%= comment.trackId.title %></td>
+                  <td class="comment-text"><%= comment.text %></td>
+                  <td><%= new Date(comment.createdAt).toLocaleDateString('vi-VN') %></td>
+                  <td>
+                    <button class="btn-icon delete" onclick="deleteComment('<%= comment._id %>')">Xóa</button>
+                  </td>
+                </tr>
+              <% }) %>
+            <% } %>
+          </tbody>
+        </table>
+      </div>
+    </main>
+  </div>
+
+  <script>
+    async function deleteComment(id) {
+      if (!confirm('Bạn có chắc muốn xóa bình luận này không?')) return;
+      try {
+        const res = await fetch(`/admin/comments/${id}`, { method: 'DELETE' });
+        const data = await res.json();
+        if (data.success) location.reload();
+      } catch (err) {
+        alert('Lỗi: ' + err.message);
+      }
+    }
+  </script>
+</body>
+</html>

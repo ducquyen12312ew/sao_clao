@@ -7,7 +7,6 @@ const dotenv = require('dotenv');
 
 dotenv.config();
 
-// Import database
 const {
   connectDB,
   TrackCollection,
@@ -18,26 +17,23 @@ const {
   FollowCollection
 } = require('./config');
 
-// Import routes
 const uploadRoutes = require('./upload-routes');
 const playlistRoutes = require('./playlist-routes');
 const userRoutes = require('./user-routes');
 const settingsRoutes = require('./settings-routes');
+const adminRoutes = require('./admin-routes');
 
 const app = express();
 const SALT_ROUNDS = 10;
 
-// View engine
 app.set('view engine', 'ejs');
 app.set('views', path.join(__dirname, '..', 'views'));
 app.use('/public', express.static(path.join(__dirname, '..', 'public')));
 
-// Middleware
 app.use(express.urlencoded({ extended: true }));
 app.use(express.json());
 app.get('/favicon.ico', (req, res) => res.status(204).end());
 
-// Session configuration
 const sessionSecret = process.env.SESSION_SECRET || 'dev_secret_change_in_production';
 app.use(session({
   secret: sessionSecret,
@@ -58,7 +54,6 @@ app.use(session({
   })
 }));
 
-// Flash messages và user context
 app.use((req, res, next) => {
   res.locals.currentUser = req.session.user || null;
   res.locals.flash = req.session.flash || null;
@@ -66,7 +61,6 @@ app.use((req, res, next) => {
   next();
 });
 
-// Middleware yêu cầu đăng nhập
 const requireAuth = (req, res, next) => {
   if (!req.session.user) {
     req.session.flash = { type: 'warning', message: 'Vui lòng đăng nhập.' };
@@ -77,13 +71,17 @@ const requireAuth = (req, res, next) => {
   next();
 };
 
-// Trang chủ
+// Helper: filter tracks theo role
+const getTrackFilter = (user) => {
+  return user?.role === 'admin' ? {} : { status: 'approved' };
+};
+
 app.get('/', async (req, res) => {
   try {
     if (req.session.user) return res.redirect('/profile');
     
     const tracks = await TrackCollection
-      .find()
+      .find({ status: 'approved' })
       .sort({ createdAt: -1 })
       .limit(12)
       .lean();
@@ -97,7 +95,6 @@ app.get('/', async (req, res) => {
   }
 });
 
-// Trang đăng ký
 app.get('/signup', (req, res) => {
   if (req.session.user) {
     req.session.flash = { type: 'info', message: 'Bạn đã đăng nhập rồi.' };
@@ -106,20 +103,17 @@ app.get('/signup', (req, res) => {
   res.render('signup', { title: 'Create account' });
 });
 
-// Xử lý đăng ký
 app.post('/signup', async (req, res) => {
   if (req.session.user) return res.redirect('/');
 
   try {
     const { name, username, email, password } = req.body;
     
-    // Kiểm tra dữ liệu
     if (!name || !username || !email || !password) {
       req.session.flash = { type: 'danger', message: 'Vui lòng điền đầy đủ thông tin.' };
       return req.session.save(() => res.redirect('/signup'));
     }
     
-    // Kiểm tra user đã tồn tại
     const exists = await UserCollection.findOne({ 
       $or: [{ email }, { username }] 
     });
@@ -129,7 +123,6 @@ app.post('/signup', async (req, res) => {
       return req.session.save(() => res.redirect('/signup'));
     }
     
-    // Tạo user mới
     const passwordHash = await bcrypt.hash(password, SALT_ROUNDS);
     await UserCollection.create({ name, username, email, passwordHash });
     
@@ -142,20 +135,17 @@ app.post('/signup', async (req, res) => {
   }
 });
 
-// Trang đăng nhập
 app.get('/login', (req, res) => {
   if (req.session.user) return res.redirect('/profile');
   res.render('login', { title: 'Sign in' });
 });
 
-// Xử lý đăng nhập
 app.post('/login', async (req, res) => {
   if (req.session.user) return res.redirect('/profile');
   
   try {
     const { identifier, password } = req.body;
     
-    // Tìm user theo email hoặc username
     const user = await UserCollection.findOne({ 
       $or: [{ email: identifier }, { username: identifier }] 
     });
@@ -165,21 +155,24 @@ app.post('/login', async (req, res) => {
       return req.session.save(() => res.redirect('/login'));
     }
     
-    // Kiểm tra mật khẩu
     const ok = await bcrypt.compare(password, user.passwordHash);
     if (!ok) { 
       req.session.flash = { type: 'danger', message: 'Sai thông tin đăng nhập.' }; 
       return req.session.save(() => res.redirect('/login'));
     }
     
-    // Lưu session
     req.session.user = { 
       id: user._id, 
       name: user.name, 
       username: user.username,
       avatarUrl: user.avatarUrl || '',
-      bio: user.bio || ''
+      bio: user.bio || '',
+      role: user.role || 'user'
     };
+    
+    if (user.role === 'admin') {
+      return req.session.save(() => res.redirect('/admin/dashboard'));
+    }
     
     req.session.save(() => res.redirect('/profile'));
     
@@ -189,7 +182,6 @@ app.post('/login', async (req, res) => {
   }
 });
 
-// Đăng xuất
 const doLogout = (req, res) => {
   req.session.destroy(() => res.redirect('/'));
 };
@@ -197,23 +189,25 @@ const doLogout = (req, res) => {
 app.get('/logout', doLogout);
 app.post('/logout', doLogout);
 
-// Mount routes
 app.use('/upload', uploadRoutes);
 app.use('/playlists', playlistRoutes);
 app.use('/users', userRoutes);  
 app.use('/settings', settingsRoutes);
+app.use('/admin', adminRoutes);
 
-// Trang profile với gợi ý thông minh
 app.get(['/me', '/profile'], requireAuth, async (req, res) => {
   try {
     const userId = req.session.user.id;
+    const filter = getTrackFilter(req.session.user);
 
-    // Lấy các bài hát đã nghe gần đây
     const recentPlays = await PlayHistoryCollection
       .find({ userId })
       .sort({ playedAt: -1 })
       .limit(20)
-      .populate('trackId')
+      .populate({
+        path: 'trackId',
+        match: filter
+      })
       .lean();
     
     const seenTracks = new Set();
@@ -227,22 +221,23 @@ app.get(['/me', '/profile'], requireAuth, async (req, res) => {
       }
     }
 
-    // Lấy playlist của user
     const playlists = await PlaylistCollection
       .find({ userId })
-      .populate('tracks')
+      .populate({
+        path: 'tracks',
+        match: filter
+      })
       .sort({ updatedAt: -1 })
       .limit(6)
       .lean();
     
-    // Gợi ý dựa trên lịch sử nghe
     let moreOfWhatYouLike = [];
     
     if (recentlyPlayed.length > 0) {
       const lastTrack = recentlyPlayed[0];
       
-      // Tìm bài tương tự theo thể loại, tag, mood
       const similarTracks = await TrackCollection.find({
+        ...filter,
         _id: { $ne: lastTrack._id },
         $or: [
           { genres: { $in: lastTrack.genres || [] } },
@@ -251,7 +246,6 @@ app.get(['/me', '/profile'], requireAuth, async (req, res) => {
         ]
       }).limit(30).lean();
       
-      // Tính điểm và sắp xếp
       const scoredTracks = similarTracks.map(track => {
         let score = 0;
         
@@ -280,7 +274,10 @@ app.get(['/me', '/profile'], requireAuth, async (req, res) => {
         .slice(0, 12);
     } else {
       moreOfWhatYouLike = await TrackCollection
-        .aggregate([{ $sample: { size: 12 } }]);
+        .aggregate([
+          { $match: filter },
+          { $sample: { size: 12 } }
+        ]);
     }
 
     res.render('profile', {
@@ -295,7 +292,6 @@ app.get(['/me', '/profile'], requireAuth, async (req, res) => {
   }
 });
 
-// Lưu lịch sử phát nhạc
 app.post('/api/plays/:trackId', requireAuth, async (req, res) => {
   try {
     const trackId = req.params.trackId;
@@ -318,7 +314,6 @@ app.post('/api/plays/:trackId', requireAuth, async (req, res) => {
   }
 });
 
-// Lấy danh sách playlist
 app.get('/api/playlists', requireAuth, async (req, res) => {
   try {
     const playlists = await PlaylistCollection
@@ -333,7 +328,6 @@ app.get('/api/playlists', requireAuth, async (req, res) => {
   }
 });
 
-// Tìm kiếm bài hát và user
 app.get('/api/search', requireAuth, async (req, res) => {
   try {
     const { q } = req.query;
@@ -343,9 +337,10 @@ app.get('/api/search', requireAuth, async (req, res) => {
     }
     
     const query = q.trim();
+    const filter = getTrackFilter(req.session.user);
     
-    // Tìm bài hát
     const tracks = await TrackCollection.find({
+      ...filter,
       $or: [
         { title: { $regex: query, $options: 'i' } },
         { artist: { $regex: query, $options: 'i' } },
@@ -358,7 +353,6 @@ app.get('/api/search', requireAuth, async (req, res) => {
     .limit(20)
     .lean();
     
-    // Tìm user
     const users = await UserCollection.find({
       $or: [
         { username: { $regex: query, $options: 'i' } },
@@ -369,10 +363,12 @@ app.get('/api/search', requireAuth, async (req, res) => {
     .limit(10)
     .lean();
     
-    // Đếm số bài hát của mỗi user
     const usersWithTrackCount = await Promise.all(
       users.map(async (user) => {
-        const trackCount = await TrackCollection.countDocuments({ userId: user._id });
+        const trackCount = await TrackCollection.countDocuments({ 
+          userId: user._id,
+          ...filter
+        });
         return { ...user, trackCount };
       })
     );
@@ -392,11 +388,11 @@ app.get('/api/search', requireAuth, async (req, res) => {
   }
 });
 
-// Gợi ý bài hát tương tự
 app.get('/api/recommendations/:trackId', requireAuth, async (req, res) => {
   try {
     const { trackId } = req.params;
     const limit = parseInt(req.query.limit) || 10;
+    const filter = getTrackFilter(req.session.user);
     
     const sourceTrack = await TrackCollection.findById(trackId).lean();
     
@@ -405,6 +401,7 @@ app.get('/api/recommendations/:trackId', requireAuth, async (req, res) => {
     }
     
     const recommendations = await TrackCollection.find({
+      ...filter,
       _id: { $ne: trackId },
       $or: [
         { genres: { $in: sourceTrack.genres || [] } },
@@ -445,13 +442,14 @@ app.get('/api/recommendations/:trackId', requireAuth, async (req, res) => {
   }
 });
 
-// Lấy bài hát theo thể loại
 app.get('/api/tracks/genre/:genre', requireAuth, async (req, res) => {
   try {
     const { genre } = req.params;
     const limit = parseInt(req.query.limit) || 20;
+    const filter = getTrackFilter(req.session.user);
     
     const tracks = await TrackCollection.find({
+      ...filter,
       genres: { $regex: new RegExp(genre, 'i') }
     }).limit(limit).lean();
     
@@ -461,13 +459,14 @@ app.get('/api/tracks/genre/:genre', requireAuth, async (req, res) => {
   }
 });
 
-// Lấy bài hát theo mood
 app.get('/api/tracks/mood/:mood', requireAuth, async (req, res) => {
   try {
     const { mood } = req.params;
     const limit = parseInt(req.query.limit) || 20;
+    const filter = getTrackFilter(req.session.user);
     
     const tracks = await TrackCollection.find({
+      ...filter,
       mood: { $regex: new RegExp(mood, 'i') }
     }).limit(limit).lean();
     
@@ -477,27 +476,29 @@ app.get('/api/tracks/mood/:mood', requireAuth, async (req, res) => {
   }
 });
 
-// Lấy danh sách thể loại
 app.get('/api/genres', requireAuth, async (req, res) => {
   try {
-    const genres = await TrackCollection.distinct('genres');
-    res.json({ success: true, genres: genres.filter(g => g).sort() });
+    const filter = getTrackFilter(req.session.user);
+    const tracks = await TrackCollection.find(filter).select('genres').lean();
+    const genresSet = new Set();
+    tracks.forEach(t => (t.genres || []).forEach(g => genresSet.add(g)));
+    const genres = Array.from(genresSet).filter(g => g).sort();
+    res.json({ success: true, genres });
   } catch (err) {
     res.status(500).json({ success: false, genres: [], error: err.message });
   }
 });
 
-// Lấy danh sách mood
 app.get('/api/moods', requireAuth, async (req, res) => {
   try {
-    const moods = await TrackCollection.distinct('mood');
+    const filter = getTrackFilter(req.session.user);
+    const moods = await TrackCollection.distinct('mood', filter);
     res.json({ success: true, moods: moods.filter(m => m).sort() });
   } catch (err) {
     res.status(500).json({ success: false, moods: [], error: err.message });
   }
 });
 
-// Tìm kiếm user
 app.get('/api/search/users', requireAuth, async (req, res) => {
   try {
     const { q } = req.query;
@@ -522,26 +523,28 @@ app.get('/api/search/users', requireAuth, async (req, res) => {
   }
 });
 
-// Chi tiết bài hát
 app.get('/track/:id', requireAuth, async (req, res) => {
   try {
-    const track = await TrackCollection.findById(req.params.id)
-      .populate('userId', 'username name')  
-      .lean();
+    const filter = getTrackFilter(req.session.user);
+    const track = await TrackCollection.findOne({
+      _id: req.params.id,
+      ...filter
+    })
+    .populate('userId', 'username name')  
+    .lean();
     
     if (!track) {
       return res.status(404).render('404', { title: 'Track not found' });
     }
     
-    // Lấy comment
     const comments = await CommentCollection
       .find({ trackId: req.params.id })
-      .populate('userId', 'username')
+      .populate('userId', 'username avatarUrl')
       .sort({ createdAt: -1 })
       .lean();
     
-    // Bài hát liên quan
     const relatedTracks = await TrackCollection.find({
+      ...filter,
       _id: { $ne: track._id },
       genres: { $in: track.genres || [] }
     })
@@ -549,7 +552,6 @@ app.get('/track/:id', requireAuth, async (req, res) => {
     .select('_id title artist coverUrl genres playCount')
     .lean();
     
-    // Playlist chứa bài này
     const playlists = await PlaylistCollection.find({
       tracks: track._id
     })
@@ -571,7 +573,6 @@ app.get('/track/:id', requireAuth, async (req, res) => {
   }
 });
 
-// Like bài hát
 app.post('/api/tracks/:id/like', requireAuth, async (req, res) => {
   try {
     const track = await TrackCollection.findByIdAndUpdate(
@@ -590,7 +591,6 @@ app.post('/api/tracks/:id/like', requireAuth, async (req, res) => {
   }
 });
 
-// Thêm comment
 app.post('/api/tracks/:id/comments', requireAuth, async (req, res) => {
   try {
     const { text } = req.body;
@@ -610,7 +610,7 @@ app.post('/api/tracks/:id/comments', requireAuth, async (req, res) => {
     
     const populatedComment = await CommentCollection
       .findById(comment._id)
-      .populate('userId', 'username')
+      .populate('userId', 'username avatarUrl')
       .lean();
     
     res.json({ success: true, comment: populatedComment });
@@ -619,18 +619,15 @@ app.post('/api/tracks/:id/comments', requireAuth, async (req, res) => {
   }
 });
 
-
-// 404 handler
 app.use((req, res) => {
   res.status(404).render('404', { title: 'Not found' });
 });
 
-// Error handler
 app.use((err, req, res, next) => {
+  console.error(err);
   res.status(500).send('Internal Server Error');
 });
 
-// Khởi động server
 const PORT = process.env.PORT || 3000;
 
 async function startServer() {
@@ -643,6 +640,7 @@ async function startServer() {
     });
     
   } catch (err) {
+    console.error('Server start error:', err);
     process.exit(1);
   }
 }

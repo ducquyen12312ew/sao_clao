@@ -1,0 +1,60 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title><%= title %></title>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="/public/css/admin.css">
+</head>
+<body>
+  <div class="admin-layout">
+    <aside class="sidebar">
+      <div class="logo">BẢNG QUẢN TRỊ SAOCLAO</div>
+      <nav class="nav">
+        <a href="/admin/dashboard" class="nav-item active">Bảng điều khiển</a>
+        <a href="/admin/tracks" class="nav-item">Bài nhạc</a>
+        <a href="/admin/comments" class="nav-item">Bình luận</a>
+        <a href="/" class="nav-item">Quay lại trang chính</a>
+      </nav>
+      <div class="user-info">
+        <div class="user-name"><%= user.name %></div>
+        <div class="user-role">Quản trị viên</div>
+      </div>
+    </aside>
+
+    <main class="content">
+      <header class="header">
+        <h1>Bảng điều khiển</h1>
+      </header>
+
+      <div class="stats-grid">
+        <div class="stat-card">
+          <div class="stat-label">Bài nhạc đang chờ duyệt</div>
+          <div class="stat-value"><%= stats.pendingTracks %></div>
+        </div>
+        <div class="stat-card">
+          <div class="stat-label">Tổng số bài nhạc</div>
+          <div class="stat-value"><%= stats.totalTracks %></div>
+        </div>
+        <div class="stat-card">
+          <div class="stat-label">Tổng số người dùng</div>
+          <div class="stat-value"><%= stats.totalUsers %></div>
+        </div>
+        <div class="stat-card">
+          <div class="stat-label">Tổng số bình luận</div>
+          <div class="stat-value"><%= stats.totalComments %></div>
+        </div>
+      </div>
+
+      <div class="quick-actions">
+        <h2>Thao tác nhanh</h2>
+        <div class="action-buttons">
+          <a href="/admin/tracks?status=pending" class="btn btn-primary">Xem và duyệt bài nhạc chờ</a>
+          <a href="/admin/comments" class="btn btn-secondary">Quản lý bình luận</a>
+        </div>
+      </div>
+    </main>
+  </div>
+</body>
+</html>
