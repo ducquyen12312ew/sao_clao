@@ -7,6 +7,10 @@
 
 **SAOCLAO** là một ứng dụng web nghe nhạc lấy cảm hứng từ SoundCloud, được xây dựng với giao diện tối giản **đen – trắng**, mang phong cách hiện đại và tinh tế.
 
+Dự án hướng đến việc tạo ra một không gian âm nhạc trực tuyến nơi người dùng có thể **nghe, đăng tải và khám phá** các bản nhạc, đồng thời **kết nối với cộng đồng** yêu âm nhạc.
+
+Ứng dụng tập trung vào trải nghiệm người dùng đơn giản, hiệu ứng nhẹ nhàng và tính thẩm mỹ cao, phù hợp để triển khai thực tế hoặc sử dụng trong học tập – nghiên cứu về lập trình web fullstack.
+
 ---
 
 ## Cài đặt
@@ -56,7 +60,7 @@ npm start
 
 ---
 
-## Cấu hình Import từ YouTube
+## Import Nhạc từ YouTube
 
 ### Yêu cầu
 
@@ -73,34 +77,75 @@ D:\yt-dlp\yt-dlp.exe
 D:\ffmpeg-8.0-essentials_build\ffmpeg-8.0-essentials_build\bin\ffmpeg.exe
 ```
 
-> **Lưu ý:** Nếu phiên bản ffmpeg khác, hãy cập nhật đường dẫn trong `scripts/import-one.js`
+> **Lưu ý:** Nếu phiên bản ffmpeg khác hoặc đường dẫn khác, hãy cập nhật trong file `scripts/import-one.js` và `scripts/import-batch.js`
 
-### Sử dụng
+---
+
+### Phương thức 1: Import từng bài (import-one.js)
 
 Import một bài hát từ YouTube:
 
 ```bash
-node scripts/import-one.js "<YouTube_URL>" <username>
+node scripts/import-one.js "<YouTube_URL>" <username> [audio|video] [max_duration_seconds]
 ```
 
 **Ví dụ:**
 
 ```bash
+# Import audio (mặc định)
 node scripts/import-one.js "https://www.youtube.com/watch?v=ZlvAZsA3Nuc" quynhchi
+
+# Import audio (rõ ràng)
+node scripts/import-one.js "https://www.youtube.com/watch?v=ZlvAZsA3Nuc" quynhchi audio
+
+# Import video MV (toàn bộ)
+node scripts/import-one.js "https://www.youtube.com/watch?v=ZlvAZsA3Nuc" quynhchi video
+
+# Import video MV (chỉ 90 giây đầu)
+node scripts/import-one.js "https://www.youtube.com/watch?v=ZlvAZsA3Nuc" quynhchi video 90
 ```
 
 ---
+
+### Phương thức 2: Import hàng loạt (import-batch.js)
+
+Import nhiều bài hát cùng lúc từ file danh sách URL.
+
+#### Bước 1: Tạo file danh sách URL
+
+Tạo file `urls.txt` với mỗi dòng là một URL YouTube:
+
+```
+https://www.youtube.com/watch?v=ZlvAZsA3Nuc
+https://www.youtube.com/watch?v=dQw4w9WgXcQ
+https://www.youtube.com/watch?v=kJQP7kiw5Fk
+```
+
+#### Bước 2: Chạy lệnh import batch
+
+```bash
+node scripts/import-batch.js <urls_file.txt> <username> [audio|video] [max_duration_seconds]
+```
+
+**Ví dụ:**
+
+```bash
+# Import tất cả thành audio
+node scripts/import-batch.js urls.txt quynhchi audio
+
+# Import tất cả thành video MV (90 giây mỗi video)
+node scripts/import-batch.js urls.txt quynhchi video 90
+
+# Import tất cả thành video MV (toàn bộ)
+node scripts/import-batch.js urls.txt quynhchi video
+```
 
 ## Công nghệ sử dụng
 
 - **Backend:** Node.js, Express.js
 - **Database:** MongoDB
 - **Storage:** Cloudinary
-- **Audio Processing:** yt-dlp, ffmpeg
+- **Audio/Video Processing:** yt-dlp, ffmpeg
 - **Frontend:** EJS, CSS
 
 ---
-
-## License
-
-Dự án này là mã nguồn mở và có sẵn theo [giấy phép MIT](LICENSE).
