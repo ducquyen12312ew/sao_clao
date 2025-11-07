@@ -3,7 +3,6 @@ require('dotenv').config();
 
 const mongoURI = process.env.MONGO_URI || 'mongodb://127.0.0.1:27017/MusicCloud';
 
-// Kết nối MongoDB
 async function connectDB() {
   try {
     await mongoose.connect(mongoURI, {
@@ -19,7 +18,6 @@ async function connectDB() {
   }
 }
 
-// User Schema
 const UserSchema = new mongoose.Schema({
   name: { 
     type: String, 
@@ -71,7 +69,6 @@ const UserSchema = new mongoose.Schema({
   }
 });
 
-// Track Schema
 const TrackSchema = new mongoose.Schema({
   title: { 
     type: String, 
@@ -83,6 +80,11 @@ const TrackSchema = new mongoose.Schema({
     required: true,
     trim: true
   },
+  featuring: {
+    type: String,
+    default: '',
+    trim: true
+  },
   userId: {
     type: mongoose.Schema.Types.ObjectId,
     ref: 'User',
@@ -92,6 +94,10 @@ const TrackSchema = new mongoose.Schema({
   audioUrl: { 
     type: String, 
     required: true 
+  },
+  videoUrl: {
+    type: String,
+    default: ''
   },
   coverUrl: { 
     type: String,
@@ -142,7 +148,6 @@ const TrackSchema = new mongoose.Schema({
 
 TrackSchema.index({ title: 'text', artist: 'text', genres: 'text', tags: 'text' });
 
-// Play History Schema
 const PlayHistorySchema = new mongoose.Schema({
   userId: { 
     type: mongoose.Schema.Types.ObjectId, 
@@ -165,7 +170,6 @@ const PlayHistorySchema = new mongoose.Schema({
 
 PlayHistorySchema.index({ userId: 1, playedAt: -1 });
 
-// Playlist Schema
 const PlaylistSchema = new mongoose.Schema({
   name: { 
     type: String, 
@@ -205,7 +209,6 @@ PlaylistSchema.pre('save', function(next) {
   next();
 });
 
-// Comment Schema
 const CommentSchema = new mongoose.Schema({
   trackId: { 
     type: mongoose.Schema.Types.ObjectId, 
@@ -235,7 +238,6 @@ const CommentSchema = new mongoose.Schema({
   }
 });
 
-// Follow Schema
 const FollowSchema = new mongoose.Schema({
   follower: {
     type: mongoose.Schema.Types.ObjectId,
@@ -258,7 +260,6 @@ const FollowSchema = new mongoose.Schema({
 
 FollowSchema.index({ follower: 1, following: 1 }, { unique: true });
 
-// Report Schema - NEW
 const ReportSchema = new mongoose.Schema({
   trackId: { 
     type: mongoose.Schema.Types.ObjectId, 
@@ -310,7 +311,6 @@ const ReportSchema = new mongoose.Schema({
 ReportSchema.index({ trackId: 1, status: 1 });
 ReportSchema.index({ reporterId: 1, trackId: 1 });
 
-// Models
 const UserCollection = mongoose.model('User', UserSchema);
 const TrackCollection = mongoose.model('Track', TrackSchema);
 const PlayHistoryCollection = mongoose.model('PlayHistory', PlayHistorySchema);
@@ -319,7 +319,6 @@ const CommentCollection = mongoose.model('Comment', CommentSchema);
 const FollowCollection = mongoose.model('Follow', FollowSchema);
 const ReportCollection = mongoose.model('Report', ReportSchema);
 
-// Export
 module.exports = {
   connectDB,
   UserCollection,

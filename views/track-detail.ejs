@@ -305,15 +305,18 @@
             </button>
             <div class="track-info">
               <h1><%= track.title %></h1>
-              <div class="track-artist">
-                <% if (track.userId && track.userId.username) { %>
-                  <a href="/users/<%= track.userId.username %>" style="color: var(--text-secondary); text-decoration: none; transition: color 0.2s;">
-                    <%= track.artist || 'Unknown Artist' %>
-                  </a>
-                <% } else { %>
-                  <%= track.artist || 'Unknown Artist' %>
-                <% } %>
-              </div>
+              
+  <% if (track.userId && track.userId.username) { %>
+    <a href="/users/<%= track.userId.username %>" style="color: var(--text-secondary); text-decoration: none; transition: color 0.2s;">
+      <%= track.artist || 'Unknown Artist' %>
+    </a>
+  <% } else { %>
+    <%= track.artist || 'Unknown Artist' %>
+  <% } %>
+  <% if (track.featuring) { %>
+    <span style="color: var(--text-secondary);"> ft. <%= track.featuring %></span>
+  <% } %>
+</div>
               <% if (track.genres && track.genres.length > 0) { %>
                 <div class="track-genres">
                   <% track.genres.slice(0, 3).forEach(genre => { %>
@@ -325,12 +328,35 @@
           </div>
           
           <div class="track-meta">
-            <div class="meta-item">
-              <i class="fa-regular fa-clock"></i>
-              <span><%= new Date(track.createdAt).toLocaleDateString('vi-VN') %></span>
-            </div>
-          </div>
+  <div class="meta-item">
+    <i class="fa-regular fa-clock"></i>
+    <span><%= new Date(track.createdAt).toLocaleDateString('vi-VN') %></span>
+  </div>
+  <% if (track.videoUrl) { %>
+    <div class="meta-item">
+      <i class="fa-solid fa-video"></i>
+      <span>Music Video</span>
+    </div>
+  <% } %>
+</div>
           
+          <% if (track.videoUrl) { %>
+  <div class="video-player-container" style="margin: 24px 0; border-radius: 12px; overflow: hidden; background: #000; position: relative;">
+    <video 
+      id="videoPlayer" 
+      controls 
+      style="width: 100%; display: block; max-height: 500px; object-fit: contain;"
+      poster="<%= track.coverUrl || '' %>"
+    >
+      <source src="<%= track.videoUrl %>" type="video/mp4">
+      Your browser does not support the video tag.
+    </video>
+    <div style="position: absolute; top: 12px; right: 12px; background: rgba(0,0,0,0.7); padding: 8px 12px; border-radius: 8px; font-size: 12px; font-weight: 600; color: #fff;">
+      <i class="fa-solid fa-video"></i> MV
+    </div>
+  </div>
+<% } %>
+
           <div class="waveform-container">
             <div class="waveform" id="waveform"></div>
           </div>
