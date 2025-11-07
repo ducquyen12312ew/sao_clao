@@ -13,21 +13,11 @@
     <!-- HEADER -->
     <header class="admin-header">
       <div class="header-left">
-        <h1>ADMIN DASHBOARD</h1>
+        <h1>SEARCH RESULTS</h1>
         <div class="user-badge"><%= user.name %> - Administrator</div>
       </div>
       <div class="header-right">
-        <a href="/admin/reports" class="btn-reports">
-          <i class="fa-solid fa-flag"></i>
-          Reports
-          <% if (stats.reports > 0) { %>
-            <span class="badge-count"><%= stats.reports %></span>
-          <% } %>
-        </a>
-        <a href="/" class="btn-back">Back to Site</a>
-        <form method="post" action="/logout" style="display:inline; margin: 0;">
-          <button type="submit" class="btn-logout">Logout</button>
-        </form>
+        <a href="/admin/dashboard" class="btn-back">Dashboard</a>
       </div>
     </header>
 
@@ -35,7 +25,7 @@
     <div class="stats-bar">
       <div class="stat-item pending">
         <span class="stat-number"><%= stats.pending %></span>
-        <span class="stat-label">Pending Tracks</span>
+        <span class="stat-label">Pending</span>
       </div>
       <div class="stat-item approved">
         <span class="stat-number"><%= stats.approved %></span>
@@ -51,7 +41,7 @@
       </div>
       <div class="stat-item reports">
         <span class="stat-number"><%= stats.reports %></span>
-        <span class="stat-label">Pending Reports</span>
+        <span class="stat-label">Reports</span>
       </div>
     </div>
 
@@ -62,35 +52,36 @@
           type="text" 
           name="q" 
           placeholder="Tìm kiếm bài hát, nghệ sĩ..." 
-          class="search-input"
+          value="<%= searchQuery %>" 
+          class="search-input" 
+          required
         >
         <select name="status" class="status-filter">
-          <option value="all">Tất cả trạng thái</option>
-          <option value="pending">Pending</option>
-          <option value="approved">Approved</option>
-          <option value="rejected">Rejected</option>
+          <option value="all" <%= currentStatus === 'all' ? 'selected' : '' %>>Tất cả trạng thái</option>
+          <option value="pending" <%= currentStatus === 'pending' ? 'selected' : '' %>>Pending</option>
+          <option value="approved" <%= currentStatus === 'approved' ? 'selected' : '' %>>Approved</option>
+          <option value="rejected" <%= currentStatus === 'rejected' ? 'selected' : '' %>>Rejected</option>
         </select>
         <button type="submit" class="btn-search">
           <i class="fa-solid fa-magnifying-glass"></i>
           Search
         </button>
       </form>
-      <a href="/admin/deleted" class="btn-view-deleted">
-        <i class="fa-solid fa-trash"></i>
-        View Deleted
-      </a>
     </div>
 
     <!-- CONTENT SECTION -->
     <div class="content-section">
       <h2 class="section-title">
-        Pending Tracks (<%= tracks.length %>)
+        Found <%= tracks.length %> track<%= tracks.length !== 1 ? 's' : '' %>
+        <span style="font-weight: 400; color: var(--text-secondary);">
+          for "<%= searchQuery %>"
+        </span>
       </h2>
       
       <% if (tracks.length === 0) { %>
         <div class="empty-state">
-          <i class="fa-solid fa-check-circle"></i>
-          <p>Không có bài hát đang chờ duyệt</p>
+          <i class="fa-solid fa-magnifying-glass"></i>
+          <p>Không tìm thấy kết quả nào</p>
         </div>
       <% } else { %>
         <div class="tracks-grid">
@@ -119,9 +110,7 @@
                     <% } %>
                     @<%= track.userId.username %>
                   </span>
-                  <span class="track-date">
-                    <%= new Date(track.createdAt).toLocaleDateString('vi-VN') %>
-                  </span>
+                  <span class="status-badge <%= track.status %>"><%= track.status %></span>
                 </div>
                 <% if (track.reportCount > 0) { %>
                   <div class="track-warning">
@@ -138,35 +127,6 @@
   </div>
 
   <style>
-    .btn-reports {
-      position: relative;
-      padding: 8px 20px;
-      border-radius: 20px;
-      text-decoration: none;
-      font-weight: 600;
-      font-size: 14px;
-      transition: all .2s;
-      background: rgba(255, 170, 0, 0.15);
-      color: var(--warning);
-      border: 1px solid rgba(255, 170, 0, 0.3);
-      display: flex;
-      align-items: center;
-      gap: 8px;
-    }
-    
-    .btn-reports:hover {
-      background: rgba(255, 170, 0, 0.25);
-    }
-    
-    .badge-count {
-      background: var(--warning);
-      color: #000;
-      padding: 2px 8px;
-      border-radius: 12px;
-      font-size: 12px;
-      font-weight: 700;
-    }
-    
     .stat-item.reports .stat-number {
       color: var(--warning);
     }
@@ -185,14 +145,9 @@
       font-weight: 600;
     }
     
-    .track-date {
-      font-size: 11px;
-      color: var(--text-secondary);
-    }
-    
     .empty-state i {
       font-size: 64px;
-      color: var(--success);
+      color: var(--text-secondary);
       margin-bottom: 16px;
     }
   </style>

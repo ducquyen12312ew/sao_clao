@@ -14,7 +14,8 @@ const {
   PlayHistoryCollection,
   PlaylistCollection,
   CommentCollection,
-  FollowCollection
+  FollowCollection,
+  ReportCollection
 } = require('./config');
 
 const uploadRoutes = require('./upload-routes');
@@ -71,7 +72,6 @@ const requireAuth = (req, res, next) => {
   next();
 };
 
-// Helper: filter tracks theo role
 const getTrackFilter = (user) => {
   return user?.role === 'admin' ? {} : { status: 'approved' };
 };
@@ -81,7 +81,7 @@ app.get('/', async (req, res) => {
     if (req.session.user) return res.redirect('/profile');
     
     const tracks = await TrackCollection
-      .find({ status: 'approved' })
+      .find({ status: 'approved', deletedAt: null })
       .sort({ createdAt: -1 })
       .limit(12)
       .lean();
@@ -199,6 +199,7 @@ app.get(['/me', '/profile'], requireAuth, async (req, res) => {
   try {
     const userId = req.session.user.id;
     const filter = getTrackFilter(req.session.user);
+    const baseFilter = { ...filter, deletedAt: null };
 
     const recentPlays = await PlayHistoryCollection
       .find({ userId })
@@ -206,7 +207,7 @@ app.get(['/me', '/profile'], requireAuth, async (req, res) => {
       .limit(20)
       .populate({
         path: 'trackId',
-        match: filter
+        match: baseFilter
       })
       .lean();
     
@@ -225,7 +226,7 @@ app.get(['/me', '/profile'], requireAuth, async (req, res) => {
       .find({ userId })
       .populate({
         path: 'tracks',
-        match: filter
+        match: baseFilter
       })
       .sort({ updatedAt: -1 })
       .limit(6)
@@ -237,7 +238,7 @@ app.get(['/me', '/profile'], requireAuth, async (req, res) => {
       const lastTrack = recentlyPlayed[0];
       
       const similarTracks = await TrackCollection.find({
-        ...filter,
+        ...baseFilter,
         _id: { $ne: lastTrack._id },
         $or: [
           { genres: { $in: lastTrack.genres || [] } },
@@ -275,7 +276,7 @@ app.get(['/me', '/profile'], requireAuth, async (req, res) => {
     } else {
       moreOfWhatYouLike = await TrackCollection
         .aggregate([
-          { $match: filter },
+          { $match: baseFilter },
           { $sample: { size: 12 } }
         ]);
     }
@@ -341,6 +342,7 @@ app.get('/api/search', requireAuth, async (req, res) => {
     
     const tracks = await TrackCollection.find({
       ...filter,
+      deletedAt: null,
       $or: [
         { title: { $regex: query, $options: 'i' } },
         { artist: { $regex: query, $options: 'i' } },
@@ -367,7 +369,8 @@ app.get('/api/search', requireAuth, async (req, res) => {
       users.map(async (user) => {
         const trackCount = await TrackCollection.countDocuments({ 
           userId: user._id,
-          ...filter
+          ...filter,
+          deletedAt: null
         });
         return { ...user, trackCount };
       })
@@ -402,6 +405,7 @@ app.get('/api/recommendations/:trackId', requireAuth, async (req, res) => {
     
     const recommendations = await TrackCollection.find({
       ...filter,
+      deletedAt: null,
       _id: { $ne: trackId },
       $or: [
         { genres: { $in: sourceTrack.genres || [] } },
@@ -450,6 +454,7 @@ app.get('/api/tracks/genre/:genre', requireAuth, async (req, res) => {
     
     const tracks = await TrackCollection.find({
       ...filter,
+      deletedAt: null,
       genres: { $regex: new RegExp(genre, 'i') }
     }).limit(limit).lean();
     
@@ -467,6 +472,7 @@ app.get('/api/tracks/mood/:mood', requireAuth, async (req, res) => {
     
     const tracks = await TrackCollection.find({
       ...filter,
+      deletedAt: null,
       mood: { $regex: new RegExp(mood, 'i') }
     }).limit(limit).lean();
     
@@ -479,7 +485,7 @@ app.get('/api/tracks/mood/:mood', requireAuth, async (req, res) => {
 app.get('/api/genres', requireAuth, async (req, res) => {
   try {
     const filter = getTrackFilter(req.session.user);
-    const tracks = await TrackCollection.find(filter).select('genres').lean();
+    const tracks = await TrackCollection.find({ ...filter, deletedAt: null }).select('genres').lean();
     const genresSet = new Set();
     tracks.forEach(t => (t.genres || []).forEach(g => genresSet.add(g)));
     const genres = Array.from(genresSet).filter(g => g).sort();
@@ -492,7 +498,7 @@ app.get('/api/genres', requireAuth, async (req, res) => {
 app.get('/api/moods', requireAuth, async (req, res) => {
   try {
     const filter = getTrackFilter(req.session.user);
-    const moods = await TrackCollection.distinct('mood', filter);
+    const moods = await TrackCollection.distinct('mood', { ...filter, deletedAt: null });
     res.json({ success: true, moods: moods.filter(m => m).sort() });
   } catch (err) {
     res.status(500).json({ success: false, moods: [], error: err.message });
@@ -528,6 +534,7 @@ app.get('/track/:id', requireAuth, async (req, res) => {
     const filter = getTrackFilter(req.session.user);
     const track = await TrackCollection.findOne({
       _id: req.params.id,
+      deletedAt: null,
       ...filter
     })
     .populate('userId', 'username name')  
@@ -545,6 +552,7 @@ app.get('/track/:id', requireAuth, async (req, res) => {
     
     const relatedTracks = await TrackCollection.find({
       ...filter,
+      deletedAt: null,
       _id: { $ne: track._id },
       genres: { $in: track.genres || [] }
     })
@@ -616,6 +624,114 @@ app.post('/api/tracks/:id/comments', requireAuth, async (req, res) => {
     res.json({ success: true, comment: populatedComment });
   } catch (err) {
     res.status(500).json({ success: false, error: err.message });
+  }
+});
+
+// DELETE COMMENT - ADMIN ONLY (NEW!)
+app.delete('/api/comments/:id', requireAuth, async (req, res) => {
+  try {
+    if (req.session.user.role !== 'admin') {
+      return res.status(403).json({ 
+        success: false, 
+        message: 'Chỉ admin mới có quyền xóa comment' 
+      });
+    }
+    
+    const commentId = req.params.id;
+    
+    const comment = await CommentCollection.findByIdAndDelete(commentId);
+    
+    if (!comment) {
+      return res.status(404).json({ 
+        success: false, 
+        message: 'Comment không tồn tại' 
+      });
+    }
+    
+    res.json({ 
+      success: true, 
+      message: 'Đã xóa comment' 
+    });
+    
+  } catch (err) {
+    console.error('Delete comment error:', err);
+    res.status(500).json({ 
+      success: false, 
+      message: 'Có lỗi xảy ra' 
+    });
+  }
+});
+
+app.post('/api/tracks/:id/report', requireAuth, async (req, res) => {
+  try {
+    const { reason, description } = req.body;
+    const trackId = req.params.id;
+    const reporterId = req.session.user.id;
+    
+    const track = await TrackCollection.findById(trackId);
+    if (!track) {
+      return res.status(404).json({ success: false, message: 'Track not found' });
+    }
+    
+    const existingReport = await ReportCollection.findOne({
+      trackId,
+      reporterId,
+      status: 'pending'
+    });
+    
+    if (existingReport) {
+      return res.status(400).json({ 
+        success: false, 
+        message: 'Bạn đã báo cáo bài hát này rồi' 
+      });
+    }
+    
+    await ReportCollection.create({
+      trackId,
+      reporterId,
+      reason,
+      description: description?.trim() || ''
+    });
+    
+    await TrackCollection.findByIdAndUpdate(trackId, {
+      $inc: { reportCount: 1 }
+    });
+    
+    res.json({ 
+      success: true, 
+      message: 'Đã gửi báo cáo. Admin sẽ xem xét trong thời gian sớm nhất.' 
+    });
+    
+  } catch (err) {
+    console.error('Report error:', err);
+    res.status(500).json({ success: false, message: 'Có lỗi xảy ra' });
+  }
+});
+
+app.get('/api/admin/notifications/count', requireAuth, async (req, res) => {
+  try {
+    if (req.session.user.role !== 'admin') {
+      return res.status(403).json({ success: false });
+    }
+    
+    const pendingReports = await ReportCollection.countDocuments({ 
+      status: 'pending' 
+    });
+    
+    const pendingTracks = await TrackCollection.countDocuments({ 
+      status: 'pending',
+      deletedAt: null 
+    });
+    
+    res.json({ 
+      success: true, 
+      count: pendingReports + pendingTracks,
+      reports: pendingReports,
+      tracks: pendingTracks
+    });
+    
+  } catch (err) {
+    res.status(500).json({ success: false });
   }
 });
 

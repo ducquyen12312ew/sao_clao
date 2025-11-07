@@ -13,21 +13,11 @@
     <!-- HEADER -->
     <header class="admin-header">
       <div class="header-left">
-        <h1>ADMIN DASHBOARD</h1>
+        <h1>DELETED TRACKS</h1>
         <div class="user-badge"><%= user.name %> - Administrator</div>
       </div>
       <div class="header-right">
-        <a href="/admin/reports" class="btn-reports">
-          <i class="fa-solid fa-flag"></i>
-          Reports
-          <% if (stats.reports > 0) { %>
-            <span class="badge-count"><%= stats.reports %></span>
-          <% } %>
-        </a>
-        <a href="/" class="btn-back">Back to Site</a>
-        <form method="post" action="/logout" style="display:inline; margin: 0;">
-          <button type="submit" class="btn-logout">Logout</button>
-        </form>
+        <a href="/admin/dashboard" class="btn-back">Dashboard</a>
       </div>
     </header>
 
@@ -35,7 +25,7 @@
     <div class="stats-bar">
       <div class="stat-item pending">
         <span class="stat-number"><%= stats.pending %></span>
-        <span class="stat-label">Pending Tracks</span>
+        <span class="stat-label">Pending</span>
       </div>
       <div class="stat-item approved">
         <span class="stat-number"><%= stats.approved %></span>
@@ -51,61 +41,31 @@
       </div>
       <div class="stat-item reports">
         <span class="stat-number"><%= stats.reports %></span>
-        <span class="stat-label">Pending Reports</span>
+        <span class="stat-label">Reports</span>
       </div>
     </div>
 
-    <!-- SEARCH SECTION -->
-    <div class="search-section">
-      <form action="/admin/search" method="get" class="search-form">
-        <input 
-          type="text" 
-          name="q" 
-          placeholder="Tìm kiếm bài hát, nghệ sĩ..." 
-          class="search-input"
-        >
-        <select name="status" class="status-filter">
-          <option value="all">Tất cả trạng thái</option>
-          <option value="pending">Pending</option>
-          <option value="approved">Approved</option>
-          <option value="rejected">Rejected</option>
-        </select>
-        <button type="submit" class="btn-search">
-          <i class="fa-solid fa-magnifying-glass"></i>
-          Search
-        </button>
-      </form>
-      <a href="/admin/deleted" class="btn-view-deleted">
-        <i class="fa-solid fa-trash"></i>
-        View Deleted
-      </a>
-    </div>
-
     <!-- CONTENT SECTION -->
-    <div class="content-section">
-      <h2 class="section-title">
-        Pending Tracks (<%= tracks.length %>)
-      </h2>
+    <div class="content-section" style="padding-top:40px;">
+      <h2 class="section-title">Deleted Tracks (<%= tracks.length %>)</h2>
       
       <% if (tracks.length === 0) { %>
         <div class="empty-state">
           <i class="fa-solid fa-check-circle"></i>
-          <p>Không có bài hát đang chờ duyệt</p>
+          <p>Không có bài hát nào bị xóa</p>
         </div>
       <% } else { %>
         <div class="tracks-grid">
           <% tracks.forEach(track => { %>
-            <div class="track-card">
+            <div class="track-card deleted">
               <div class="track-cover">
                 <img 
                   src="<%= track.coverUrl || 'https://images.unsplash.com/photo-1514525253161-7a46d19cd819?w=400' %>" 
                   alt="<%= track.title %>"
                 >
-                <div class="play-overlay">
-                  <a href="/track/<%= track._id %>" class="play-btn" target="_blank">
-                    <i class="fa-solid fa-eye"></i>
-                    View
-                  </a>
+                <div class="deleted-overlay">
+                  <i class="fa-solid fa-trash"></i>
+                  <span>Deleted</span>
                 </div>
               </div>
               
@@ -119,16 +79,24 @@
                     <% } %>
                     @<%= track.userId.username %>
                   </span>
-                  <span class="track-date">
-                    <%= new Date(track.createdAt).toLocaleDateString('vi-VN') %>
-                  </span>
+                </div>
+                <div class="deleted-info">
+                  <i class="fa-regular fa-clock"></i>
+                  Deleted: <%= new Date(track.deletedAt).toLocaleString('vi-VN') %>
                 </div>
                 <% if (track.reportCount > 0) { %>
                   <div class="track-warning">
                     <i class="fa-solid fa-flag"></i>
-                    <%= track.reportCount %> report<%= track.reportCount > 1 ? 's' : '' %>
+                    Had <%= track.reportCount %> report<%= track.reportCount > 1 ? 's' : '' %>
                   </div>
                 <% } %>
+              </div>
+              
+              <div class="track-actions">
+                <button class="btn-action restore" onclick="restoreTrack('<%= track._id %>')">
+                  <i class="fa-solid fa-rotate-left"></i>
+                  Restore
+                </button>
               </div>
             </div>
           <% }) %>
@@ -137,38 +105,65 @@
     </div>
   </div>
 
+  <script>
+    async function restoreTrack(id) {
+      if (!confirm('Khôi phục bài hát này?')) return;
+      
+      try {
+        const res = await fetch(`/admin/tracks/${id}/restore`, { method: 'POST' });
+        const data = await res.json();
+        
+        if (data.success) {
+          location.reload();
+        }
+      } catch (err) {
+        console.error(err);
+        alert('Có lỗi xảy ra');
+      }
+    }
+  </script>
+
   <style>
-    .btn-reports {
-      position: relative;
-      padding: 8px 20px;
-      border-radius: 20px;
-      text-decoration: none;
-      font-weight: 600;
-      font-size: 14px;
-      transition: all .2s;
-      background: rgba(255, 170, 0, 0.15);
-      color: var(--warning);
-      border: 1px solid rgba(255, 170, 0, 0.3);
-      display: flex;
-      align-items: center;
-      gap: 8px;
-    }
-    
-    .btn-reports:hover {
-      background: rgba(255, 170, 0, 0.25);
-    }
-    
-    .badge-count {
-      background: var(--warning);
-      color: #000;
-      padding: 2px 8px;
-      border-radius: 12px;
-      font-size: 12px;
-      font-weight: 700;
-    }
-    
     .stat-item.reports .stat-number {
       color: var(--warning);
+    }
+    
+    .track-card.deleted {
+      opacity: 0.8;
+    }
+    
+    .deleted-overlay {
+      position: absolute;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      background: rgba(0, 0, 0, 0.75);
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      gap: 8px;
+      color: var(--danger);
+      font-weight: 700;
+      font-size: 14px;
+    }
+    
+    .deleted-overlay i {
+      font-size: 32px;
+    }
+    
+    .deleted-info {
+      margin-top: 8px;
+      padding: 6px 10px;
+      background: rgba(255, 68, 68, 0.15);
+      border: 1px solid rgba(255, 68, 68, 0.3);
+      border-radius: 8px;
+      font-size: 11px;
+      color: var(--danger);
+      display: flex;
+      align-items: center;
+      gap: 6px;
     }
     
     .track-warning {
@@ -185,9 +180,15 @@
       font-weight: 600;
     }
     
-    .track-date {
-      font-size: 11px;
-      color: var(--text-secondary);
+    .btn-action.restore {
+      background: rgba(29, 185, 84, 0.2);
+      color: var(--success);
+      flex: 1;
+    }
+    
+    .btn-action.restore:hover {
+      background: var(--success);
+      color: #000;
     }
     
     .empty-state i {

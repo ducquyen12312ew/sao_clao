@@ -1,0 +1,466 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title><%= title %></title>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+  <link rel="stylesheet" href="/public/css/admin.css">
+</head>
+<body>
+  <div class="admin-container">
+    <!-- HEADER -->
+    <header class="admin-header">
+      <div class="header-left">
+        <h1>REPORTS MANAGEMENT</h1>
+        <div class="user-badge"><%= user.name %> - Administrator</div>
+      </div>
+      <div class="header-right">
+        <a href="/admin/dashboard" class="btn-back">Dashboard</a>
+      </div>
+    </header>
+
+    <!-- STATS BAR -->
+    <div class="stats-bar">
+      <div class="stat-item pending">
+        <span class="stat-number"><%= stats.pending %></span>
+        <span class="stat-label">Pending</span>
+      </div>
+      <div class="stat-item reviewed">
+        <span class="stat-number"><%= stats.reviewed %></span>
+        <span class="stat-label">Reviewed</span>
+      </div>
+      <div class="stat-item resolved">
+        <span class="stat-number"><%= stats.resolved %></span>
+        <span class="stat-label">Resolved</span>
+      </div>
+      <div class="stat-item dismissed">
+        <span class="stat-number"><%= stats.dismissed %></span>
+        <span class="stat-label">Dismissed</span>
+      </div>
+    </div>
+
+    <!-- FILTER SECTION -->
+    <div class="search-section">
+      <form action="/admin/reports" method="get" class="search-form">
+        <select name="status" class="status-filter" onchange="this.form.submit()">
+          <option value="all" <%= currentStatus === 'all' ? 'selected' : '' %>>Tất cả</option>
+          <option value="pending" <%= currentStatus === 'pending' ? 'selected' : '' %>>Pending</option>
+          <option value="reviewed" <%= currentStatus === 'reviewed' ? 'selected' : '' %>>Reviewed</option>
+          <option value="resolved" <%= currentStatus === 'resolved' ? 'selected' : '' %>>Resolved</option>
+          <option value="dismissed" <%= currentStatus === 'dismissed' ? 'selected' : '' %>>Dismissed</option>
+        </select>
+      </form>
+    </div>
+
+    <!-- CONTENT SECTION -->
+    <div class="content-section">
+      <h2 class="section-title">
+        <%= currentStatus === 'all' ? 'All' : currentStatus.charAt(0).toUpperCase() + currentStatus.slice(1) %> 
+        Reports (<%= reports.length %>)
+      </h2>
+      
+      <% if (reports.length === 0) { %>
+        <div class="empty-state">
+          <i class="fa-solid fa-check-circle"></i>
+          <p>Không có báo cáo nào</p>
+        </div>
+      <% } else { %>
+        <div class="reports-list">
+          <% reports.forEach(report => { %>
+            <div class="report-card <%= report.status %>">
+              <div class="report-header">
+                <div class="report-reason">
+                  <% if (report.reason === 'copyright') { %>
+                    <i class="fa-solid fa-copyright"></i> Vi phạm bản quyền
+                  <% } else if (report.reason === 'inappropriate') { %>
+                    <i class="fa-solid fa-ban"></i> Nội dung không phù hợp
+                  <% } else if (report.reason === 'spam') { %>
+                    <i class="fa-solid fa-circle-exclamation"></i> Spam/Lừa đảo
+                  <% } else if (report.reason === 'misleading') { %>
+                    <i class="fa-solid fa-triangle-exclamation"></i> Thông tin sai lệch
+                  <% } else { %>
+                    <i class="fa-solid fa-ellipsis"></i> Khác
+                  <% } %>
+                </div>
+                <span class="report-status-badge <%= report.status %>">
+                  <%= report.status %>
+                </span>
+              </div>
+              
+              <div class="report-body">
+                <div class="report-track">
+                  <% if (report.trackId) { %>
+                    <div class="report-track-cover">
+                      <img 
+                        src="<%= report.trackId.coverUrl || 'https://images.unsplash.com/photo-1514525253161-7a46d19cd819?w=100' %>" 
+                        alt="<%= report.trackId.title %>"
+                      >
+                    </div>
+                    <div class="report-track-info">
+                      <a href="/track/<%= report.trackId._id %>" target="_blank" class="report-track-title">
+                        <%= report.trackId.title %>
+                      </a>
+                      <div class="report-track-artist"><%= report.trackId.artist %></div>
+                      <div class="report-track-status">
+                        Status: <span class="status-badge <%= report.trackId.status %>">
+                          <%= report.trackId.status %>
+                        </span>
+                      </div>
+                    </div>
+                  <% } else { %>
+                    <div class="report-track-deleted">
+                      <i class="fa-solid fa-trash"></i>
+                      Track đã bị xóa
+                    </div>
+                  <% } %>
+                </div>
+                
+                <% if (report.description) { %>
+                  <div class="report-description">
+                    <strong>Mô tả:</strong>
+                    <p><%= report.description %></p>
+                  </div>
+                <% } %>
+                
+                <div class="report-meta">
+                  <div class="report-reporter">
+                    <i class="fa-solid fa-user"></i>
+                    Reported by: 
+                    <a href="/users/<%= report.reporterId.username %>">
+                      @<%= report.reporterId.username %>
+                    </a>
+                  </div>
+                  <div class="report-date">
+                    <i class="fa-regular fa-clock"></i>
+                    <%= new Date(report.createdAt).toLocaleString('vi-VN') %>
+                  </div>
+                </div>
+                
+                <% if (report.reviewedBy) { %>
+                  <div class="report-review">
+                    <div class="review-info">
+                      <i class="fa-solid fa-user-check"></i>
+                      Reviewed by: <strong>@<%= report.reviewedBy.username %></strong>
+                      on <%= new Date(report.reviewedAt).toLocaleString('vi-VN') %>
+                    </div>
+                    <% if (report.adminNote) { %>
+                      <div class="review-note">
+                        <strong>Admin note:</strong> <%= report.adminNote %>
+                      </div>
+                    <% } %>
+                  </div>
+                <% } %>
+              </div>
+              
+              <% if (report.status === 'pending') { %>
+                <div class="report-actions">
+                  <button 
+                    class="btn-action dismiss" 
+                    onclick="dismissReport('<%= report._id %>')"
+                  >
+                    <i class="fa-solid fa-xmark"></i>
+                    Dismiss
+                  </button>
+                  <button 
+                    class="btn-action resolve" 
+                    onclick="resolveReport('<%= report._id %>')"
+                  >
+                    <i class="fa-solid fa-check"></i>
+                    Resolve
+                  </button>
+                  <% if (report.trackId) { %>
+                    <a 
+                      href="/track/<%= report.trackId._id %>" 
+                      target="_blank"
+                      class="btn-action view"
+                    >
+                      <i class="fa-solid fa-eye"></i>
+                      View Track
+                    </a>
+                  <% } %>
+                </div>
+              <% } %>
+            </div>
+          <% }) %>
+        </div>
+      <% } %>
+    </div>
+  </div>
+
+  <script>
+    async function dismissReport(id) {
+      const note = prompt('Admin note (optional):');
+      if (note === null) return; // Cancelled
+      
+      try {
+        const res = await fetch(`/admin/reports/${id}/dismiss`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ adminNote: note })
+        });
+        
+        const data = await res.json();
+        if (data.success) {
+          location.reload();
+        }
+      } catch (err) {
+        console.error(err);
+        alert('Error dismissing report');
+      }
+    }
+    
+    async function resolveReport(id) {
+      const note = prompt('Admin note (optional):');
+      if (note === null) return; // Cancelled
+      
+      try {
+        const res = await fetch(`/admin/reports/${id}/resolve`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ adminNote: note })
+        });
+        
+        const data = await res.json();
+        if (data.success) {
+          location.reload();
+        }
+      } catch (err) {
+        console.error(err);
+        alert('Error resolving report');
+      }
+    }
+  </script>
+
+  <style>
+    .stat-item.reviewed .stat-number {
+      color: #4a9eff;
+    }
+    
+    .stat-item.resolved .stat-number {
+      color: var(--success);
+    }
+    
+    .stat-item.dismissed .stat-number {
+      color: var(--text-secondary);
+    }
+    
+    .reports-list {
+      display: flex;
+      flex-direction: column;
+      gap: 20px;
+    }
+    
+    .report-card {
+      background: var(--bg-card);
+      border: 1px solid var(--border-color);
+      border-radius: 12px;
+      overflow: hidden;
+    }
+    
+    .report-card.pending {
+      border-left: 4px solid var(--warning);
+    }
+    
+    .report-card.resolved {
+      border-left: 4px solid var(--success);
+      opacity: 0.7;
+    }
+    
+    .report-card.dismissed {
+      border-left: 4px solid var(--text-secondary);
+      opacity: 0.6;
+    }
+    
+    .report-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding: 16px 20px;
+      background: var(--bg-secondary);
+      border-bottom: 1px solid var(--border-color);
+    }
+    
+    .report-reason {
+      font-weight: 700;
+      font-size: 15px;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+    
+    .report-status-badge {
+      padding: 4px 12px;
+      border-radius: 12px;
+      font-size: 11px;
+      font-weight: 700;
+      text-transform: uppercase;
+    }
+    
+    .report-status-badge.pending {
+      background: rgba(255, 170, 0, 0.2);
+      color: var(--warning);
+    }
+    
+    .report-status-badge.reviewed {
+      background: rgba(74, 158, 255, 0.2);
+      color: #4a9eff;
+    }
+    
+    .report-status-badge.resolved {
+      background: rgba(29, 185, 84, 0.2);
+      color: var(--success);
+    }
+    
+    .report-status-badge.dismissed {
+      background: rgba(155, 163, 193, 0.2);
+      color: var(--text-secondary);
+    }
+    
+    .report-body {
+      padding: 20px;
+    }
+    
+    .report-track {
+      display: flex;
+      gap: 16px;
+      margin-bottom: 16px;
+      padding: 16px;
+      background: var(--bg-secondary);
+      border-radius: 8px;
+    }
+    
+    .report-track-cover {
+      width: 80px;
+      height: 80px;
+      border-radius: 8px;
+      overflow: hidden;
+      flex-shrink: 0;
+    }
+    
+    .report-track-cover img {
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+    }
+    
+    .report-track-info {
+      flex: 1;
+    }
+    
+    .report-track-title {
+      font-size: 16px;
+      font-weight: 700;
+      color: var(--text-primary);
+      text-decoration: none;
+      display: block;
+      margin-bottom: 4px;
+    }
+    
+    .report-track-title:hover {
+      color: var(--accent);
+    }
+    
+    .report-track-artist {
+      font-size: 14px;
+      color: var(--text-secondary);
+      margin-bottom: 8px;
+    }
+    
+    .report-track-status {
+      font-size: 13px;
+    }
+    
+    .report-track-deleted {
+      padding: 20px;
+      text-align: center;
+      color: var(--danger);
+      font-weight: 600;
+    }
+    
+    .report-description {
+      margin-bottom: 16px;
+      padding: 12px;
+      background: var(--bg-secondary);
+      border-radius: 8px;
+      font-size: 14px;
+    }
+    
+    .report-description p {
+      margin-top: 8px;
+      color: var(--text-secondary);
+      line-height: 1.6;
+    }
+    
+    .report-meta {
+      display: flex;
+      gap: 24px;
+      margin-bottom: 16px;
+      font-size: 13px;
+      color: var(--text-secondary);
+    }
+    
+    .report-meta a {
+      color: var(--accent);
+      text-decoration: none;
+      font-weight: 600;
+    }
+    
+    .report-review {
+      padding: 12px;
+      background: rgba(29, 185, 84, 0.1);
+      border: 1px solid rgba(29, 185, 84, 0.2);
+      border-radius: 8px;
+      font-size: 13px;
+    }
+    
+    .review-info {
+      margin-bottom: 8px;
+    }
+    
+    .review-note {
+      color: var(--text-secondary);
+    }
+    
+    .report-actions {
+      display: flex;
+      gap: 12px;
+      padding: 16px 20px;
+      border-top: 1px solid var(--border-color);
+      background: var(--bg-secondary);
+    }
+    
+    .btn-action.dismiss {
+      background: rgba(155, 163, 193, 0.2);
+      color: var(--text-secondary);
+    }
+    
+    .btn-action.dismiss:hover {
+      background: rgba(155, 163, 193, 0.3);
+    }
+    
+    .btn-action.resolve {
+      background: rgba(29, 185, 84, 0.2);
+      color: var(--success);
+    }
+    
+    .btn-action.resolve:hover {
+      background: rgba(29, 185, 84, 0.3);
+    }
+    
+    .btn-action.view {
+      background: rgba(74, 158, 255, 0.2);
+      color: #4a9eff;
+      text-decoration: none;
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+    }
+    
+    .btn-action.view:hover {
+      background: rgba(74, 158, 255, 0.3);
+    }
+  </style>
+</body>
+</html>

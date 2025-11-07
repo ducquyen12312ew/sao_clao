@@ -8,6 +8,239 @@
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
   <link rel="stylesheet" href="/public/css/track.css">
+  <style>
+/* Admin & Report Button Styles */
+.action-btn.admin-approve {
+  background: rgba(29, 185, 84, 0.15);
+  border: 1px solid rgba(29, 185, 84, 0.3);
+}
+.action-btn.admin-approve:hover:not(:disabled) {
+  background: rgba(29, 185, 84, 0.25);
+}
+.action-btn.admin-approve:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+.action-btn.admin-reject {
+  background: rgba(255, 170, 0, 0.15);
+  border: 1px solid rgba(255, 170, 0, 0.3);
+}
+.action-btn.admin-reject:hover:not(:disabled) {
+  background: rgba(255, 170, 0, 0.25);
+}
+.action-btn.admin-reject:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+.action-btn.admin-delete {
+  background: rgba(255, 68, 68, 0.15);
+  border: 1px solid rgba(255, 68, 68, 0.3);
+}
+.action-btn.admin-delete:hover {
+  background: rgba(255, 68, 68, 0.25);
+}
+
+.action-btn.report-btn {
+  background: rgba(255, 170, 0, 0.1);
+  border: 1px solid rgba(255, 170, 0, 0.2);
+}
+.action-btn.report-btn:hover {
+  background: rgba(255, 170, 0, 0.2);
+}
+
+/* Comment Delete Button - ADMIN ONLY */
+.comment-action.admin-delete-comment {
+  color: #ff4444;
+}
+.comment-action.admin-delete-comment:hover {
+  color: #ff0000;
+  background: rgba(255, 68, 68, 0.1);
+  padding: 4px 8px;
+  border-radius: 4px;
+}
+
+/* Modal Styles */
+.modal {
+  display: none;
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  z-index: 10000;
+  animation: fadeIn 0.2s ease-out;
+}
+
+.modal.active {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.modal-overlay {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background: rgba(0, 0, 0, 0.7);
+  backdrop-filter: blur(4px);
+}
+
+.modal-content {
+  position: relative;
+  background: var(--bg-card);
+  border: 1px solid var(--border-color);
+  border-radius: 16px;
+  width: 90%;
+  max-width: 600px;
+  max-height: 90vh;
+  overflow-y: auto;
+  animation: slideUp 0.3s ease-out;
+}
+
+.modal-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 24px;
+  border-bottom: 1px solid var(--border-color);
+}
+
+.modal-header h3 {
+  font-size: 20px;
+  font-weight: 700;
+}
+
+.modal-close {
+  background: none;
+  border: none;
+  color: var(--text-secondary);
+  font-size: 24px;
+  cursor: pointer;
+  padding: 8px;
+  border-radius: 8px;
+  transition: all 0.2s;
+}
+
+.modal-close:hover {
+  background: var(--bg-secondary);
+  color: var(--text-primary);
+}
+
+.modal-body {
+  padding: 24px;
+}
+
+.report-reasons {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.report-reason-item {
+  display: block;
+  cursor: pointer;
+}
+
+.report-reason-item input[type="radio"] {
+  display: none;
+}
+
+.reason-content {
+  display: flex;
+  align-items: flex-start;
+  gap: 16px;
+  padding: 16px;
+  background: var(--bg-secondary);
+  border: 2px solid var(--border-color);
+  border-radius: 12px;
+  transition: all 0.2s;
+}
+
+.reason-content i {
+  font-size: 24px;
+  color: var(--text-secondary);
+  margin-top: 4px;
+}
+
+.report-reason-item input:checked + .reason-content {
+  border-color: var(--accent);
+  background: rgba(29, 185, 84, 0.1);
+}
+
+.report-reason-item input:checked + .reason-content i {
+  color: var(--accent);
+}
+
+.reason-title {
+  font-size: 15px;
+  font-weight: 600;
+  margin-bottom: 4px;
+}
+
+.reason-desc {
+  font-size: 13px;
+  color: var(--text-secondary);
+  line-height: 1.4;
+}
+
+.modal-footer {
+  display: flex;
+  gap: 12px;
+  justify-content: flex-end;
+  padding: 20px 24px;
+  border-top: 1px solid var(--border-color);
+}
+
+.btn-cancel,
+.btn-submit {
+  padding: 12px 24px;
+  border-radius: 24px;
+  font-weight: 600;
+  font-size: 14px;
+  cursor: pointer;
+  transition: all 0.2s;
+  border: none;
+}
+
+.btn-cancel {
+  background: var(--bg-secondary);
+  color: var(--text-primary);
+}
+
+.btn-cancel:hover {
+  background: var(--border-color);
+}
+
+.btn-submit {
+  background: var(--accent);
+  color: #000;
+}
+
+.btn-submit:hover {
+  background: var(--accent-hover);
+  transform: scale(1.02);
+}
+
+@keyframes fadeIn {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}
+
+@keyframes slideUp {
+  from {
+    opacity: 0;
+    transform: translateY(20px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+  </style>
 </head>
 <body>
   <!-- HEADER -->
@@ -119,6 +352,26 @@
               <i class="fa-solid fa-share"></i>
               <span>Share</span>
             </button>
+            
+            <% if (user.role === 'admin') { %>
+              <button class="action-btn admin-approve" id="adminApproveBtn" data-track-id="<%= track._id %>" <% if (track.status === 'approved') { %>disabled<% } %>>
+                <i class="fa-solid fa-check"></i>
+                <span>Approve</span>
+              </button>
+              <button class="action-btn admin-reject" id="adminRejectBtn" data-track-id="<%= track._id %>" <% if (track.status === 'rejected') { %>disabled<% } %>>
+                <i class="fa-solid fa-xmark"></i>
+                <span>Reject</span>
+              </button>
+              <button class="action-btn admin-delete" id="adminDeleteBtn" data-track-id="<%= track._id %>">
+                <i class="fa-solid fa-trash"></i>
+                <span>Delete</span>
+              </button>
+            <% } else { %>
+              <button class="action-btn report-btn" id="reportBtn" data-track-id="<%= track._id %>">
+                <i class="fa-solid fa-flag"></i>
+                <span>Report</span>
+              </button>
+            <% } %>
           </div>
         </div>
         
@@ -168,7 +421,7 @@
         <div class="comments-list" id="commentsList">
           <% if (comments.length > 0) { %>
             <% comments.forEach(comment => { %>
-              <div class="comment">
+  <div class="comment" id="comment-<%= comment._id %>" data-comment-id="<%= comment._id %>">
                 <div class="comment-avatar">
                   <% if (comment.userId.avatarUrl) { %>
                     <img src="<%= comment.userId.avatarUrl %>" alt="<%= comment.userId.username %>">
@@ -189,6 +442,13 @@
                       <i class="fa-regular fa-heart"></i>
                       <span><%= comment.likes || 0 %></span>
                     </button>
+                    
+                    <% if (user.role === 'admin') { %>
+                      <button class="comment-action admin-delete-comment" data-comment-id="<%= comment._id %>">
+                        <i class="fa-solid fa-trash"></i>
+                        <span>Delete</span>
+                      </button>
+                    <% } %>
                   </div>
                 </div>
               </div>
@@ -323,6 +583,95 @@
       </div>
     </div>
   </div>
+
+  <!-- Report Modal -->
+  <div class="modal" id="reportModal">
+    <div class="modal-overlay" onclick="closeReportModal()"></div>
+    <div class="modal-content">
+      <div class="modal-header">
+        <h3>Báo cáo bài hát</h3>
+        <button class="modal-close" onclick="closeReportModal()">
+          <i class="fa-solid fa-xmark"></i>
+        </button>
+      </div>
+      <div class="modal-body">
+        <p style="color: var(--text-secondary); margin-bottom: 20px;">
+          Vui lòng chọn lý do báo cáo bài hát này
+        </p>
+        <div class="report-reasons">
+          <label class="report-reason-item">
+            <input type="radio" name="reportReason" value="copyright">
+            <div class="reason-content">
+              <i class="fa-solid fa-copyright"></i>
+              <div>
+                <div class="reason-title">Vi phạm bản quyền</div>
+                <div class="reason-desc">Bài hát này vi phạm bản quyền của tôi hoặc người khác</div>
+              </div>
+            </div>
+          </label>
+          
+          <label class="report-reason-item">
+            <input type="radio" name="reportReason" value="inappropriate">
+            <div class="reason-content">
+              <i class="fa-solid fa-ban"></i>
+              <div>
+                <div class="reason-title">Nội dung không phù hợp</div>
+                <div class="reason-desc">Chứa nội dung bạo lực, khiêu dâm hoặc phân biệt đối xử</div>
+              </div>
+            </div>
+          </label>
+          
+          <label class="report-reason-item">
+            <input type="radio" name="reportReason" value="spam">
+            <div class="reason-content">
+              <i class="fa-solid fa-circle-exclamation"></i>
+              <div>
+                <div class="reason-title">Spam hoặc lừa đảo</div>
+                <div class="reason-desc">Bài hát spam hoặc có mục đích lừa đảo</div>
+              </div>
+            </div>
+          </label>
+          
+          <label class="report-reason-item">
+            <input type="radio" name="reportReason" value="misleading">
+            <div class="reason-content">
+              <i class="fa-solid fa-triangle-exclamation"></i>
+              <div>
+                <div class="reason-title">Thông tin sai lệch</div>
+                <div class="reason-desc">Tiêu đề, tác giả hoặc thông tin không chính xác</div>
+              </div>
+            </div>
+          </label>
+          
+          <label class="report-reason-item">
+            <input type="radio" name="reportReason" value="other">
+            <div class="reason-content">
+              <i class="fa-solid fa-ellipsis"></i>
+              <div>
+                <div class="reason-title">Lý do khác</div>
+                <div class="reason-desc">Vấn đề khác không nằm trong các danh mục trên</div>
+              </div>
+            </div>
+          </label>
+        </div>
+        
+        <div style="margin-top: 20px;">
+          <label style="display: block; margin-bottom: 8px; font-weight: 600; font-size: 14px;">
+            Mô tả chi tiết (không bắt buộc)
+          </label>
+          <textarea 
+            id="reportDescription" 
+            placeholder="Cung cấp thêm thông tin về báo cáo của bạn..."
+            style="width: 100%; padding: 12px; background: var(--bg-secondary); border: 1px solid var(--border-color); border-radius: 8px; color: var(--text-primary); font-family: 'Inter', sans-serif; min-height: 100px; resize: vertical;"
+          ></textarea>
+        </div>
+      </div>
+      <div class="modal-footer">
+        <button class="btn-cancel" onclick="closeReportModal()">Hủy</button>
+        <button class="btn-submit" id="submitReport">Gửi báo cáo</button>
+      </div>
+    </div>
+  </div>
   
   <audio id="audioPlayer"></audio>
   
@@ -336,6 +685,190 @@ const trackData = {
   cover: '<%= track.coverUrl || "" %>',
   audioUrl: '<%= track.audioUrl %>'
 };
+
+// Report Modal
+function openReportModal() {
+  const modal = document.getElementById('reportModal');
+  if (modal) {
+    modal.classList.add('active');
+    document.body.style.overflow = 'hidden';
+  }
+}
+
+function closeReportModal() {
+  const modal = document.getElementById('reportModal');
+  if (modal) {
+    modal.classList.remove('active');
+    document.body.style.overflow = '';
+    const radios = document.querySelectorAll('input[name="reportReason"]');
+    radios.forEach(r => r.checked = false);
+    document.getElementById('reportDescription').value = '';
+  }
+}
+
+// Report button handler
+const reportBtn = document.getElementById('reportBtn');
+if (reportBtn) {
+  reportBtn.addEventListener('click', openReportModal);
+}
+
+// Submit report
+const submitReport = document.getElementById('submitReport');
+if (submitReport) {
+  submitReport.addEventListener('click', async function() {
+    const selectedReason = document.querySelector('input[name="reportReason"]:checked');
+    
+    if (!selectedReason) {
+      alert('Vui lòng chọn lý do báo cáo');
+      return;
+    }
+    
+    const trackId = reportBtn.dataset.trackId;
+    const reason = selectedReason.value;
+    const description = document.getElementById('reportDescription').value.trim();
+    
+    try {
+      const res = await fetch(`/api/tracks/${trackId}/report`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ reason, description })
+      });
+      
+      const data = await res.json();
+      
+      if (data.success) {
+        closeReportModal();
+        alert(data.message);
+      } else {
+        alert(data.message || 'Có lỗi xảy ra');
+      }
+    } catch (err) {
+      console.error(err);
+      alert('Có lỗi xảy ra khi gửi báo cáo');
+    }
+  });
+}
+
+// Admin actions
+const adminApproveBtn = document.getElementById('adminApproveBtn');
+const adminRejectBtn = document.getElementById('adminRejectBtn');
+const adminDeleteBtn = document.getElementById('adminDeleteBtn');
+
+if (adminApproveBtn) {
+  adminApproveBtn.addEventListener('click', async function() {
+    if (!confirm('Phê duyệt bài hát này?')) return;
+    
+    const trackId = this.dataset.trackId;
+    
+    try {
+      const res = await fetch(`/admin/tracks/${trackId}/approve`, {
+        method: 'POST'
+      });
+      
+      const data = await res.json();
+      
+      if (data.success) {
+        alert('Đã phê duyệt bài hát');
+        location.reload();
+      }
+    } catch (err) {
+      console.error(err);
+      alert('Có lỗi xảy ra');
+    }
+  });
+}
+
+if (adminRejectBtn) {
+  adminRejectBtn.addEventListener('click', async function() {
+    if (!confirm('Từ chối bài hát này?')) return;
+    
+    const trackId = this.dataset.trackId;
+    
+    try {
+      const res = await fetch(`/admin/tracks/${trackId}/reject`, {
+        method: 'POST'
+      });
+      
+      const data = await res.json();
+      
+      if (data.success) {
+        alert('Đã từ chối bài hát');
+        location.reload();
+      }
+    } catch (err) {
+      console.error(err);
+      alert('Có lỗi xảy ra');
+    }
+  });
+}
+
+if (adminDeleteBtn) {
+  adminDeleteBtn.addEventListener('click', async function() {
+    if (!confirm('XÓA bài hát này? Hành động này có thể khôi phục được.')) return;
+    
+    const trackId = this.dataset.trackId;
+    
+    try {
+      const res = await fetch(`/admin/tracks/${trackId}`, {
+        method: 'DELETE'
+      });
+      
+      const data = await res.json();
+      
+      if (data.success) {
+        alert('Đã xóa bài hát');
+        window.location.href = '/admin/dashboard';
+      }
+    } catch (err) {
+      console.error(err);
+      alert('Có lỗi xảy ra');
+    }
+  });
+}
+
+// Delete Comment (Admin Only)
+document.addEventListener('click', async function(e) {
+  const deleteBtn = e.target.closest('.admin-delete-comment');
+  if (!deleteBtn) return;
+  
+  const commentId = deleteBtn.getAttribute('data-comment-id');
+  
+  if (!confirm('Xóa comment này?')) return;
+  
+  try {
+    const res = await fetch(`/api/comments/${commentId}`, {
+      method: 'DELETE'
+    });
+    
+    const data = await res.json();
+    
+    if (data.success) {
+      // Remove comment from DOM
+      const commentEl = document.querySelector(`.comment[data-comment-id="${commentId}"]`);
+      if (commentEl) {
+        commentEl.style.opacity = '0';
+        commentEl.style.transition = 'all 0.3s';
+        commentEl.style.transform = 'translateX(-20px)';
+        setTimeout(() => commentEl.remove(), 300);
+      }
+      
+      // Update count
+      const countEl = document.querySelector('.comments-title');
+      if (countEl) {
+        const match = countEl.textContent.match(/\d+/);
+        if (match) {
+          const currentCount = parseInt(match[0]);
+          countEl.textContent = `Comments (${currentCount - 1})`;
+        }
+      }
+    } else {
+      alert(data.message || 'Không thể xóa comment');
+    }
+  } catch (err) {
+    console.error(err);
+    alert('Có lỗi xảy ra khi xóa comment');
+  }
+});
 
 // Search functionality
 function initSearch() {
@@ -390,21 +923,6 @@ function initSearch() {
       searchDropdown.classList.remove('active');
     }
   });
-  
-  searchInput.addEventListener('focus', () => {
-    if (searchInput.value.trim().length >= 2 && searchDropdown.children.length > 0) {
-      searchDropdown.classList.add('active');
-    }
-  });
-  
-  searchInput.addEventListener('keydown', (e) => {
-    if (e.key === 'Escape') {
-      searchInput.value = '';
-      searchClear.classList.remove('active');
-      searchDropdown.classList.remove('active');
-      searchInput.blur();
-    }
-  });
 }
 
 function displaySearchResults(users, tracks, query) {
@@ -419,7 +937,6 @@ function displaySearchResults(users, tracks, query) {
   
   let html = '';
   
-  // Display users
   if (users.length > 0) {
     html += '<div class="search-section-title">Nghệ sĩ</div>';
     
@@ -445,7 +962,6 @@ function displaySearchResults(users, tracks, query) {
     });
   }
   
-  // Display tracks
   if (tracks.length > 0) {
     html += '<div class="search-section-title">Bài hát</div>';
     
@@ -672,7 +1188,6 @@ function initDetailPage() {
   }
   
   console.log('Initializing track detail page...');
-  console.log('Track data:', trackData);
   
   initSearch();
   
