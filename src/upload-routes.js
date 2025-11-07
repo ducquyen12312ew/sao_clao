@@ -1,67 +1,99 @@
 const path = require('path');
-const fs = require('fs');
 const express = require('express');
 const multer = require('multer');
+const { v2: cloudinary } = require('cloudinary');
+const { CloudinaryStorage } = require('multer-storage-cloudinary');
 const { TrackCollection } = require('./config');
 
 const router = express.Router();
-const AUDIO_DIR = path.join(__dirname, '..', 'public', 'uploads', 'audio');
-const COVER_DIR = path.join(__dirname, '..', 'public', 'uploads', 'covers');
-fs.mkdirSync(AUDIO_DIR, { recursive: true });
-fs.mkdirSync(COVER_DIR, { recursive: true });
 
-const storage = multer.diskStorage({
-  destination: (req, file, cb) => { 
-    if (file.fieldname === 'audio') return cb(null, AUDIO_DIR); 
-    cb(null, COVER_DIR); 
+cloudinary.config({
+  cloud_name: process.env.CLOUDINARY_CLOUD_NAME,
+  api_key: process.env.CLOUDINARY_API_KEY,
+  api_secret: process.env.CLOUDINARY_API_SECRET,
+});
+
+const storage = new CloudinaryStorage({
+  cloudinary,
+  params: async (req, file) => {
+    const isAudio = file.mimetype.startsWith('audio');
+    const folder = isAudio ? 'musiccloud/audio' : 'musiccloud/covers';
+    const resource_type = isAudio ? 'video' : 'image'; // Cloudinary coi audio là "video"
+
+    const ext = path.extname(file.originalname).toLowerCase();
+    const base = path.basename(file.originalname, ext).replace(/[^a-z0-9_-]/gi, '_');
+
+    return {
+      folder,
+      resource_type,
+      public_id: `${Date.now()}_${base}`, 
+
+    };
   },
-  filename: (req, file, cb) => { 
-    const ext = path.extname(file.originalname).toLowerCase(); 
-    const base = path.basename(file.originalname, ext).replace(/[^a-z0-9_-]/gi,'_'); 
-    cb(null, `${Date.now()}_${base}${ext}`); 
-  }
 });
 
 const fileFilter = (req, file, cb) => {
-  if (file.fieldname === 'audio') return cb(null, /audio\/(mpeg|mp3|wav)/.test(file.mimetype));
-  if (file.fieldname === 'cover') return cb(null, /image\/(png|jpe?g)/.test(file.mimetype));
+  if (file.fieldname === 'audio') {
+    return cb(null, /audio\/(mpeg|mp3|wav)/.test(file.mimetype));
+  }
+  if (file.fieldname === 'cover') {
+    return cb(null, /image\/(png|jpe?g)/.test(file.mimetype));
+  }
   cb(null, false);
 };
 
-const upload = multer({ storage, fileFilter, limits: { fileSize: 50 * 1024 * 1024 } });
-
-router.get('/', (req,res)=> res.render('upload', { title: 'Upload music' }));
-
-router.post('/new', upload.fields([{name:'audio',maxCount:1},{name:'cover',maxCount:1}]), async (req,res)=>{
-  try{
-    const { title, artist } = req.body;
-    const audio = req.files?.audio?.[0];
-    const cover = req.files?.cover?.[0];
-    
-    if(!title || !audio){ 
-      req.session.flash = { type: 'danger', message: 'Thiếu tiêu đề hoặc file audio.' }; 
-      return res.redirect('/upload'); 
-    }
-    
-    const audioUrl = `/public/uploads/audio/${audio.filename}`;
-    const coverUrl = cover ? `/public/uploads/covers/${cover.filename}` : '';
-    
-    await TrackCollection.create({ 
-      title: title.trim(), 
-      artist: (artist||'').trim(), 
-      audioUrl, 
-      coverUrl,
-      userId: req.session.user.id,
-      status: 'pending'
-    });
-    
-    req.session.flash = { type: 'success', message: 'Upload thành công! Đang chờ duyệt.' };
-    res.redirect('/');
-  }catch(err){ 
-    console.error(err); 
-    req.session.flash = { type: 'danger', message: 'Upload thất bại.' }; 
-    res.redirect('/upload'); 
-  }
+const upload = multer({
+  storage,
+  fileFilter,
+  limits: { fileSize: 50 * 1024 * 1024 }, 
 });
+
+router.get('/', (req, res) => {
+  res.render('upload', { title: 'Upload music' });
+});
+
+router.post(
+  '/new',
+  upload.fields([
+    { name: 'audio', maxCount: 1 },
+    { name: 'cover', maxCount: 1 },
+  ]),
+  async (req, res) => {
+    try {
+      const { title, artist } = req.body;
+      const audio = req.files?.audio?.[0];
+      const cover = req.files?.cover?.[0];
+
+      if (!title || !audio) {
+        req.session.flash = { type: 'danger', message: 'Thiếu tiêu đề hoặc file audio.' };
+        return res.redirect('/upload');
+      }
+
+      const audioUrl = audio.path; 
+      const coverUrl =
+        cover?.path ||
+        process.env.CLOUDINARY_DEFAULT_COVER_URL ||
+        '';
+
+      await TrackCollection.create({
+        title: title.trim(),
+        artist: (artist || '').trim(),
+        audioUrl,
+        coverUrl,
+        userId: req.session?.user?.id,
+        status: 'approved', 
+        createdAt: new Date(),
+        updatedAt: new Date(),
+      });
+
+      req.session.flash = { type: 'success', message: 'Upload thành công!' };
+      res.redirect('/');
+    } catch (err) {
+      console.error('Upload error:', err);
+      req.session.flash = { type: 'danger', message: 'Upload thất bại.' };
+      res.redirect('/upload');
+    }
+  }
+);
 
 module.exports = router;
