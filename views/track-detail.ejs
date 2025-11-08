@@ -655,7 +655,7 @@
   <audio id="audioPlayer"></audio>
   
   <script src="/public/js/player.js"></script>
-  <script>
+ <script>
 // ====== Track data sang client ======
 const trackData = {
   id: '<%= track._id %>',
@@ -663,7 +663,6 @@ const trackData = {
   artist: '<%= (track.artist || "Unknown Artist").replace(/'/g, "\\'") %>',
   cover: '<%= track.coverUrl || "" %>',
   audioUrl: '<%= track.audioUrl %>',
-  // Lyrics lấy từ DB sau import-one
   lyricsLRC: <%- JSON.stringify(track.lyricsLRC || "") %>,
   lyricsText: <%- JSON.stringify(track.lyricsText || "") %>
 };
@@ -767,7 +766,6 @@ if (closeLyricsBtn) {
   closeLyricsBtn.addEventListener('click', closeLyrics);
 }
 
-// Khi player play/seek thì sync lại
 (function hookLyricEvents() {
   const audio = window.player?.audio;
   if (!audio) return setTimeout(hookLyricEvents, 100);
@@ -1089,7 +1087,7 @@ function initWaveform() {
   const waveform = document.getElementById('waveform');
   const waveformContainer = document.querySelector('.waveform-container');
   
-  if (!waveform || !waveformContainer) return;
+  if (!waveform || !waveformContainer) return null;
   
   const totalBars = 150;
   const bars = [];
@@ -1136,7 +1134,7 @@ function initWaveform() {
   }
   
   function updateWaveformProgress() {
-    const isCurrentTrack = window.player.currentTrack?.id === trackData.id;
+    const isCurrentTrack = window.player?.currentTrack?.id === trackData.id;
     
     if (isCurrentTrack && window.player.audio.duration) {
       const percentage = (window.player.audio.currentTime / window.player.audio.duration) * 100;
@@ -1156,6 +1154,7 @@ function initWaveform() {
   return { updateWaveformProgress };
 }
 
+// ========== PLAYER UI ==========
 function initPlayerUI() {
   const mainPlayBtn = document.getElementById('mainPlayBtn');
   const currentTimeEl = document.getElementById('currentTime');
@@ -1163,7 +1162,7 @@ function initPlayerUI() {
   
   if (!mainPlayBtn) return null;
   
-  // ===== FIX: Load duration ngay khi trang load =====
+  // Load duration immediately
   loadTrackDuration();
   
   function loadTrackDuration() {
@@ -1172,7 +1171,6 @@ function initPlayerUI() {
     tempAudio.addEventListener('loadedmetadata', () => {
       if (durationEl && tempAudio.duration && !isNaN(tempAudio.duration)) {
         durationEl.textContent = formatTime(tempAudio.duration);
-        console.log('Duration loaded:', tempAudio.duration);
       }
     });
     
@@ -1198,6 +1196,8 @@ function initPlayerUI() {
   });
   
   function updateUI() {
+    if (!window.player || !window.player.audio) return;
+    
     const audio = window.player.audio;
     const isCurrentTrack = window.player.currentTrack?.id === trackData.id;
     const isPlaying = !audio.paused;
@@ -1326,7 +1326,7 @@ function initDetailPage() {
     return;
   }
   
-  console.log('Initializing track detail page...');
+  console.log('🎵 Initializing track detail page...');
   
   initSearch();
   
@@ -1340,18 +1340,29 @@ function initDetailPage() {
   if (playerUI && waveformUpdater) {
     const audio = window.player.audio;
     
-    audio.addEventListener('play', playerUI.updateUI);
-    audio.addEventListener('pause', playerUI.updateUI);
+    audio.addEventListener('play', () => {
+      playerUI.updateUI();
+    });
+    
+    audio.addEventListener('pause', () => {
+      playerUI.updateUI();
+    });
+    
     audio.addEventListener('timeupdate', () => {
       playerUI.updateUI();
       waveformUpdater.updateWaveformProgress();
     });
+    
     audio.addEventListener('loadedmetadata', () => {
       playerUI.updateUI();
       waveformUpdater.updateWaveformProgress();
     });
-    audio.addEventListener('seeked', waveformUpdater.updateWaveformProgress);
     
+    audio.addEventListener('seeked', () => {
+      waveformUpdater.updateWaveformProgress();
+    });
+    
+    // Sync UI periodically
     setInterval(() => {
       const isCurrentTrack = window.player.currentTrack?.id === trackData.id;
       if (isCurrentTrack) {
@@ -1360,6 +1371,7 @@ function initDetailPage() {
       }
     }, 100);
     
+    // Initial update
     playerUI.updateUI();
     waveformUpdater.updateWaveformProgress();
   }
@@ -1367,7 +1379,7 @@ function initDetailPage() {
   initActions();
   initMVPlayer();
 
-  console.log('Track detail page initialized');
+  console.log('✅ Track detail page initialized');
 }
 
 if (document.readyState === 'loading') {
@@ -1375,6 +1387,6 @@ if (document.readyState === 'loading') {
 } else {
   initDetailPage();
 }
-  </script>
+</script>
 </body>
 </html>

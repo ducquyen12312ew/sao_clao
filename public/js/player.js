@@ -7,7 +7,7 @@ class MusicPlayer {
     this.isShuffled = false;
     this.repeatMode = 'off';
     this.originalQueue = [];
-    this.hasTrackedCurrentPlay = false; // NEW: Track if we've recorded this play
+    this.hasTrackedCurrentPlay = false;
     
     if (!this.audio) {
       console.error('Audio element not found!');
@@ -17,13 +17,13 @@ class MusicPlayer {
     this.initElements();
     this.initEventListeners();
     
+    // Restore state after a short delay
     setTimeout(() => {
       this.restoreState();
     }, 100);
   }
 
   initElements() {
-    // Player elements
     this.playerEl = document.getElementById('musicPlayer');
     this.playPauseBtn = document.getElementById('playPauseBtn');
     this.prevBtn = document.getElementById('prevBtn');
@@ -31,22 +31,19 @@ class MusicPlayer {
     this.shuffleBtn = document.getElementById('shuffleBtn');
     this.repeatBtn = document.getElementById('repeatBtn');
     
-    // Progress elements
     this.progressBar = document.getElementById('progressBar');
     this.progressFill = document.getElementById('progressFill');
     this.currentTimeEl = document.getElementById('currentTime');
     this.durationEl = document.getElementById('duration');
     
-    // Volume elements
     this.volumeSlider = document.getElementById('volumeSlider');
     this.volumeIcon = document.getElementById('volumeIcon');
     
-    // Queue elements
     this.queueBtn = document.getElementById('queueBtn');
     this.queuePanel = document.getElementById('queuePanel');
     this.queueList = document.getElementById('queueList');
     
-    console.log('✅ Player elements initialized');
+    console.log('Player elements initialized');
   }
 
   initEventListeners() {
@@ -86,22 +83,40 @@ class MusicPlayer {
     }
 
     // Audio events
-    this.audio.addEventListener('timeupdate', () => this.updateProgress());
+    this.audio.addEventListener('timeupdate', () => {
+      this.updateProgress();
+      this.checkPlayTracking();
+      this.saveState(); // Auto-save state khi thời gian thay đổi
+    });
+    
     this.audio.addEventListener('loadedmetadata', () => this.updateDuration());
     this.audio.addEventListener('ended', () => this.handleTrackEnd());
-    this.audio.addEventListener('play', () => this.updatePlayButton(true));
-    this.audio.addEventListener('pause', () => this.updatePlayButton(false));
     
-    // NEW: Track play after 30 seconds or 50% completion
-    this.audio.addEventListener('timeupdate', () => this.checkPlayTracking());
+    this.audio.addEventListener('play', () => {
+      this.updatePlayButton(true);
+      this.saveState(); // Save khi play
+    });
+    
+    this.audio.addEventListener('pause', () => {
+      this.updatePlayButton(false);
+      this.saveState(); // Save khi pause
+    });
+    
+    this.audio.addEventListener('seeked', () => {
+      this.saveState(); // Save khi seek
+    });
     
     // Keyboard shortcuts
     document.addEventListener('keydown', (e) => this.handleKeyboard(e));
     
-    console.log('✅ Event listeners initialized');
+    // Save state before page unload
+    window.addEventListener('beforeunload', () => {
+      this.saveState();
+    });
+    
+    console.log('Event listeners initialized');
   }
 
-  // NEW: Check if we should record this play
   checkPlayTracking() {
     if (this.hasTrackedCurrentPlay) return;
     if (!this.currentTrack || !this.currentTrack.id) return;
@@ -109,17 +124,13 @@ class MusicPlayer {
     const duration = this.audio.duration;
     const currentTime = this.audio.currentTime;
     
-    // Record play if:
-    // 1. User has listened for at least 30 seconds, OR
-    // 2. User has listened to at least 50% of the track
     if (currentTime >= 30 || (duration > 0 && currentTime / duration >= 0.5)) {
       this.recordPlay(this.currentTrack.id);
       this.hasTrackedCurrentPlay = true;
-      console.log('✅ Play tracked for:', this.currentTrack.title);
+      console.log('Play tracked for:', this.currentTrack.title);
     }
   }
 
-  // NEW: Record play history to backend
   async recordPlay(trackId) {
     try {
       const response = await fetch(`/api/plays/${trackId}`, { 
@@ -128,10 +139,10 @@ class MusicPlayer {
       });
       
       if (response.ok) {
-        console.log('✅ Play history recorded');
+        console.log('Play history recorded');
       }
     } catch (err) {
-      console.log('⚠️ Could not save play history:', err);
+      console.log('Could not save play history:', err);
     }
   }
 
@@ -141,9 +152,7 @@ class MusicPlayer {
       return;
     }
     
-    // Reset tracking for new track
     this.hasTrackedCurrentPlay = false;
-    
     this.currentTrack = track;
     this.updateUI(track);
     this.audio.src = track.audioUrl;
@@ -154,7 +163,7 @@ class MusicPlayer {
       playPromise.then(() => {
         if (this.playerEl) this.playerEl.classList.add('active');
         this.saveState();
-        console.log('▶️ Playing:', track.title);
+        console.log('Playing:', track.title);
       }).catch((error) => {
         console.error('Play error:', error);
       });
@@ -207,7 +216,6 @@ class MusicPlayer {
       return;
     }
     
-    // If we're more than 3 seconds into the track, restart it
     if (this.audio.currentTime > 3) {
       this.audio.currentTime = 0;
       return;
@@ -238,7 +246,6 @@ class MusicPlayer {
     this.queue.push(track);
     this.originalQueue.push(track);
     
-    // If this is the first track, play it
     if (this.queue.length === 1) {
       this.queueIndex = 0;
       this.playTrack(track);
@@ -246,7 +253,7 @@ class MusicPlayer {
     
     this.renderQueue();
     this.saveState();
-    console.log('✅ Added to queue:', track.title);
+    console.log('Added to queue:', track.title);
     return true;
   }
 
@@ -261,10 +268,10 @@ class MusicPlayer {
     
     if (this.isShuffled) {
       this.queue = this.shuffleArray([...this.originalQueue]);
-      console.log('🔀 Shuffle enabled');
+      console.log('Shuffle enabled');
     } else {
       this.queue = [...this.originalQueue];
-      console.log('▶️ Shuffle disabled');
+      console.log('▶Shuffle disabled');
     }
     
     this.queueIndex = this.queue.findIndex(t => t.id === current?.id);
@@ -282,12 +289,12 @@ class MusicPlayer {
       
       if (this.repeatMode === 'all') {
         this.repeatBtn.classList.add('active');
-        console.log('🔁 Repeat: All');
+        console.log('Repeat: All');
       } else if (this.repeatMode === 'one') {
         this.repeatBtn.classList.add('active', 'repeat-one');
-        console.log('🔂 Repeat: One');
+        console.log('Repeat: One');
       } else {
-        console.log('➡️ Repeat: Off');
+        console.log('Repeat: Off');
       }
     }
     
@@ -373,7 +380,7 @@ class MusicPlayer {
   }
 
   updateDuration() {
-    if (this.durationEl) {
+    if (this.durationEl && this.audio.duration) {
       this.durationEl.textContent = this.formatTime(this.audio.duration);
     }
   }
@@ -384,7 +391,6 @@ class MusicPlayer {
       icon.className = isPlaying ? 'fa-solid fa-pause' : 'fa-solid fa-play';
     }
     
-    // Update all play buttons on page
     document.querySelectorAll('.play-btn').forEach(btn => {
       btn.classList.remove('playing');
       const btnIcon = btn.querySelector('i');
@@ -393,7 +399,6 @@ class MusicPlayer {
       }
     });
     
-    // Highlight current playing track
     if (this.currentTrack && isPlaying) {
       const currentCard = document.querySelector(`[data-track-id="${this.currentTrack.id}"]`);
       if (currentCard) {
@@ -410,7 +415,6 @@ class MusicPlayer {
   }
 
   updateUI(track) {
-    // Update player UI
     const playerTitle = document.getElementById('playerTitle');
     const playerArtist = document.getElementById('playerArtist');
     const playerThumb = document.getElementById('playerThumb');
@@ -421,7 +425,6 @@ class MusicPlayer {
     const thumbHTML = track.cover ? `<img src="${track.cover}" alt="${track.title}">` : '';
     if (playerThumb) playerThumb.innerHTML = thumbHTML;
     
-    // Update sidebar UI
     const sidebarTitle = document.getElementById('sidebarTitle');
     const sidebarArtist = document.getElementById('sidebarArtist');
     const sidebarImage = document.getElementById('sidebarImage');
@@ -430,7 +433,6 @@ class MusicPlayer {
     if (sidebarArtist) sidebarArtist.textContent = track.artist || 'Unknown Artist';
     if (sidebarImage) sidebarImage.innerHTML = thumbHTML;
     
-    // Update page title
     document.title = `${track.title} - ${track.artist || 'Unknown'} • SAOCLAO`;
   }
 
@@ -499,7 +501,7 @@ class MusicPlayer {
     
     this.renderQueue();
     this.saveState();
-    console.log('❌ Removed from queue:', removedTrack.title);
+    console.log('Removed from queue:', removedTrack.title);
   }
 
   clearQueue() {
@@ -517,11 +519,10 @@ class MusicPlayer {
     
     this.renderQueue();
     this.saveState();
-    console.log('🗑️ Queue cleared');
+    console.log('Queue cleared');
   }
 
   handleKeyboard(e) {
-    // Don't handle keyboard shortcuts when typing in input fields
     if (e.target.tagName === 'INPUT' || e.target.tagName === 'TEXTAREA') {
       return;
     }
@@ -570,114 +571,132 @@ class MusicPlayer {
   }
 
   formatTime(seconds) {
-    if (isNaN(seconds)) return '0:00';
+    if (isNaN(seconds) || !seconds) return '0:00';
     const mins = Math.floor(seconds / 60);
     const secs = Math.floor(seconds % 60);
     return `${mins}:${secs.toString().padStart(2, '0')}`;
   }
 
   saveState() {
-  const state = {
-    currentTrack: this.currentTrack,
-    queue: this.queue,
-    queueIndex: this.queueIndex,
-    currentTime: this.audio.currentTime || 0,
-    isShuffled: this.isShuffled,
-    repeatMode: this.repeatMode,
-    originalQueue: this.originalQueue,
-    wasPlaying: !this.audio.paused  // true nếu đang phát, false nếu đang pause
-  };
-  
-  try {
-    localStorage.setItem('playerState', JSON.stringify(state));
-  } catch (err) {
-    console.error('Could not save player state:', err);
+    const state = {
+      currentTrack: this.currentTrack,
+      queue: this.queue,
+      queueIndex: this.queueIndex,
+      currentTime: this.audio.currentTime || 0,
+      isShuffled: this.isShuffled,
+      repeatMode: this.repeatMode,
+      originalQueue: this.originalQueue,
+      wasPlaying: !this.audio.paused,
+      timestamp: Date.now()
+    };
+    
+    try {
+      localStorage.setItem('playerState', JSON.stringify(state));
+    } catch (err) {
+      console.error('Could not save player state:', err);
+    }
   }
-}
 
   restoreState() {
-  try {
-    const saved = localStorage.getItem('playerState');
-    if (!saved) {
-      console.log('No saved player state');
-      return;
-    }
-    
-    const state = JSON.parse(saved);
-    
-    if (!state.currentTrack || !state.currentTrack.audioUrl) {
-      console.log('Invalid saved state');
-      return;
-    }
-    
-    this.currentTrack = state.currentTrack;
-    this.queue = state.queue || [];
-    this.originalQueue = state.originalQueue || [];
-    this.queueIndex = state.queueIndex || 0;
-    this.isShuffled = state.isShuffled || false;
-    this.repeatMode = state.repeatMode || 'off';
-    
-    // ===== FIX: Lưu trạng thái đang phát =====
-    const wasPlaying = state.wasPlaying || false;
-    
-    this.updateUI(state.currentTrack);
-    this.audio.src = state.currentTrack.audioUrl;
-    
-    // Restore current time
-    if (state.currentTime && state.currentTime > 0) {
-      this.audio.currentTime = state.currentTime;
-    }
-    
-    // ===== FIX: Tự động phát lại nếu đang chạy trước khi F5 =====
-    if (wasPlaying) {
-      // Đợi metadata load xong rồi mới play
-      this.audio.addEventListener('loadedmetadata', () => {
-        this.audio.currentTime = state.currentTime || 0;
-        this.audio.play()
-          .then(() => {
-            console.log('🔄 Auto-resumed playback after page reload');
-          })
-          .catch(err => {
-            console.log('Auto-play blocked by browser:', err);
-            // Trình duyệt chặn autoplay, hiển thị nút play cho user
-          });
-      }, { once: true });
-    }
-    
-    if (this.playerEl) {
-      this.playerEl.classList.add('active');
-    }
-    
-    if (this.shuffleBtn) {
-      this.shuffleBtn.classList.toggle('active', this.isShuffled);
-    }
-    
-    if (this.repeatBtn) {
-      this.repeatBtn.classList.remove('active', 'repeat-one');
-      if (this.repeatMode === 'all') {
-        this.repeatBtn.classList.add('active');
-      } else if (this.repeatMode === 'one') {
-        this.repeatBtn.classList.add('active', 'repeat-one');
+    try {
+      const saved = localStorage.getItem('playerState');
+      if (!saved) {
+        console.log('No saved player state');
+        return;
       }
-    }
-    
-    this.renderQueue();
-    
-    const savedVolume = localStorage.getItem('volume');
-    if (savedVolume) {
-      if (this.volumeSlider) {
-        this.volumeSlider.value = savedVolume;
+      
+      const state = JSON.parse(saved);
+      
+      if (!state.currentTrack || !state.currentTrack.audioUrl) {
+        console.log('Invalid saved state');
+        return;
       }
-      this.audio.volume = savedVolume / 100;
-      this.updateVolumeIcon(savedVolume);
+      
+      // Check if state is not too old (within 24 hours)
+      const age = Date.now() - (state.timestamp || 0);
+      if (age > 24 * 60 * 60 * 1000) {
+        console.log('Saved state is too old');
+        localStorage.removeItem('playerState');
+        return;
+      }
+      
+      this.currentTrack = state.currentTrack;
+      this.queue = state.queue || [];
+      this.originalQueue = state.originalQueue || [];
+      this.queueIndex = state.queueIndex || 0;
+      this.isShuffled = state.isShuffled || false;
+      this.repeatMode = state.repeatMode || 'off';
+      
+      const wasPlaying = state.wasPlaying || false;
+      const savedTime = state.currentTime || 0;
+      
+      this.updateUI(state.currentTrack);
+      this.audio.src = state.currentTrack.audioUrl;
+      
+      // Set up one-time event listener for when metadata loads
+      const onMetadataLoaded = () => {
+        // Restore time position
+        if (savedTime > 0 && savedTime < this.audio.duration) {
+          this.audio.currentTime = savedTime;
+        }
+        
+        // Auto-play if was playing before
+        if (wasPlaying) {
+          const playPromise = this.audio.play();
+          if (playPromise !== undefined) {
+            playPromise
+              .then(() => {
+                console.log('Auto-resumed playback after page reload at', this.formatTime(savedTime));
+              })
+              .catch(err => {
+                console.log('Auto-play blocked by browser. Click play to continue.', err.message);
+              });
+          }
+        }
+      };
+      
+      // Listen for metadata load
+      this.audio.addEventListener('loadedmetadata', onMetadataLoaded, { once: true });
+      
+      // Fallback: if metadata is already loaded
+      if (this.audio.readyState >= 1) {
+        onMetadataLoaded();
+      }
+      
+      if (this.playerEl) {
+        this.playerEl.classList.add('active');
+      }
+      
+      if (this.shuffleBtn) {
+        this.shuffleBtn.classList.toggle('active', this.isShuffled);
+      }
+      
+      if (this.repeatBtn) {
+        this.repeatBtn.classList.remove('active', 'repeat-one');
+        if (this.repeatMode === 'all') {
+          this.repeatBtn.classList.add('active');
+        } else if (this.repeatMode === 'one') {
+          this.repeatBtn.classList.add('active', 'repeat-one');
+        }
+      }
+      
+      this.renderQueue();
+      
+      const savedVolume = localStorage.getItem('volume');
+      if (savedVolume) {
+        if (this.volumeSlider) {
+          this.volumeSlider.value = savedVolume;
+        }
+        this.audio.volume = savedVolume / 100;
+        this.updateVolumeIcon(savedVolume);
+      }
+      
+      console.log('Player state restored', wasPlaying ? '(will auto-play)' : '(paused)');
+    } catch (err) {
+      console.error('Error restoring state:', err);
+      localStorage.removeItem('playerState');
     }
-    
-    console.log('Player state restored', wasPlaying ? '(auto-playing)' : '');
-  } catch (err) {
-    console.error('Error restoring state:', err);
-    localStorage.removeItem('playerState');
   }
-}
 }
 
 // ============================================
@@ -697,7 +716,7 @@ window.addEventListener('DOMContentLoaded', () => {
 // ============================================
 
 window.playTrack = function(id, title, artist, cover, audioUrl) {
-  console.log('▶️ playTrack called:', { id, title, artist });
+  console.log('playTrack called:', { id, title, artist });
   
   if (!window.player) {
     alert('Player chưa sẵn sàng. Vui lòng đợi vài giây và thử lại.');
