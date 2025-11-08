@@ -544,14 +544,15 @@ body {
   margin-bottom: 12px;
 }
 
-.track-artist a:hover {
-  color: var(--text-primary) !important;
+.track-artist a {
+  color: var(--text-secondary);
+  text-decoration: none;
+  transition: all 0.2s ease;
 }
 
-.track-genres {
-  display: flex;
-  gap: 8px;
-  flex-wrap: wrap;
+.track-artist a:hover {
+  color: var(--accent);
+  text-decoration: underline;
 }
 
 .genre-tag {
