@@ -6,13 +6,14 @@ const { UserCollection } = require('./config');
 
 const router = express.Router();
 
-// Cloudinary config
+// Cloudinary configuration
 cloudinary.config({
   cloud_name: process.env.CLOUDINARY_CLOUD_NAME,
   api_key: process.env.CLOUDINARY_API_KEY,
   api_secret: process.env.CLOUDINARY_API_SECRET,
 });
 
+// Authentication middleware
 const requireAuth = (req, res, next) => {
   if (!req.session.user) {
     req.session.flash = { type: 'warning', message: 'Vui lòng đăng nhập.' };
@@ -21,7 +22,7 @@ const requireAuth = (req, res, next) => {
   next();
 };
 
-// Avatar upload configuration với Cloudinary
+// Cloudinary storage configuration for avatar uploads
 const storage = new CloudinaryStorage({
   cloudinary,
   params: {
@@ -34,6 +35,7 @@ const storage = new CloudinaryStorage({
   }
 });
 
+// File filter to only allow images
 const fileFilter = (req, file, cb) => {
   if (/image\/(png|jpe?g|gif|webp)/.test(file.mimetype)) {
     cb(null, true);
@@ -42,35 +44,35 @@ const fileFilter = (req, file, cb) => {
   }
 };
 
+// Multer upload configuration
 const upload = multer({ 
   storage, 
   fileFilter, 
-  limits: { fileSize: 2 * 1024 * 1024 } // 2MB
+  limits: { fileSize: 2 * 1024 * 1024 }
 });
 
-// ============================================
-// SETTINGS PAGE
-// ============================================
-
+// GET settings page
 router.get('/', requireAuth, async (req, res) => {
   try {
     const userId = req.session.user.id;
     
-    // Get full user data
     const user = await UserCollection.findById(userId)
       .select('-passwordHash')
       .lean();
     
     if (!user) {
+      req.session.flash = { type: 'danger', message: 'User not found' };
       return res.redirect('/login');
     }
     
     res.render('settings', {
       title: 'Settings - SAOCLAO',
       user: {
-        ...req.session.user,
-        bio: user.bio,
-        avatarUrl: user.avatarUrl
+        id: user._id,
+        name: user.name,
+        username: user.username,
+        bio: user.bio || '',
+        avatarUrl: user.avatarUrl || ''
       }
     });
   } catch (err) {
@@ -79,54 +81,70 @@ router.get('/', requireAuth, async (req, res) => {
   }
 });
 
-// ============================================
-// UPDATE PROFILE
-// ============================================
-
+// POST update profile
 router.post('/profile', requireAuth, upload.single('avatar'), async (req, res) => {
   try {
     const userId = req.session.user.id;
     const { name, bio } = req.body;
+    
+    if (!name || name.trim().length === 0) {
+      req.session.flash = {
+        type: 'danger',
+        message: 'Name cannot be empty'
+      };
+      return req.session.save(() => res.redirect('/settings'));
+    }
     
     const updateData = {
       name: name.trim(),
       bio: bio ? bio.trim() : ''
     };
     
-    // If avatar uploaded to Cloudinary
     if (req.file) {
-      updateData.avatarUrl = req.file.path; // Cloudinary URL
+      console.log('New avatar uploaded to Cloudinary:', req.file.path);
       
-      // Delete old avatar from Cloudinary if exists
-      const user = await UserCollection.findById(userId);
-      if (user.avatarUrl && user.avatarUrl.includes('cloudinary.com')) {
+      const oldUser = await UserCollection.findById(userId).select('avatarUrl');
+      
+      updateData.avatarUrl = req.file.path;
+      
+      if (oldUser && oldUser.avatarUrl && oldUser.avatarUrl.includes('cloudinary.com')) {
         try {
-          // Extract public_id from URL
-          const urlParts = user.avatarUrl.split('/');
-          const fileWithExt = urlParts[urlParts.length - 1];
-          const publicId = `musiccloud/avatars/${fileWithExt.split('.')[0]}`;
+          const matches = oldUser.avatarUrl.match(/\/musiccloud\/avatars\/([^/.]+)/);
           
-          await cloudinary.uploader.destroy(publicId);
+          if (matches && matches[1]) {
+            const publicId = `musiccloud/avatars/${matches[1]}`;
+            console.log('Attempting to delete old avatar:', publicId);
+            
+            const result = await cloudinary.uploader.destroy(publicId);
+            console.log('Cloudinary delete result:', result);
+          }
         } catch (err) {
           console.error('Error deleting old avatar from Cloudinary:', err);
         }
       }
     }
     
-    // Update user
     const updatedUser = await UserCollection.findByIdAndUpdate(
       userId,
       { $set: updateData },
       { new: true }
-    );
+    ).select('-passwordHash');
     
-    // Update session
+    if (!updatedUser) {
+      req.session.flash = {
+        type: 'danger',
+        message: 'Failed to update profile'
+      };
+      return req.session.save(() => res.redirect('/settings'));
+    }
+    
     req.session.user = {
-      id: updatedUser._id,
+      id: updatedUser._id.toString(),
       name: updatedUser.name,
       username: updatedUser.username,
       avatarUrl: updatedUser.avatarUrl || '',
-      bio: updatedUser.bio || ''
+      bio: updatedUser.bio || '',
+      role: updatedUser.role || 'user'
     };
 
     req.session.flash = {
@@ -135,7 +153,9 @@ router.post('/profile', requireAuth, upload.single('avatar'), async (req, res) =
     };
     
     req.session.save((err) => {
-      if (err) console.error('Session save error:', err);
+      if (err) {
+        console.error('Session save error:', err);
+      }
       res.redirect('/settings');
     });
     
