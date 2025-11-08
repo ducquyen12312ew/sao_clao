@@ -1156,13 +1156,34 @@ function initWaveform() {
   return { updateWaveformProgress };
 }
 
-// ========== PLAYER UI ==========
 function initPlayerUI() {
   const mainPlayBtn = document.getElementById('mainPlayBtn');
   const currentTimeEl = document.getElementById('currentTime');
   const durationEl = document.getElementById('duration');
   
   if (!mainPlayBtn) return null;
+  
+  // ===== FIX: Load duration ngay khi trang load =====
+  loadTrackDuration();
+  
+  function loadTrackDuration() {
+    const tempAudio = new Audio();
+    
+    tempAudio.addEventListener('loadedmetadata', () => {
+      if (durationEl && tempAudio.duration && !isNaN(tempAudio.duration)) {
+        durationEl.textContent = formatTime(tempAudio.duration);
+        console.log('Duration loaded:', tempAudio.duration);
+      }
+    });
+    
+    tempAudio.addEventListener('error', () => {
+      if (durationEl) {
+        durationEl.textContent = '--:--';
+      }
+    });
+    
+    tempAudio.src = trackData.audioUrl;
+  }
   
   mainPlayBtn.addEventListener('click', () => {
     if (window.player.currentTrack?.id === trackData.id) {
@@ -1192,12 +1213,14 @@ function initPlayerUI() {
     
     if (isCurrentTrack && currentTimeEl && durationEl) {
       currentTimeEl.textContent = formatTime(audio.currentTime);
-      durationEl.textContent = formatTime(audio.duration);
+      if (audio.duration && !isNaN(audio.duration)) {
+        durationEl.textContent = formatTime(audio.duration);
+      }
     }
   }
   
   function formatTime(seconds) {
-    if (isNaN(seconds)) return '0:00';
+    if (isNaN(seconds) || !seconds) return '0:00';
     const mins = Math.floor(seconds / 60);
     const secs = Math.floor(seconds % 60);
     return `${mins}:${secs.toString().padStart(2, '0')}`;

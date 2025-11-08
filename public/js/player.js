@@ -577,86 +577,107 @@ class MusicPlayer {
   }
 
   saveState() {
-    const state = {
-      currentTrack: this.currentTrack,
-      queue: this.queue,
-      queueIndex: this.queueIndex,
-      currentTime: this.audio.currentTime || 0,
-      isShuffled: this.isShuffled,
-      repeatMode: this.repeatMode,
-      originalQueue: this.originalQueue
-    };
-    
-    try {
-      localStorage.setItem('playerState', JSON.stringify(state));
-    } catch (err) {
-      console.error('Could not save player state:', err);
-    }
+  const state = {
+    currentTrack: this.currentTrack,
+    queue: this.queue,
+    queueIndex: this.queueIndex,
+    currentTime: this.audio.currentTime || 0,
+    isShuffled: this.isShuffled,
+    repeatMode: this.repeatMode,
+    originalQueue: this.originalQueue,
+    wasPlaying: !this.audio.paused  // true nếu đang phát, false nếu đang pause
+  };
+  
+  try {
+    localStorage.setItem('playerState', JSON.stringify(state));
+  } catch (err) {
+    console.error('Could not save player state:', err);
   }
+}
 
   restoreState() {
-    try {
-      const saved = localStorage.getItem('playerState');
-      if (!saved) {
-        console.log('No saved player state');
-        return;
-      }
-      
-      const state = JSON.parse(saved);
-      
-      if (!state.currentTrack || !state.currentTrack.audioUrl) {
-        console.log('Invalid saved state');
-        return;
-      }
-      
-      this.currentTrack = state.currentTrack;
-      this.queue = state.queue || [];
-      this.originalQueue = state.originalQueue || [];
-      this.queueIndex = state.queueIndex || 0;
-      this.isShuffled = state.isShuffled || false;
-      this.repeatMode = state.repeatMode || 'off';
-      
-      this.updateUI(state.currentTrack);
-      this.audio.src = state.currentTrack.audioUrl;
-      
-      if (state.currentTime && state.currentTime > 0) {
-        this.audio.currentTime = state.currentTime;
-      }
-      
-      if (this.playerEl) {
-        this.playerEl.classList.add('active');
-      }
-      
-      if (this.shuffleBtn) {
-        this.shuffleBtn.classList.toggle('active', this.isShuffled);
-      }
-      
-      if (this.repeatBtn) {
-        this.repeatBtn.classList.remove('active', 'repeat-one');
-        if (this.repeatMode === 'all') {
-          this.repeatBtn.classList.add('active');
-        } else if (this.repeatMode === 'one') {
-          this.repeatBtn.classList.add('active', 'repeat-one');
-        }
-      }
-      
-      this.renderQueue();
-      
-      const savedVolume = localStorage.getItem('volume');
-      if (savedVolume) {
-        if (this.volumeSlider) {
-          this.volumeSlider.value = savedVolume;
-        }
-        this.audio.volume = savedVolume / 100;
-        this.updateVolumeIcon(savedVolume);
-      }
-      
-      console.log('✅ Player state restored');
-    } catch (err) {
-      console.error('Error restoring state:', err);
-      localStorage.removeItem('playerState');
+  try {
+    const saved = localStorage.getItem('playerState');
+    if (!saved) {
+      console.log('No saved player state');
+      return;
     }
+    
+    const state = JSON.parse(saved);
+    
+    if (!state.currentTrack || !state.currentTrack.audioUrl) {
+      console.log('Invalid saved state');
+      return;
+    }
+    
+    this.currentTrack = state.currentTrack;
+    this.queue = state.queue || [];
+    this.originalQueue = state.originalQueue || [];
+    this.queueIndex = state.queueIndex || 0;
+    this.isShuffled = state.isShuffled || false;
+    this.repeatMode = state.repeatMode || 'off';
+    
+    // ===== FIX: Lưu trạng thái đang phát =====
+    const wasPlaying = state.wasPlaying || false;
+    
+    this.updateUI(state.currentTrack);
+    this.audio.src = state.currentTrack.audioUrl;
+    
+    // Restore current time
+    if (state.currentTime && state.currentTime > 0) {
+      this.audio.currentTime = state.currentTime;
+    }
+    
+    // ===== FIX: Tự động phát lại nếu đang chạy trước khi F5 =====
+    if (wasPlaying) {
+      // Đợi metadata load xong rồi mới play
+      this.audio.addEventListener('loadedmetadata', () => {
+        this.audio.currentTime = state.currentTime || 0;
+        this.audio.play()
+          .then(() => {
+            console.log('🔄 Auto-resumed playback after page reload');
+          })
+          .catch(err => {
+            console.log('Auto-play blocked by browser:', err);
+            // Trình duyệt chặn autoplay, hiển thị nút play cho user
+          });
+      }, { once: true });
+    }
+    
+    if (this.playerEl) {
+      this.playerEl.classList.add('active');
+    }
+    
+    if (this.shuffleBtn) {
+      this.shuffleBtn.classList.toggle('active', this.isShuffled);
+    }
+    
+    if (this.repeatBtn) {
+      this.repeatBtn.classList.remove('active', 'repeat-one');
+      if (this.repeatMode === 'all') {
+        this.repeatBtn.classList.add('active');
+      } else if (this.repeatMode === 'one') {
+        this.repeatBtn.classList.add('active', 'repeat-one');
+      }
+    }
+    
+    this.renderQueue();
+    
+    const savedVolume = localStorage.getItem('volume');
+    if (savedVolume) {
+      if (this.volumeSlider) {
+        this.volumeSlider.value = savedVolume;
+      }
+      this.audio.volume = savedVolume / 100;
+      this.updateVolumeIcon(savedVolume);
+    }
+    
+    console.log('Player state restored', wasPlaying ? '(auto-playing)' : '');
+  } catch (err) {
+    console.error('Error restoring state:', err);
+    localStorage.removeItem('playerState');
   }
+}
 }
 
 // ============================================
