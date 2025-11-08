@@ -7,19 +7,24 @@ const { MongoClient } = require("mongodb");
 const { v2: cloudinary } = require("cloudinary");
 require("dotenv").config();
 
-const YTDLP_PATH = "D:\\yt-dlp\\yt-dlp.exe";
-const FFMPEG_BIN_DIR = "D:\\ffmpeg-8.0-essentials_build\\ffmpeg-8.0-essentials_build\\bin";
+// === Paths của bạn (giữ như bạn đang dùng trên Windows)
+const YTDLP_PATH = process.env.YTDLP_PATH || "D:\\yt-dlp\\yt-dlp.exe";
+const FFMPEG_BIN_DIR = process.env.FFMPEG_BIN_DIR || "D:\\ffmpeg-8.0-essentials_build\\ffmpeg-8.0-essentials_build\\bin";
 process.env.PATH += `;${FFMPEG_BIN_DIR}`;
 
 const TMP_DIR = path.join(__dirname, "tmp_one");
 if (!fs.existsSync(TMP_DIR)) fs.mkdirSync(TMP_DIR, { recursive: true });
 
+// === Cloudinary
 cloudinary.config({
   cloud_name: process.env.CLOUDINARY_CLOUD_NAME,
   api_key: process.env.CLOUDINARY_API_KEY,
   api_secret: process.env.CLOUDINARY_API_SECRET,
 });
 
+function rmIfExists(p) { try { if (fs.existsSync(p)) fs.unlinkSync(p); } catch { } }
+
+// ================= yt-dlp helpers =================
 async function downloadAudio(url, outPrefix) {
   const args = [
     url,
@@ -30,13 +35,11 @@ async function downloadAudio(url, outPrefix) {
     "--write-thumbnail",
     "--output", `${outPrefix}.%(ext)s`,
   ];
-  console.log("Running:", YTDLP_PATH, args.join(" "));
-  await execFileAsync(YTDLP_PATH, args, { maxBuffer: 200 * 1024 * 1024, encoding: "utf8" });
-
-  const mp3 = ["mp3", "m4a", "webm", "wav"].map(e => `${outPrefix}.${e}`).find(f => fs.existsSync(f));
-  const thumb = ["jpg", "jpeg", "png", "webp"].map(e => `${outPrefix}.${e}`).find(f => fs.existsSync(f));
-  if (!mp3) throw new Error("Audio file not found after yt-dlp download");
-  return { mp3, thumb };
+  await execFileAsync(YTDLP_PATH, args, { maxBuffer: 200 * 1024 * 1024 });
+  const audio = ["mp3", "m4a", "webm", "wav"].map(e => `${outPrefix}.${e}`).find(fs.existsSync);
+  const thumb = ["jpg", "jpeg", "png", "webp"].map(e => `${outPrefix}.${e}`).find(fs.existsSync);
+  if (!audio) throw new Error("Audio file not found");
+  return { audio, thumb };
 }
 
 async function downloadVideo(url, outPrefix, maxDuration = 180) {
@@ -48,112 +51,134 @@ async function downloadVideo(url, outPrefix, maxDuration = 180) {
     "--write-thumbnail",
     "--output", `${outPrefix}.%(ext)s`,
   ];
-  
-  if (maxDuration) {
-    args.push("--postprocessor-args", `ffmpeg:-t ${maxDuration}`);
-  }
-  
-  console.log("Running:", YTDLP_PATH, args.join(" "));
-  await execFileAsync(YTDLP_PATH, args, { maxBuffer: 500 * 1024 * 1024, encoding: "utf8" });
+  if (maxDuration) args.push("--postprocessor-args", `ffmpeg:-t ${maxDuration}`);
+  await execFileAsync(YTDLP_PATH, args, { maxBuffer: 500 * 1024 * 1024 });
 
   const video = `${outPrefix}.mp4`;
-  const thumb = ["jpg", "jpeg", "png", "webp"].map(e => `${outPrefix}.${e}`).find(f => fs.existsSync(f));
-  if (!fs.existsSync(video)) throw new Error("Video file not found after yt-dlp download");
+  const thumb = ["jpg", "jpeg", "png", "webp"].map(e => `${outPrefix}.${e}`).find(fs.existsSync);
+  if (!fs.existsSync(video)) throw new Error("Video file not found");
   return { video, thumb };
 }
 
-async function uploadToCloudinary(filePath, resourceType) {
-  const folder = resourceType === "video" ? "musiccloud/videos" : 
-                 resourceType === "audio" ? "musiccloud/audio" : "musiccloud/covers";
-  
-  console.log("Uploading:", path.basename(filePath));
+async function extractAudioFromVideo(videoPath, outPrefix) {
+  const outMp3 = `${outPrefix}.mp3`;
+  await execFileAsync("ffmpeg", ["-y", "-i", videoPath, "-vn", "-acodec", "libmp3lame", "-q:a", "0", outMp3], { maxBuffer: 500 * 1024 * 1024 });
+  if (!fs.existsSync(outMp3)) throw new Error("Failed to extract audio");
+  return outMp3;
+}
+
+async function uploadToCloudinary(filePath, type) {
+  const folder =
+    type === "video" ? "musiccloud/videos" :
+    type === "audio" ? "musiccloud/audio" : "musiccloud/covers";
+
   const res = await cloudinary.uploader.upload(filePath, {
     folder,
-    resource_type: resourceType === "image" ? "image" : "video",
+    resource_type: type === "image" ? "image" : "video",
     use_filename: true,
     unique_filename: true,
   });
   return res.secure_url;
 }
 
-async function getTitle(url) {
+// --------- Lấy metadata nhanh từ yt-dlp -J ----------
+async function getMeta(url) {
   try {
-    const { stdout } = await execFileAsync(YTDLP_PATH, [
-      "--get-title",
-      "--encoding", "utf-8",
-      url
-    ], {
-      maxBuffer: 10 * 1024 * 1024,
-      encoding: "buffer",
-    });
-    return stdout.toString("utf8").trim() || "Không rõ tiêu đề";
+    const { stdout } = await execFileAsync(YTDLP_PATH, ["-J", url], { maxBuffer: 30 * 1024 * 1024, encoding: "buffer" });
+    const meta = JSON.parse(stdout.toString("utf8"));
+    return {
+      title: (meta.title || "").toString(),
+      uploader: (meta.artist || meta.uploader || meta.channel || "").toString()
+    };
   } catch {
-    return "Không rõ tiêu đề";
+    return { title: "", uploader: "" };
   }
 }
 
-function rmIfExists(p) {
+function parseTitle(meta, defaultArtist, username) {
+  const rawTitle = (meta.title || "").trim();
+  const artist = (meta.uploader || defaultArtist || username || "").trim();
+  const title = rawTitle || "Không rõ tiêu đề";
+  return { artist, title };
+}
+
+// ================== Subtitles -> LRC ==================
+function vttToLRC(vttText) {
+  const lines = vttText.split(/\r?\n/);
+  const out = [];
+  const rx = /(\d{2}):(\d{2}):(\d{2})\.(\d{3})\s+-->\s+(\d{2}):(\d{2}):(\d{2})\.(\d{3})/;
+
+  const hmsToSec = (h, m, s, ms) => (+h) * 3600 + (+m) * 60 + (+s) + (+ms) / 1000;
+  const secToTag = (sec) => {
+    const m = Math.floor(sec / 60);
+    const s = Math.floor(sec % 60);
+    const cs = Math.floor((sec - Math.floor(sec)) * 100);
+    return `[${String(m).padStart(2, "0")}:${String(s).padStart(2, "0")}.${String(cs).padStart(2, "0")}]`;
+  };
+
+  for (let i = 0; i < lines.length; i++) {
+    const t = lines[i].match(rx);
+    if (!t) continue;
+
+    // gom text đến khi gặp dòng trống
+    let j = i + 1, text = [];
+    while (j < lines.length && lines[j].trim() !== "") {
+      text.push(lines[j].replace(/<\/?[^>]+>/g, "").trim());
+      j++;
+    }
+
+    const start = hmsToSec(t[1], t[2], t[3], t[4]);
+    const oneLine = text.join(" ").replace(/\s+/g, " ").trim();
+    if (oneLine) out.push(`${secToTag(start)} ${oneLine}`);
+    i = j;
+  }
+  return out.join("\n");
+}
+
+async function downloadSubtitles(url, outPrefix) {
+  // Thử lấy phụ đề vi → en; chấp nhận auto-caption
+  const args = [
+    url,
+    "--skip-download",
+    "--write-subs", "--write-auto-subs",
+    "--sub-lang", "vi,en",
+    "--convert-subs", "vtt",
+    "--output", `${outPrefix}.%(ext)s`,
+  ];
+
   try {
-    if (p && fs.existsSync(p)) fs.unlinkSync(p);
-  } catch {}
+    await execFileAsync(YTDLP_PATH, args, { maxBuffer: 200 * 1024 * 1024 });
+
+    const vi = `${outPrefix}.vi.vtt`;
+    const en = `${outPrefix}.en.vtt`;
+    const pick = fs.existsSync(vi) ? vi : (fs.existsSync(en) ? en : null);
+    if (!pick) return { lrc: "", text: "" };
+
+    const vtt = fs.readFileSync(pick, "utf8");
+    const lrc = vttToLRC(vtt);
+
+    // plain text (không timestamp) để fallback
+    const text = vtt
+      .split(/\r?\n/)
+      .filter(l => !/^\d+$/.test(l) && !/-->/i.test(l) && !/^(WEBVTT|Kind:|Language:)/i.test(l))
+      .map(l => l.replace(/<\/?[^>]+>/g, "").trim())
+      .filter(Boolean)
+      .join("\n");
+
+    return { lrc, text };
+  } catch (e) {
+    return { lrc: "", text: "" };
+  } finally {
+    // dọn phụ đề tạm
+    rmIfExists(`${outPrefix}.vi.vtt`);
+    rmIfExists(`${outPrefix}.en.vtt`);
+  }
 }
 
-function parseTitle(rawTitle, defaultArtist, username) {
-  let artist = defaultArtist || username;
-  let title = rawTitle;
-
-  const parts = rawTitle.split(/[-–—]/);
-  if (parts.length >= 2) {
-    const possibleArtist = parts[0].trim();
-    const possibleTitle = parts[1].split("|")[0].trim();
-    if (!/official|video/i.test(possibleArtist)) artist = possibleArtist;
-    title = possibleTitle;
-  }
-
-  title = title
-    .replace(/\(.*Official.*\)/i, "")
-    .replace(/\|.*$/i, "")
-    .replace(/\s+/g, " ")
-    .trim();
-
-  const featMatch = rawTitle.match(/\(feat\. (.*?)\)/i);
-  const featuring = featMatch ? featMatch[1].trim() : "";
-  return { artist, title, featuring };
-}
-
-async function main() {
-  const YT_URL = process.argv[2];
-  const USERNAME = process.argv[3];
-  const TYPE = process.argv[4] || "audio";
-  const MAX_DURATION = process.argv[5] ? parseInt(process.argv[5]) : 180;
-  
-  if (!YT_URL || !USERNAME) {
-    console.log('Usage: node scripts/import-one.js "<YouTube_URL>" <username> [audio|video] [max_duration_seconds]');
-    console.log('Examples:');
-    console.log('  node scripts/import-one.js "https://youtube.com/watch?v=..." quynhchi audio');
-    console.log('  node scripts/import-one.js "https://youtube.com/watch?v=..." quynhchi video 90');
-    process.exit(1);
-  }
-
-  const MONGO_URI = process.env.MONGO_URI;
-  if (!MONGO_URI) throw new Error("Missing MONGO_URI in .env");
-
-  const client = new MongoClient(MONGO_URI);
-  await client.connect();
-  const db = client.db();
-  const users = db.collection("users");
-  const tracks = db.collection("tracks");
-
-  console.log("Finding user:", USERNAME);
-  const user = await users.findOne({ username: USERNAME });
-  if (!user) {
-    console.error("User not found:", USERNAME);
-    await client.close();
-    return;
-  }
-
-  const stamp = Date.now();
-  const outPrefix = path.join(TMP_DIR, `${USERNAME}_${stamp}`);
+// ================== Quy trình chính cho 1 track ==================
+async function processTrack(url, username, user, tracks, type = "audio", maxDuration = 180) {
+  const stamp = Date.now() + Math.random().toString(36).slice(2);
+  const outPrefix = path.join(TMP_DIR, `${username}_${stamp}`);
 
   try {
     let audioUrl = "";
@@ -161,30 +186,33 @@ async function main() {
     let coverUrl = "";
     let thumb = null;
 
-    if (TYPE === "video") {
-      console.log(`Downloading video from YouTube (max ${MAX_DURATION}s)...`);
-      const result = await downloadVideo(YT_URL, outPrefix, MAX_DURATION);
+    if (type === "video") {
+      const result = await downloadVideo(url, outPrefix, maxDuration);
       videoUrl = await uploadToCloudinary(result.video, "video");
       thumb = result.thumb;
-      console.log("Video uploaded successfully!");
+      const mp3 = await extractAudioFromVideo(result.video, outPrefix);
+      audioUrl = await uploadToCloudinary(mp3, "audio");
     } else {
-      console.log("Downloading audio from YouTube...");
-      const result = await downloadAudio(YT_URL, outPrefix);
-      audioUrl = await uploadToCloudinary(result.mp3, "audio");
+      const result = await downloadAudio(url, outPrefix);
+      audioUrl = await uploadToCloudinary(result.audio, "audio");
       thumb = result.thumb;
     }
 
     coverUrl = thumb
       ? await uploadToCloudinary(thumb, "image")
-      : process.env.CLOUDINARY_DEFAULT_COVER_URL || "";
+      : (process.env.CLOUDINARY_DEFAULT_COVER_URL || "");
 
-    const rawTitle = await getTitle(YT_URL);
-    const parsed = parseTitle(rawTitle, user.name, USERNAME);
+    // meta & title/artist
+    const meta = await getMeta(url);
+    const parsed = parseTitle(meta, user.name, username);
 
+    // === Lấy phụ đề -> LRC
+    const subs = await downloadSubtitles(url, outPrefix);
+
+    // Lưu DB
     const trackDoc = {
       title: parsed.title,
       artist: parsed.artist,
-      featuring: parsed.featuring || "",
       audioUrl,
       videoUrl,
       coverUrl,
@@ -196,30 +224,60 @@ async function main() {
       likes: 0,
       status: "approved",
       reportCount: 0,
+      lyricsLRC: subs.lrc || "",
+      lyricsText: subs.text || "",
       createdAt: new Date(),
       updatedAt: new Date(),
     };
 
     const r = await tracks.insertOne(trackDoc);
-    console.log("Added:", parsed.title);
-    console.log("Artist:", parsed.artist);
-    if (parsed.featuring) console.log("Featuring:", parsed.featuring);
-    console.log("Track ID:", r.insertedId.toString());
-    if (audioUrl) console.log("Audio URL:", audioUrl);
-    if (videoUrl) console.log("Video URL:", videoUrl);
-    console.log("Cover URL:", coverUrl);
+    return { success: true, id: r.insertedId };
   } catch (err) {
-    console.error("Error:", err.message || err);
+    return { success: false, error: err.message };
   } finally {
-    for (const ext of ["mp3", "m4a", "webm", "wav", "mp4", "jpg", "jpeg", "png", "webp"]) {
+    for (const ext of ["mp3", "mp4", "jpg", "jpeg", "png", "webp", "wav", "m4a"]) {
       rmIfExists(`${outPrefix}.${ext}`);
     }
-    await client.close();
-    console.log("Cleaned up and closed MongoDB connection.");
   }
 }
 
-main().catch((e) => {
-  console.error("Unexpected error:", e);
+// ================= Entry =================
+async function main() {
+  const URL = process.argv[2];
+  const USERNAME = process.argv[3];
+  const TYPE = process.argv[4] || "audio";
+  const MAX = process.argv[5] ? parseInt(process.argv[5]) : 180;
+
+  if (!URL || !USERNAME) {
+    console.log('Usage: node scripts/import-one.js "<youtube_url>" <username> [audio|video] [max_duration]');
+    process.exit(1);
+  }
+
+  const client = new MongoClient(process.env.MONGO_URI);
+  await client.connect();
+  const db = client.db();
+  const users = db.collection("users");
+  const tracks = db.collection("tracks");
+
+  const user = await users.findOne({ username: USERNAME });
+  if (!user) {
+    console.error("User not found");
+    await client.close();
+    process.exit(1);
+  }
+
+  const r = await processTrack(URL, USERNAME, user, tracks, TYPE, MAX);
+  await client.close();
+
+  if (!r.success) {
+    console.error("Error:", r.error);
+    process.exit(1);
+  } else {
+    console.log("Imported track id:", r.id.toString());
+  }
+}
+
+main().catch(e => {
+  console.error("Unexpected:", e);
   process.exit(1);
 });

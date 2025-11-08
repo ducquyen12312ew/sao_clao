@@ -10,6 +10,7 @@
   <link rel="stylesheet" href="/public/css/profile.css">
 </head>
 <body>
+  <!-- Context Menu -->
   <div class="context-menu" id="contextMenu">
     <div class="context-menu-item" onclick="addToQueue(window.contextTrack)">
       <i class="fa-solid fa-list"></i>
@@ -28,6 +29,7 @@
     </div>
   </div>
 
+  <!-- Create Playlist Modal -->
   <div class="modal" id="createPlaylistModal">
     <div class="modal-content">
       <h3 class="modal-title">Tạo playlist mới</h3>
@@ -37,7 +39,7 @@
       </div>
       <div class="form-group">
         <label class="form-label">Mô tả</label>
-        <textarea class="form-input form-textarea" id="playlistDescription" placeholder="Mô tả về playlist"></textarea>
+        <textarea class="form-input form-textarea" id="playlistDescription" placeholder="Mô tả về playlist (không bắt buộc)"></textarea>
       </div>
       <div class="modal-footer">
         <button class="btn btn-secondary" onclick="closeCreatePlaylistModal()">Hủy</button>
@@ -46,20 +48,26 @@
     </div>
   </div>
 
+  <!-- Header -->
   <header class="header">
     <div style="display: flex; align-items: center;">
       <div class="logo">
-        <img src="/public/img/saoclao.png" alt="SAOCLAO">
+        <a href="/profile">
+          <img src="/public/img/saoclao.png" alt="SAOCLAO">
+        </a>
       </div>
       <nav class="nav-menu">
         <a href="/profile" class="nav-link active">
-          <i class="fa-solid fa-house"></i> Trang chủ
+          <i class="fa-solid fa-house"></i>
+          <span>Trang chủ</span>
         </a>
         <a href="/playlists" class="nav-link">
-          <i class="fa-solid fa-music"></i> Playlist của tôi
+          <i class="fa-solid fa-music"></i>
+          <span>Playlist</span>
         </a>
       </nav>
     </div>
+    
     <div class="search-container">
       <div class="search-icon">
         <i class="fa-solid fa-magnifying-glass"></i>
@@ -68,7 +76,7 @@
       <button class="search-clear" id="searchClear">
         <i class="fa-solid fa-xmark"></i>
       </button>
-       <div id="searchDropdown" class="search-dropdown"></div>
+      <div id="searchDropdown" class="search-dropdown"></div>
     </div>
     
     <div class="header-actions">
@@ -77,63 +85,60 @@
         <span class="btn-text">Upload</span>
       </button>
 
-     <a href="/users/<%= user.username %>" style="text-decoration: none;">
-  <div class="user-avatar">
-    <% if (user.avatarUrl) { %>
-      <img src="<%= user.avatarUrl %>" alt="<%= user.username %>">
-    <% } else { %>
-      <%= user.username.charAt(0).toUpperCase() %>
-    <% } %>
-  </div>
-</a>
-      
-      <form method="post" action="/logout" style="display:inline; margin-left: 12px;">
+      <a href="/users/<%= user.username %>" style="text-decoration: none;">
+        <div class="user-avatar">
+          <img src="<%= user.avatarUrl || '/public/img/default-avatar.png' %>" alt="<%= user.username %>">
+        </div>
+      </a>
+
+      <form method="post" action="/logout" style="display:inline; margin-left: 8px;">
         <button type="submit" class="btn-logout">Đăng xuất</button>
       </form>
     </div>
   </header>
   
+  <!-- Main Layout -->
   <div class="main-layout">
     <div class="content-area">
+      <!-- Recommendations Section -->
       <section class="section" id="recommendations-section">
         <div class="section-header">
           <h2 class="section-title">Có thể bạn thích</h2>
         </div>
         
-       <% if (moreOfWhatYouLike && moreOfWhatYouLike.length > 0) { %>
-  <div class="cards-grid">
-    <% moreOfWhatYouLike.slice(0, 6).forEach((track) => { %>
-      <div class="card track-card" 
-           data-track-id="<%= track._id %>" 
-           data-track-title="<%= track.title %>"
-           data-track-artist="<%= track.artist || 'Unknown' %>"
-           data-track-cover="<%= track.coverUrl || '' %>"
-           data-track-audio="<%= track.audioUrl %>"
-           data-title="<%= track.title.toLowerCase() %>" 
-           data-artist="<%= (track.artist || '').toLowerCase() %>">
-        <!-- Clickable image to go to track detail page -->
-        <a href="/track/<%= track._id %>" class="card-image">
-          <img src="<%= track.coverUrl || 'https://images.unsplash.com/photo-1470225620780-dba8ba36b745?w=400' %>" alt="<%= track.title %>">
-          <!-- Play button stays on top and plays music -->
-          <button class="play-btn" onclick="event.preventDefault(); event.stopPropagation(); playTrack('<%= track._id %>', '<%= track.title.replace(/'/g, "\\'") %>', '<%= (track.artist || 'Unknown').replace(/'/g, "\\'") %>', '<%= track.coverUrl || '' %>', '<%= track.audioUrl %>')">
-            <i class="fa-solid fa-play"></i>
-          </button>
-        </a>
-        <div class="card-info">
-          <div class="card-title"><%= track.title %></div>
-          <div class="card-artist"><%= track.artist || 'Nghệ sĩ không rõ' %></div>
-        </div>
-      </div>
-    <% }) %>
-  </div>
-<% } else { %>
-  <div class="empty-state">
-    <h3>Chưa có gợi ý</h3>
-    <p>Nghe thêm nhạc để nhận gợi ý cá nhân hóa</p>
-  </div>
-<% } %>
+        <% if (moreOfWhatYouLike && moreOfWhatYouLike.length > 0) { %>
+          <div class="cards-grid">
+            <% moreOfWhatYouLike.slice(0, 6).forEach((track) => { %>
+              <div class="card track-card" 
+                   data-track-id="<%= track._id %>" 
+                   data-track-title="<%= track.title %>"
+                   data-track-artist="<%= track.artist || 'Unknown' %>"
+                   data-track-cover="<%= track.coverUrl || '' %>"
+                   data-track-audio="<%= track.audioUrl %>"
+                   data-title="<%= track.title.toLowerCase() %>" 
+                   data-artist="<%= (track.artist || '').toLowerCase() %>">
+                <a href="/track/<%= track._id %>" class="card-image">
+                  <img src="<%= track.coverUrl || 'https://images.unsplash.com/photo-1470225620780-dba8ba36b745?w=400' %>" alt="<%= track.title %>">
+                  <button class="play-btn" onclick="event.preventDefault(); event.stopPropagation(); playTrack('<%= track._id %>', '<%= track.title.replace(/'/g, "\\'") %>', '<%= (track.artist || 'Unknown').replace(/'/g, "\\'") %>', '<%= track.coverUrl || '' %>', '<%= track.audioUrl %>')">
+                    <i class="fa-solid fa-play"></i>
+                  </button>
+                </a>
+                <div class="card-info">
+                  <div class="card-title"><%= track.title %></div>
+                  <div class="card-artist"><%= track.artist || 'Nghệ sĩ không rõ' %></div>
+                </div>
+              </div>
+            <% }) %>
+          </div>
+        <% } else { %>
+          <div class="empty-state">
+            <h3>Chưa có gợi ý</h3>
+            <p>Nghe thêm nhạc để nhận gợi ý cá nhân hóa</p>
+          </div>
+        <% } %>
       </section>
 
+      <!-- Recently Played Section -->
       <% if (recentlyPlayed && recentlyPlayed.length > 0) { %>
       <section class="section" id="recently-played-section">
         <div class="section-header">
@@ -149,12 +154,12 @@
                  data-track-audio="<%= track.audioUrl %>"
                  data-title="<%= track.title.toLowerCase() %>" 
                  data-artist="<%= (track.artist || '').toLowerCase() %>">
-              <div class="card-image">
+              <a href="/track/<%= track._id %>" class="card-image">
                 <img src="<%= track.coverUrl || 'https://images.unsplash.com/photo-1470225620780-dba8ba36b745?w=400' %>" alt="<%= track.title %>">
-                <button class="play-btn" onclick="playTrack('<%= track._id %>', '<%= track.title.replace(/'/g, "\\'") %>', '<%= (track.artist || 'Unknown').replace(/'/g, "\\'") %>', '<%= track.coverUrl || '' %>', '<%= track.audioUrl %>')">
+                <button class="play-btn" onclick="event.preventDefault(); event.stopPropagation(); playTrack('<%= track._id %>', '<%= track.title.replace(/'/g, "\\'") %>', '<%= (track.artist || 'Unknown').replace(/'/g, "\\'") %>', '<%= track.coverUrl || '' %>', '<%= track.audioUrl %>')">
                   <i class="fa-solid fa-play"></i>
                 </button>
-              </div>
+              </a>
               <div class="card-info">
                 <div class="card-title"><%= track.title %></div>
                 <div class="card-artist"><%= track.artist || 'Nghệ sĩ không rõ' %></div>
@@ -165,6 +170,7 @@
       </section>
       <% } %>
 
+      <!-- Playlists Section -->
       <section class="section" id="playlists-section">
         <div class="section-header">
           <h2 class="section-title">Playlist của tôi</h2>
@@ -213,8 +219,10 @@
       </section>
     </div>
     
+    <!-- Resize Handle -->
     <div class="resize-handle" id="resizeHandle"></div>
     
+    <!-- Right Sidebar -->
     <aside class="right-sidebar" id="rightSidebar">
       <h3 class="sidebar-title">Đang phát</h3>
       <div class="now-playing-card">
@@ -227,10 +235,12 @@
     </aside>
   </div>
   
+  <!-- Sidebar Toggle Button -->
   <button class="sidebar-toggle" id="sidebarToggle" onclick="toggleSidebar()">
     <i class="fa-solid fa-chevron-left"></i>
   </button>
   
+  <!-- Queue Panel -->
   <div class="queue-panel" id="queuePanel">
     <div class="queue-header">
       <h3 class="queue-title">Hàng đợi</h3>
@@ -239,6 +249,7 @@
     <div class="queue-list" id="queueList"></div>
   </div>
   
+  <!-- Music Player -->
   <div class="music-player" id="musicPlayer">
     <div class="player-wrapper">
       <div class="player-left">
@@ -294,7 +305,7 @@
   <script src="/public/js/player.js"></script>
   
   <script>
-// Biến global để lưu danh sách playlist
+// Global playlists data
 let userPlaylists = <%- JSON.stringify(playlists || []) %>;
 console.log('Initial playlists from server:', userPlaylists.length);
 
@@ -542,30 +553,29 @@ function displaySearchResults(users, tracks, query) {
   
   let html = '';
   
-
   if (users.length > 0) {
     html += '<div class="search-section-title">Nghệ sĩ</div>';
     
-   users.slice(0, 5).forEach(user => {
-  const avatarHtml = user.avatarUrl 
-    ? `<img src="${user.avatarUrl}" alt="${user.username}">`
-    : `<div class="avatar-placeholder">${user.username.charAt(0).toUpperCase()}</div>`;
-  
-  html += `
-    <a href="/users/${user.username}" class="search-dropdown-item search-artist-item">
-      <div class="search-dropdown-cover artist-avatar">
-        ${avatarHtml}
-      </div>
-      <div class="search-dropdown-info">
-        <div class="search-dropdown-title">${user.name || user.username}</div>
-        <div class="search-dropdown-artist">@${user.username} • ${user.trackCount || 0} bài hát</div>
-      </div>
-      <div class="search-dropdown-badge">
-        <i class="fa-solid fa-user"></i>
-      </div>
-    </a>
-  `;
-});
+    users.slice(0, 5).forEach(user => {
+      const avatarHtml = user.avatarUrl 
+        ? `<img src="${user.avatarUrl}" alt="${user.username}">`
+        : `<div class="avatar-placeholder">${user.username.charAt(0).toUpperCase()}</div>`;
+      
+      html += `
+        <a href="/users/${user.username}" class="search-dropdown-item search-artist-item">
+          <div class="search-dropdown-cover artist-avatar">
+            ${avatarHtml}
+          </div>
+          <div class="search-dropdown-info">
+            <div class="search-dropdown-title">${user.name || user.username}</div>
+            <div class="search-dropdown-artist">@${user.username} • ${user.trackCount || 0} bài hát</div>
+          </div>
+          <div class="search-dropdown-badge">
+            <i class="fa-solid fa-user"></i>
+          </div>
+        </a>
+      `;
+    });
   }
   
   if (tracks.length > 0) {
@@ -780,7 +790,7 @@ function initEventListeners() {
     });
   }
   
-  // Event delegation cho context menu
+  // Context menu event delegation
   document.addEventListener('contextmenu', (e) => {
     const card = e.target.closest('.track-card');
     if (!card) return;
@@ -798,7 +808,7 @@ function initEventListeners() {
   });
 }
 
-// Khởi tạo khi trang load
+// Initialize on page load
 window.addEventListener('DOMContentLoaded', () => {
   initResizeSidebar();
   initSearch();

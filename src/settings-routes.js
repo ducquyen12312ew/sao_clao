@@ -1,10 +1,17 @@
 const express = require('express');
 const multer = require('multer');
-const path = require('path');
-const fs = require('fs');
+const { v2: cloudinary } = require('cloudinary');
+const { CloudinaryStorage } = require('multer-storage-cloudinary');
 const { UserCollection } = require('./config');
 
 const router = express.Router();
+
+// Cloudinary config
+cloudinary.config({
+  cloud_name: process.env.CLOUDINARY_CLOUD_NAME,
+  api_key: process.env.CLOUDINARY_API_KEY,
+  api_secret: process.env.CLOUDINARY_API_SECRET,
+});
 
 const requireAuth = (req, res, next) => {
   if (!req.session.user) {
@@ -14,16 +21,16 @@ const requireAuth = (req, res, next) => {
   next();
 };
 
-// Avatar upload configuration
-const AVATAR_DIR = path.join(__dirname, '..', 'public', 'uploads', 'avatars');
-fs.mkdirSync(AVATAR_DIR, { recursive: true });
-
-const storage = multer.diskStorage({
-  destination: (req, file, cb) => cb(null, AVATAR_DIR),
-  filename: (req, file, cb) => {
-    const ext = path.extname(file.originalname).toLowerCase();
-    const filename = `${Date.now()}_${req.session.user.id}${ext}`;
-    cb(null, filename);
+// Avatar upload configuration với Cloudinary
+const storage = new CloudinaryStorage({
+  cloudinary,
+  params: {
+    folder: 'musiccloud/avatars',
+    resource_type: 'image',
+    allowed_formats: ['jpg', 'jpeg', 'png', 'gif', 'webp'],
+    transformation: [
+      { width: 400, height: 400, crop: 'fill', gravity: 'face' }
+    ]
   }
 });
 
@@ -86,16 +93,22 @@ router.post('/profile', requireAuth, upload.single('avatar'), async (req, res) =
       bio: bio ? bio.trim() : ''
     };
     
-    // If avatar uploaded
+    // If avatar uploaded to Cloudinary
     if (req.file) {
-      updateData.avatarUrl = `/public/uploads/avatars/${req.file.filename}`;
+      updateData.avatarUrl = req.file.path; // Cloudinary URL
       
-      // Delete old avatar if exists
+      // Delete old avatar from Cloudinary if exists
       const user = await UserCollection.findById(userId);
-      if (user.avatarUrl && user.avatarUrl.startsWith('/public/uploads/avatars/')) {
-        const oldPath = path.join(__dirname, '..', user.avatarUrl);
-        if (fs.existsSync(oldPath)) {
-          fs.unlinkSync(oldPath);
+      if (user.avatarUrl && user.avatarUrl.includes('cloudinary.com')) {
+        try {
+          // Extract public_id from URL
+          const urlParts = user.avatarUrl.split('/');
+          const fileWithExt = urlParts[urlParts.length - 1];
+          const publicId = `musiccloud/avatars/${fileWithExt.split('.')[0]}`;
+          
+          await cloudinary.uploader.destroy(publicId);
+        } catch (err) {
+          console.error('Error deleting old avatar from Cloudinary:', err);
         }
       }
     }
@@ -108,18 +121,18 @@ router.post('/profile', requireAuth, upload.single('avatar'), async (req, res) =
     );
     
     // Update session
-req.session.user = {
-  id: updatedUser._id,
-  name: updatedUser.name,
-  username: updatedUser.username,
-  avatarUrl: updatedUser.avatarUrl || '',  // <-- THÊM DÒNG NÀY
-  bio: updatedUser.bio || ''                // <-- VÀ DÒNG NÀY (optional)
-};
+    req.session.user = {
+      id: updatedUser._id,
+      name: updatedUser.name,
+      username: updatedUser.username,
+      avatarUrl: updatedUser.avatarUrl || '',
+      bio: updatedUser.bio || ''
+    };
 
-req.session.flash = {
-  type: 'success',
-  message: 'Profile updated successfully!'
-};
+    req.session.flash = {
+      type: 'success',
+      message: 'Profile updated successfully!'
+    };
     
     req.session.save((err) => {
       if (err) console.error('Session save error:', err);

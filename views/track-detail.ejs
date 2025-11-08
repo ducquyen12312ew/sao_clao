@@ -9,231 +9,153 @@
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
   <link rel="stylesheet" href="/public/css/track.css">
   <style>
-/* Admin & Report Button Styles */
-.action-btn.admin-approve {
-  background: rgba(29, 185, 84, 0.15);
-  border: 1px solid rgba(29, 185, 84, 0.3);
-}
-.action-btn.admin-approve:hover:not(:disabled) {
-  background: rgba(29, 185, 84, 0.25);
-}
-.action-btn.admin-approve:disabled {
-  opacity: 0.5;
-  cursor: not-allowed;
-}
-
-.action-btn.admin-reject {
-  background: rgba(255, 170, 0, 0.15);
-  border: 1px solid rgba(255, 170, 0, 0.3);
-}
-.action-btn.admin-reject:hover:not(:disabled) {
-  background: rgba(255, 170, 0, 0.25);
-}
-.action-btn.admin-reject:disabled {
-  opacity: 0.5;
-  cursor: not-allowed;
-}
-
-.action-btn.admin-delete {
-  background: rgba(255, 68, 68, 0.15);
-  border: 1px solid rgba(255, 68, 68, 0.3);
-}
-.action-btn.admin-delete:hover {
-  background: rgba(255, 68, 68, 0.25);
-}
-
-.action-btn.report-btn {
-  background: rgba(255, 170, 0, 0.1);
-  border: 1px solid rgba(255, 170, 0, 0.2);
-}
-.action-btn.report-btn:hover {
-  background: rgba(255, 170, 0, 0.2);
-}
-
-/* Comment Delete Button - ADMIN ONLY */
-.comment-action.admin-delete-comment {
-  color: #ff4444;
-}
-.comment-action.admin-delete-comment:hover {
-  color: #ff0000;
-  background: rgba(255, 68, 68, 0.1);
-  padding: 4px 8px;
-  border-radius: 4px;
-}
-
-/* Modal Styles */
-.modal {
-  display: none;
-  position: fixed;
-  top: 0;
-  left: 0;
-  width: 100%;
-  height: 100%;
-  z-index: 10000;
-  animation: fadeIn 0.2s ease-out;
-}
-
-.modal.active {
-  display: flex;
-  align-items: center;
-  justify-content: center;
-}
-
-.modal-overlay {
-  position: absolute;
-  top: 0;
-  left: 0;
-  width: 100%;
-  height: 100%;
-  background: rgba(0, 0, 0, 0.7);
-  backdrop-filter: blur(4px);
-}
-
-.modal-content {
-  position: relative;
+/* ========== LYRICS PANEL STYLES ========== */
+.lyrics-panel {
+  margin-top: 24px;
   background: var(--bg-card);
   border: 1px solid var(--border-color);
   border-radius: 16px;
-  width: 90%;
-  max-width: 600px;
-  max-height: 90vh;
-  overflow-y: auto;
-  animation: slideUp 0.3s ease-out;
+  overflow: hidden;
+  animation: slideDown 0.3s ease-out;
 }
 
-.modal-header {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  padding: 24px;
-  border-bottom: 1px solid var(--border-color);
-}
-
-.modal-header h3 {
-  font-size: 20px;
-  font-weight: 700;
-}
-
-.modal-close {
-  background: none;
-  border: none;
-  color: var(--text-secondary);
-  font-size: 24px;
-  cursor: pointer;
-  padding: 8px;
-  border-radius: 8px;
-  transition: all 0.2s;
-}
-
-.modal-close:hover {
-  background: var(--bg-secondary);
-  color: var(--text-primary);
-}
-
-.modal-body {
-  padding: 24px;
-}
-
-.report-reasons {
-  display: flex;
-  flex-direction: column;
-  gap: 12px;
-}
-
-.report-reason-item {
-  display: block;
-  cursor: pointer;
-}
-
-.report-reason-item input[type="radio"] {
+.lyrics-panel[hidden] {
   display: none;
 }
 
-.reason-content {
+.lyrics-header {
   display: flex;
-  align-items: flex-start;
-  gap: 16px;
-  padding: 16px;
+  align-items: center;
+  justify-content: space-between;
+  padding: 16px 20px;
+  border-bottom: 1px solid var(--border-color);
   background: var(--bg-secondary);
-  border: 2px solid var(--border-color);
-  border-radius: 12px;
-  transition: all 0.2s;
 }
 
-.reason-content i {
-  font-size: 24px;
-  color: var(--text-secondary);
-  margin-top: 4px;
-}
-
-.report-reason-item input:checked + .reason-content {
-  border-color: var(--accent);
-  background: rgba(29, 185, 84, 0.1);
-}
-
-.report-reason-item input:checked + .reason-content i {
-  color: var(--accent);
-}
-
-.reason-title {
-  font-size: 15px;
-  font-weight: 600;
-  margin-bottom: 4px;
-}
-
-.reason-desc {
-  font-size: 13px;
-  color: var(--text-secondary);
-  line-height: 1.4;
-}
-
-.modal-footer {
+.lyrics-title {
   display: flex;
-  gap: 12px;
-  justify-content: flex-end;
-  padding: 20px 24px;
-  border-top: 1px solid var(--border-color);
-}
-
-.btn-cancel,
-.btn-submit {
-  padding: 12px 24px;
-  border-radius: 24px;
-  font-weight: 600;
-  font-size: 14px;
-  cursor: pointer;
-  transition: all 0.2s;
-  border: none;
-}
-
-.btn-cancel {
-  background: var(--bg-secondary);
+  align-items: center;
+  gap: 10px;
+  font-weight: 700;
+  font-size: 16px;
   color: var(--text-primary);
 }
 
-.btn-cancel:hover {
+.lyrics-title i {
+  color: #9333ea;
+  font-size: 18px;
+}
+
+.lyrics-tools {
+  display: flex;
+  gap: 8px;
+}
+
+.lyrics-btn {
+  background: transparent;
+  border: 1px solid var(--border-color);
+  color: var(--text-secondary);
+  cursor: pointer;
+  padding: 8px 12px;
+  border-radius: 8px;
+  transition: all 0.2s;
+  font-size: 14px;
+}
+
+.lyrics-btn:hover {
+  background: var(--bg-secondary);
+  color: var(--text-primary);
+  border-color: #9333ea;
+}
+
+.lyrics-btn.small {
+  padding: 6px 10px;
+  font-size: 16px;
+}
+
+.lyrics-body {
+  padding: 20px;
+  max-height: 400px;
+  overflow-y: auto;
+  scroll-behavior: smooth;
+}
+
+.lyrics-body::-webkit-scrollbar {
+  width: 8px;
+}
+
+.lyrics-body::-webkit-scrollbar-track {
+  background: var(--bg-secondary);
+  border-radius: 4px;
+}
+
+.lyrics-body::-webkit-scrollbar-thumb {
   background: var(--border-color);
+  border-radius: 4px;
 }
 
-.btn-submit {
-  background: var(--accent);
-  color: #000;
+.lyrics-body::-webkit-scrollbar-thumb:hover {
+  background: #9333ea;
 }
 
-.btn-submit:hover {
-  background: var(--accent-hover);
-  transform: scale(1.02);
+.lyrics-lines {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
 }
 
-@keyframes fadeIn {
-  from { opacity: 0; }
-  to { opacity: 1; }
+.lyric-line {
+  font-size: 18px;
+  line-height: 1.6;
+  color: var(--text-secondary);
+  transition: all 0.3s ease;
+  padding: 8px 12px;
+  border-radius: 8px;
+  opacity: 0.5;
 }
 
-@keyframes slideUp {
+.lyric-line.passed {
+  opacity: 0.3;
+  color: var(--text-secondary);
+  font-size: 16px;
+}
+
+.lyric-line.active {
+  color: #9333ea;
+  font-weight: 700;
+  font-size: 24px;
+  opacity: 1;
+  background: rgba(147, 51, 234, 0.1);
+  border-left: 4px solid #9333ea;
+  padding-left: 16px;
+  transform: translateX(4px);
+}
+
+.lyrics-empty {
+  text-align: center;
+  color: var(--text-secondary);
+  padding: 40px 20px;
+  font-size: 15px;
+}
+
+.lyric-toggle-btn {
+  background: rgba(147, 51, 234, 0.1);
+  border: 1px solid rgba(147, 51, 234, 0.3);
+}
+
+.lyric-toggle-btn:hover {
+  background: rgba(147, 51, 234, 0.2);
+  border-color: rgba(147, 51, 234, 0.5);
+}
+
+.lyric-toggle-btn i {
+  color: #9333ea;
+}
+
+@keyframes slideDown {
   from {
     opacity: 0;
-    transform: translateY(20px);
+    transform: translateY(-10px);
   }
   to {
     opacity: 1;
@@ -297,134 +219,161 @@
   <div class="container">
     <div class="main-content">
       <!-- HERO SECTION -->
-     <div class="hero-section">
-  <!-- LEFT: Player Controls -->
-  <div class="player-section">
-   <div class="track-header">
-  <button class="play-button" id="mainPlayBtn">
-    <i class="fa-solid fa-play"></i>
-  </button>
-  <div class="track-thumbnail">
-    <img src="<%= track.coverUrl || 'https://images.unsplash.com/photo-1514525253161-7a46d19cd819?w=200' %>" alt="<%= track.title %>">
-  </div>
-  
-  <div class="track-info">
-    <h1><%= track.title %></h1>
-    <div class="track-artist">
-      <% if (track.userId && track.userId.username) { %>
-        <a href="/users/<%= track.userId.username %>">
-          <%= track.artist || 'Unknown Artist' %>
-        </a>
-      <% } else { %>
-        <%= track.artist || 'Unknown Artist' %>
-      <% } %>
-      <% if (track.featuring) { %>
-        <span> ft. <%= track.featuring %></span>
-      <% } %>
-    </div>
-    <% if (track.genres && track.genres.length > 0) { %>
-      <div class="track-genres">
-        <% track.genres.slice(0, 3).forEach(genre => { %>
-          <span class="genre-tag">#<%= genre %></span>
-        <% }) %>
-      </div>
-    <% } %>
-  </div>
-</div>
-    
-    <div class="track-meta">
-      <div class="meta-item">
-        <i class="fa-regular fa-clock"></i>
-        <span><%= new Date(track.createdAt).toLocaleDateString('vi-VN') %></span>
-      </div>
-    </div>
-    
-    <!-- WAVEFORM -->
-    <div class="waveform-container">
-      <div class="waveform" id="waveform"></div>
-    </div>
-    <div class="time-display">
-      <span id="currentTime">0:00</span>
-      <span id="duration">0:00</span>
-    </div>
-    
-    <!-- ACTION BUTTONS -->
-    <div class="action-buttons">
-      <button class="action-btn" id="likeBtn" data-track-id="<%= track._id %>">
-        <i class="fa-regular fa-heart"></i>
-        <span id="likeCount"><%= track.likes || 0 %></span>
-      </button>
-      <button class="action-btn" id="addToQueueBtn">
-        <i class="fa-solid fa-list"></i>
-        <span>Add to Queue</span>
-      </button>
-      <button class="action-btn">
-        <i class="fa-solid fa-share"></i>
-        <span>Share</span>
-      </button>
-      
-      <% if (user.role === 'admin') { %>
-        <button class="action-btn admin-approve" id="adminApproveBtn" data-track-id="<%= track._id %>" <% if (track.status === 'approved') { %>disabled<% } %>>
-          <i class="fa-solid fa-check"></i>
-          <span>Approve</span>
-        </button>
-        <button class="action-btn admin-reject" id="adminRejectBtn" data-track-id="<%= track._id %>" <% if (track.status === 'rejected') { %>disabled<% } %>>
-          <i class="fa-solid fa-xmark"></i>
-          <span>Reject</span>
-        </button>
-        <button class="action-btn admin-delete" id="adminDeleteBtn" data-track-id="<%= track._id %>">
-          <i class="fa-solid fa-trash"></i>
-          <span>Delete</span>
-        </button>
-      <% } else { %>
-        <button class="action-btn report-btn" id="reportBtn" data-track-id="<%= track._id %>">
-          <i class="fa-solid fa-flag"></i>
-          <span>Report</span>
-        </button>
-      <% } %>
-    </div>
-  </div>
+      <div class="hero-section">
+        <!-- LEFT: Player Controls -->
+        <div class="player-section">
+          <div class="track-header">
+            <button class="play-button" id="mainPlayBtn">
+              <i class="fa-solid fa-play"></i>
+            </button>
+            <div class="track-thumbnail">
+              <img src="<%= track.coverUrl || 'https://images.unsplash.com/photo-1514525253161-7a46d19cd819?w=200' %>" alt="<%= track.title %>">
+            </div>
+            
+            <div class="track-info">
+              <h1><%= track.title %></h1>
+              <div class="track-artist">
+                <% if (track.userId && track.userId.username) { %>
+                  <a href="/users/<%= track.userId.username %>">
+                    <%= track.artist || 'Unknown Artist' %>
+                  </a>
+                <% } else { %>
+                  <%= track.artist || 'Unknown Artist' %>
+                <% } %>
+                <% if (track.featuring) { %>
+                  <span> ft. <%= track.featuring %></span>
+                <% } %>
+              </div>
+              <% if (track.genres && track.genres.length > 0) { %>
+                <div class="track-genres">
+                  <% track.genres.slice(0, 3).forEach(genre => { %>
+                    <span class="genre-tag">#<%= genre %></span>
+                  <% }) %>
+                </div>
+              <% } %>
+            </div>
+          </div>
+          
+          <div class="track-meta">
+            <div class="meta-item">
+              <i class="fa-regular fa-clock"></i>
+              <span><%= new Date(track.createdAt).toLocaleDateString('vi-VN') %></span>
+            </div>
+          </div>
+          
+          <!-- WAVEFORM -->
+          <div class="waveform-container">
+            <div class="waveform" id="waveform"></div>
+          </div>
+          <div class="time-display">
+            <span id="currentTime">0:00</span>
+            <span id="duration">0:00</span>
+          </div>
+          
+          <!-- ACTION BUTTONS -->
+          <div class="action-buttons">
+            <button class="action-btn" id="likeBtn" data-track-id="<%= track._id %>">
+              <i class="fa-regular fa-heart"></i>
+              <span id="likeCount"><%= track.likes || 0 %></span>
+            </button>
+            <button class="action-btn" id="addToQueueBtn">
+              <i class="fa-solid fa-list"></i>
+              <span>Add to Queue</span>
+            </button>
+            <button class="action-btn">
+              <i class="fa-solid fa-share"></i>
+              <span>Share</span>
+            </button>
+            
+            <!-- LYRICS TOGGLE BUTTON -->
+            <button class="action-btn lyric-toggle-btn" id="toggleLyricsBtn" title="Lyrics">
+              <i class="fa-solid fa-microphone-lines"></i>
+              <span>Lyrics</span>
+            </button>
+            
+            <% if (user.role === 'admin') { %>
+              <button class="action-btn admin-approve" id="adminApproveBtn" data-track-id="<%= track._id %>" <% if (track.status === 'approved') { %>disabled<% } %>>
+                <i class="fa-solid fa-check"></i>
+                <span>Approve</span>
+              </button>
+              <button class="action-btn admin-reject" id="adminRejectBtn" data-track-id="<%= track._id %>" <% if (track.status === 'rejected') { %>disabled<% } %>>
+                <i class="fa-solid fa-xmark"></i>
+                <span>Reject</span>
+              </button>
+              <button class="action-btn admin-delete" id="adminDeleteBtn" data-track-id="<%= track._id %>">
+                <i class="fa-solid fa-trash"></i>
+                <span>Delete</span>
+              </button>
+            <% } else { %>
+              <button class="action-btn report-btn" id="reportBtn" data-track-id="<%= track._id %>">
+                <i class="fa-solid fa-flag"></i>
+                <span>Report</span>
+              </button>
+            <% } %>
+          </div>
+
+          <!-- LYRICS PANEL -->
+          <div class="lyrics-panel" id="lyricsPanel" hidden>
+            <div class="lyrics-header">
+              <div class="lyrics-title">
+                <i class="fa-solid fa-microphone-lines"></i>
+                <span>Lyrics</span>
+              </div>
+              <div class="lyrics-tools">
+                <button class="lyrics-btn small" id="closeLyricsBtn" title="Close">
+                  <i class="fa-solid fa-xmark"></i>
+                </button>
+              </div>
+            </div>
+            <div class="lyrics-body">
+              <div id="lyricsLines" class="lyrics-lines">
+                <div class="lyrics-empty">Đang tải lyric…</div>
+              </div>
+            </div>
+          </div>
+        </div>
         
+        <!-- RIGHT: Cover/MV Section -->
         <div class="cover-section">
-    <% if (track.videoUrl) { %>
-      <div class="mv-player-container">
-        <video 
-          id="mvPlayer" 
-          muted
-          loop
-          playsinline
-          poster="<%= track.coverUrl || '' %>"
-          class="mv-video"
-        >
-          <source src="<%= track.videoUrl %>" type="video/mp4">
-        </video>
-        <div class="mv-badge">
-          <i class="fa-solid fa-video"></i>
-          <span>MV</span>
+          <% if (track.videoUrl) { %>
+            <div class="mv-player-container">
+              <video 
+                id="mvPlayer" 
+                muted
+                loop
+                playsinline
+                poster="<%= track.coverUrl || '' %>"
+                class="mv-video"
+              >
+                <source src="<%= track.videoUrl %>" type="video/mp4">
+              </video>
+              <div class="mv-badge">
+                <i class="fa-solid fa-video"></i>
+                <span>MV</span>
+              </div>
+            </div>
+          <% } else { %>
+            <div class="cover-image">
+              <img src="<%= track.coverUrl || 'https://images.unsplash.com/photo-1514525253161-7a46d19cd819?w=500' %>" alt="<%= track.title %>">
+            </div>
+          <% } %>
+          
+          <div class="stats">
+            <div class="stat-item">
+              <span class="stat-value" id="playCount">0</span>
+              <span class="stat-label">Plays</span>
+            </div>
+            <div class="stat-item">
+              <span class="stat-value"><%= track.likes || 0 %></span>
+              <span class="stat-label">Likes</span>
+            </div>
+            <div class="stat-item">
+              <span class="stat-value"><%= comments.length %></span>
+              <span class="stat-label">Comments</span>
+            </div>
+          </div>
         </div>
       </div>
-    <% } else { %>
-      <div class="cover-image">
-        <img src="<%= track.coverUrl || 'https://images.unsplash.com/photo-1514525253161-7a46d19cd819?w=500' %>" alt="<%= track.title %>">
-      </div>
-    <% } %>
-    
-    <div class="stats">
-      <div class="stat-item">
-        <span class="stat-value" id="playCount">0</span>
-        <span class="stat-label">Plays</span>
-      </div>
-      <div class="stat-item">
-        <span class="stat-value"><%= track.likes || 0 %></span>
-        <span class="stat-label">Likes</span>
-      </div>
-      <div class="stat-item">
-        <span class="stat-value"><%= comments.length %></span>
-        <span class="stat-label">Comments</span>
-      </div>
-    </div>
-  </div>
-</div>
       
       <!-- COMMENTS SECTION -->
       <div class="comments-section">
@@ -451,7 +400,7 @@
         <div class="comments-list" id="commentsList">
           <% if (comments.length > 0) { %>
             <% comments.forEach(comment => { %>
-  <div class="comment" id="comment-<%= comment._id %>" data-comment-id="<%= comment._id %>">
+              <div class="comment" id="comment-<%= comment._id %>" data-comment-id="<%= comment._id %>">
                 <div class="comment-avatar">
                   <% if (comment.userId.avatarUrl) { %>
                     <img src="<%= comment.userId.avatarUrl %>" alt="<%= comment.userId.username %>">
@@ -707,16 +656,129 @@
   
   <script src="/public/js/player.js"></script>
   <script>
-// Track data
+// ====== Track data sang client ======
 const trackData = {
   id: '<%= track._id %>',
   title: '<%= track.title.replace(/'/g, "\\'") %>',
   artist: '<%= (track.artist || "Unknown Artist").replace(/'/g, "\\'") %>',
   cover: '<%= track.coverUrl || "" %>',
-  audioUrl: '<%= track.audioUrl %>'
+  audioUrl: '<%= track.audioUrl %>',
+  // Lyrics lấy từ DB sau import-one
+  lyricsLRC: <%- JSON.stringify(track.lyricsLRC || "") %>,
+  lyricsText: <%- JSON.stringify(track.lyricsText || "") %>
 };
 
-// Report Modal
+// ========== LYRICS KARAOKE LOGIC ==========
+let lyricCues = [];
+let lyricRAF = null;
+
+const lyricsPanel = document.getElementById('lyricsPanel');
+const lyricsLinesEl = document.getElementById('lyricsLines');
+const toggleLyricsBtn = document.getElementById('toggleLyricsBtn');
+const closeLyricsBtn = document.getElementById('closeLyricsBtn');
+
+function parseLRC(lrc) {
+  if (!lrc) return [];
+  const out = [];
+  lrc.split(/\r?\n/).forEach(line => {
+    const m = line.match(/\[(\d{1,2}):(\d{2})(?:\.(\d{1,2}))?\](.*)/);
+    if (!m) return;
+    const t = (+m[1]) * 60 + (+m[2]) + ((+m[3] || 0) / 100);
+    out.push({ t, text: (m[4] || "").trim() });
+  });
+  return out.sort((a, b) => a.t - b.t);
+}
+
+function renderLyrics(lines) {
+  if (!lines.length) {
+    lyricsLinesEl.innerHTML = '<div class="lyrics-empty">Không có lyric</div>';
+    return;
+  }
+  lyricsLinesEl.innerHTML = lines.map((t, i) => 
+    `<div class="lyric-line" data-idx="${i}">${t || "&nbsp;"}</div>`
+  ).join("");
+}
+
+function startLyricSync() {
+  cancelAnimationFrame(lyricRAF);
+  const audio = window.player?.audio;
+  if (!audio || !lyricCues.length) return;
+
+  const step = () => {
+    if (lyricsPanel.hasAttribute('hidden')) return;
+    if (window.player?.currentTrack?.id !== trackData.id) {
+      lyricRAF = requestAnimationFrame(step);
+      return;
+    }
+
+    const t = audio.currentTime;
+    let i = 0;
+    while (i + 1 < lyricCues.length && lyricCues[i + 1].t <= t) i++;
+
+    document.querySelectorAll('.lyric-line.active').forEach(el => el.classList.remove('active'));
+    document.querySelectorAll('.lyric-line.passed').forEach(el => el.classList.remove('passed'));
+
+    const activeEl = document.querySelector(`.lyric-line[data-idx="${i}"]`);
+    if (activeEl) {
+      for (let k = 0; k < i; k++) {
+        const p = document.querySelector(`.lyric-line[data-idx="${k}"]`);
+        if (p) p.classList.add('passed');
+      }
+      activeEl.classList.add('active');
+      activeEl.scrollIntoView({ block: 'center', behavior: 'smooth' });
+    }
+    lyricRAF = requestAnimationFrame(step);
+  };
+  lyricRAF = requestAnimationFrame(step);
+}
+
+async function loadLyrics() {
+  if (trackData.lyricsLRC) {
+    lyricCues = parseLRC(trackData.lyricsLRC);
+    renderLyrics(lyricCues.map(c => c.text));
+    startLyricSync();
+    return;
+  }
+  if (trackData.lyricsText) {
+    renderLyrics(trackData.lyricsText.split(/\r?\n/));
+    return;
+  }
+  renderLyrics([]);
+}
+
+function openLyrics() {
+  lyricsPanel.removeAttribute('hidden');
+  loadLyrics();
+  startLyricSync();
+}
+
+function closeLyrics() {
+  lyricsPanel.setAttribute('hidden', '');
+  cancelAnimationFrame(lyricRAF);
+}
+
+if (toggleLyricsBtn) {
+  toggleLyricsBtn.addEventListener('click', () => {
+    lyricsPanel.hasAttribute('hidden') ? openLyrics() : closeLyrics();
+  });
+}
+
+if (closeLyricsBtn) {
+  closeLyricsBtn.addEventListener('click', closeLyrics);
+}
+
+// Khi player play/seek thì sync lại
+(function hookLyricEvents() {
+  const audio = window.player?.audio;
+  if (!audio) return setTimeout(hookLyricEvents, 100);
+  ["play", "seeked"].forEach(ev => 
+    audio.addEventListener(ev, () => 
+      !lyricsPanel.hasAttribute('hidden') && startLyricSync()
+    )
+  );
+})();
+
+// ========== REPORT MODAL ==========
 function openReportModal() {
   const modal = document.getElementById('reportModal');
   if (modal) {
@@ -736,13 +798,11 @@ function closeReportModal() {
   }
 }
 
-// Report button handler
 const reportBtn = document.getElementById('reportBtn');
 if (reportBtn) {
   reportBtn.addEventListener('click', openReportModal);
 }
 
-// Submit report
 const submitReport = document.getElementById('submitReport');
 if (submitReport) {
   submitReport.addEventListener('click', async function() {
@@ -779,7 +839,7 @@ if (submitReport) {
   });
 }
 
-// Admin actions
+// ========== ADMIN ACTIONS ==========
 const adminApproveBtn = document.getElementById('adminApproveBtn');
 const adminRejectBtn = document.getElementById('adminRejectBtn');
 const adminDeleteBtn = document.getElementById('adminDeleteBtn');
@@ -856,7 +916,7 @@ if (adminDeleteBtn) {
   });
 }
 
-// Delete Comment (Admin Only)
+// ========== DELETE COMMENT (ADMIN) ==========
 document.addEventListener('click', async function(e) {
   const deleteBtn = e.target.closest('.admin-delete-comment');
   if (!deleteBtn) return;
@@ -873,7 +933,6 @@ document.addEventListener('click', async function(e) {
     const data = await res.json();
     
     if (data.success) {
-      // Remove comment from DOM
       const commentEl = document.querySelector(`.comment[data-comment-id="${commentId}"]`);
       if (commentEl) {
         commentEl.style.opacity = '0';
@@ -882,7 +941,6 @@ document.addEventListener('click', async function(e) {
         setTimeout(() => commentEl.remove(), 300);
       }
       
-      // Update count
       const countEl = document.querySelector('.comments-title');
       if (countEl) {
         const match = countEl.textContent.match(/\d+/);
@@ -900,7 +958,7 @@ document.addEventListener('click', async function(e) {
   }
 });
 
-// Search functionality
+// ========== SEARCH FUNCTIONALITY ==========
 function initSearch() {
   const searchInput = document.getElementById('searchInput');
   const searchClear = document.getElementById('searchClear');
@@ -1026,7 +1084,7 @@ window.playTrackFromSearch = function(id, title, artist, cover, audioUrl) {
   }
 };
 
-// Waveform
+// ========== WAVEFORM ==========
 function initWaveform() {
   const waveform = document.getElementById('waveform');
   const waveformContainer = document.querySelector('.waveform-container');
@@ -1098,7 +1156,7 @@ function initWaveform() {
   return { updateWaveformProgress };
 }
 
-// Player UI
+// ========== PLAYER UI ==========
 function initPlayerUI() {
   const mainPlayBtn = document.getElementById('mainPlayBtn');
   const currentTimeEl = document.getElementById('currentTime');
@@ -1148,7 +1206,7 @@ function initPlayerUI() {
   return { updateUI };
 }
 
-// Actions
+// ========== ACTIONS ==========
 function initActions() {
   const likeBtn = document.getElementById('likeBtn');
   const addToQueueBtn = document.getElementById('addToQueueBtn');
@@ -1210,7 +1268,35 @@ function initActions() {
   }
 }
 
-// Init page
+// ========== MV PLAYER ==========
+function initMVPlayer() {
+  const mvPlayer = document.getElementById('mvPlayer');
+  const audioPlayer = window.player?.audio;
+  
+  if (!mvPlayer || !audioPlayer) return;
+  
+  audioPlayer.addEventListener('play', () => {
+    const isCurrentTrack = window.player.currentTrack?.id === trackData.id;
+    if (isCurrentTrack) {
+      mvPlayer.play().catch(err => console.log('MV autoplay blocked:', err));
+    }
+  });
+  
+  audioPlayer.addEventListener('pause', () => {
+    mvPlayer.pause();
+  });
+  
+  audioPlayer.addEventListener('ended', () => {
+    mvPlayer.pause();
+    mvPlayer.currentTime = 0;
+  });
+  
+  if (!audioPlayer.paused && window.player.currentTrack?.id === trackData.id) {
+    mvPlayer.play().catch(err => console.log('MV autoplay blocked:', err));
+  }
+}
+
+// ========== INIT PAGE ==========
 function initDetailPage() {
   if (!window.player) {
     setTimeout(initDetailPage, 100);
@@ -1256,7 +1342,7 @@ function initDetailPage() {
   }
   
   initActions();
-   initMVPlayer();
+  initMVPlayer();
 
   console.log('Track detail page initialized');
 }
@@ -1265,33 +1351,6 @@ if (document.readyState === 'loading') {
   document.addEventListener('DOMContentLoaded', initDetailPage);
 } else {
   initDetailPage();
-}
-
-function initMVPlayer() {
-  const mvPlayer = document.getElementById('mvPlayer');
-  const audioPlayer = window.player?.audio;
-  
-  if (!mvPlayer || !audioPlayer) return;
-  
-  audioPlayer.addEventListener('play', () => {
-    const isCurrentTrack = window.player.currentTrack?.id === trackData.id;
-    if (isCurrentTrack) {
-      mvPlayer.play().catch(err => console.log('MV autoplay blocked:', err));
-    }
-  });
-  
-  audioPlayer.addEventListener('pause', () => {
-    mvPlayer.pause();
-  });
-  
-  audioPlayer.addEventListener('ended', () => {
-    mvPlayer.pause();
-    mvPlayer.currentTime = 0;
-  });
-  
-  if (!audioPlayer.paused && window.player.currentTrack?.id === trackData.id) {
-    mvPlayer.play().catch(err => console.log('MV autoplay blocked:', err));
-  }
 }
   </script>
 </body>
