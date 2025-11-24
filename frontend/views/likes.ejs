@@ -1,0 +1,254 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title><%= title %></title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+  <link rel="stylesheet" href="/public/css/profile.css">
+</head>
+<body>
+  <header class="header">
+    <div style="display: flex; align-items: center;">
+      <div class="logo">
+        <a href="/profile">
+          <img src="/public/img/saoclao.png" alt="SAOCLAO">
+        </a>
+      </div>
+      <nav class="nav-menu">
+        <a href="/profile" class="nav-link">
+          <i class="fa-solid fa-house"></i>
+          <span>Trang chủ</span>
+        </a>
+        <a href="/playlists" class="nav-link">
+          <i class="fa-solid fa-music"></i>
+          <span>Playlist</span>
+        </a>
+        <a href="/likes" class="nav-link active">
+          <i class="fa-solid fa-heart"></i>
+          <span>Đã thích</span>
+        </a>
+      </nav>
+    </div>
+
+    <div class="header-actions">
+      <button class="upload-btn" onclick="window.location.href='/upload'">
+        <i class="fa-solid fa-cloud-arrow-up"></i>
+        <span class="btn-text">Upload</span>
+      </button>
+
+      <a href="/users/<%= user.username %>" style="text-decoration: none;">
+        <div class="user-avatar">
+          <img src="<%= user.avatarUrl || '/public/img/default-avatar.png' %>" alt="<%= user.username %>">
+        </div>
+      </a>
+
+      <form method="post" action="/logout" style="display:inline; margin-left: 8px;">
+        <button type="submit" class="btn-logout">Đăng xuất</button>
+      </form>
+    </div>
+  </header>
+
+  <div class="main-layout">
+    <div class="content-area">
+      <section class="section">
+        <div class="section-header">
+          <h2 class="section-title">Bài hát đã thích</h2>
+        </div>
+
+        <% if (tracks && tracks.length > 0) { %>
+          <div class="cards-grid">
+            <% tracks.forEach(track => { %>
+              <div class="card track-card"
+                   data-track-id="<%= track._id %>"
+                   data-track-title="<%= track.title %>"
+                   data-track-artist="<%= track.artist || 'Unknown' %>"
+                   data-track-cover="<%= track.coverUrl || '' %>"
+                   data-track-audio="<%= track.audioUrl %>">
+                <a href="/track/<%= track._id %>" class="card-image">
+                  <img src="<%= track.coverUrl || 'https://images.unsplash.com/photo-1470225620780-dba8ba36b745?w=400' %>" alt="<%= track.title %>">
+                  <button
+                    class="play-btn"
+                    data-track='<%- JSON.stringify({ id: track._id, title: track.title, artist: track.artist || "Unknown", cover: track.coverUrl || "", audioUrl: track.audioUrl }).replace(/'/g, '&#39;') %>'
+                    onclick="event.preventDefault(); event.stopPropagation(); playTrackFromData(this)">
+                    <i class="fa-solid fa-play"></i>
+                  </button>
+                </a>
+                <div class="card-info">
+                  <div class="card-title"><%= track.title %></div>
+                  <div class="card-artist"><%= track.artist || 'Nghệ sĩ không rõ' %></div>
+                  <button class="btn-secondary" onclick="toggleLike('<%= track._id %>', this)" style="margin-top: 8px;">
+                    <i class="fa-solid fa-heart" style="color:#ff5c8a;"></i> Bỏ thích
+                  </button>
+                </div>
+              </div>
+            <% }) %>
+          </div>
+        <% } else { %>
+          <div class="empty-state">
+            <h3>Chưa có bài hát yêu thích</h3>
+            <p>Hãy khám phá và thả tim bài hát bạn thích.</p>
+            <a href="/profile" class="btn btn-primary" style="margin-top:16px;">Khám phá ngay</a>
+          </div>
+        <% } %>
+      </section>
+    </div>
+
+    <div class="resize-handle" id="resizeHandle"></div>
+
+    <aside class="right-sidebar" id="rightSidebar">
+      <h3 class="sidebar-title">Đang phát</h3>
+      <div class="now-playing-card">
+        <div class="now-playing-image" id="sidebarImage"></div>
+        <div class="now-playing-info">
+          <div class="now-playing-title" id="sidebarTitle">-</div>
+          <div class="now-playing-artist" id="sidebarArtist">-</div>
+        </div>
+      </div>
+    </aside>
+  </div>
+
+  <button class="sidebar-toggle" id="sidebarToggle" onclick="toggleSidebar()">
+    <i class="fa-solid fa-chevron-left"></i>
+  </button>
+
+  <div class="queue-panel" id="queuePanel">
+    <div class="queue-header">
+      <h3 class="queue-title">Hàng đợi</h3>
+      <button class="queue-clear" onclick="player.clearQueue()">Xóa tất cả</button>
+    </div>
+    <div class="queue-list" id="queueList"></div>
+  </div>
+
+  <div class="music-player" id="musicPlayer">
+    <div class="player-wrapper">
+      <div class="player-left">
+        <div class="player-thumb" id="playerThumb"></div>
+        <div class="player-info">
+          <div class="player-title" id="playerTitle">Tên bài hát</div>
+          <div class="player-artist" id="playerArtist">Nghệ sĩ</div>
+        </div>
+      </div>
+
+      <div class="player-center">
+        <div class="player-buttons">
+          <button class="control-btn" id="shuffleBtn" title="Shuffle">
+            <i class="fa-solid fa-shuffle"></i>
+          </button>
+          <button class="control-btn" id="prevBtn" title="Previous">
+            <i class="fa-solid fa-backward-step"></i>
+          </button>
+          <button class="control-btn play" id="playPauseBtn">
+            <i class="fa-solid fa-play"></i>
+          </button>
+          <button class="control-btn" id="nextBtn" title="Next">
+            <i class="fa-solid fa-forward-step"></i>
+          </button>
+          <button class="control-btn" id="repeatBtn" title="Repeat">
+            <i class="fa-solid fa-repeat"></i>
+          </button>
+        </div>
+        <div class="player-progress-wrapper">
+          <span class="time" id="currentTime">0:00</span>
+          <div class="progress-bar" id="progressBar">
+            <div class="progress-fill" id="progressFill"></div>
+          </div>
+          <span class="time" id="duration">0:00</span>
+        </div>
+      </div>
+
+      <div class="player-right">
+        <div class="volume-control">
+          <i class="fa-solid fa-volume-high volume-icon" id="volumeIcon"></i>
+          <input type="range" class="volume-slider" id="volumeSlider" min="0" max="100" value="70">
+        </div>
+        <button class="queue-toggle" id="queueBtn" title="Queue">
+          <i class="fa-solid fa-list"></i>
+          <span class="queue-count" id="queueCount">0</span>
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <audio id="audioPlayer"></audio>
+  <script src="/public/js/player.js"></script>
+  <script>
+    window.toggleSidebar = function() {
+      const sidebar = document.getElementById('rightSidebar');
+      const toggle = document.getElementById('sidebarToggle');
+      const icon = toggle?.querySelector('i');
+      if (!sidebar) return;
+      sidebar.classList.toggle('active');
+      if (icon) {
+        icon.className = sidebar.classList.contains('active')
+          ? 'fa-solid fa-chevron-right'
+          : 'fa-solid fa-chevron-left';
+      }
+    };
+
+    function showNotification(message) {
+      const existing = document.querySelector('.custom-notification');
+      if (existing) existing.remove();
+      const notif = document.createElement('div');
+      notif.className = 'custom-notification';
+      notif.textContent = message;
+      notif.style.cssText = `
+        position: fixed;
+        bottom: 120px;
+        left: 50%;
+        transform: translateX(-50%);
+        background: rgba(40, 40, 40, 0.98);
+        color: #fff;
+        padding: 14px 24px;
+        border-radius: 8px;
+        font-weight: 600;
+        z-index: 9999;
+        box-shadow: 0 8px 24px rgba(0,0,0,0.5);
+      `;
+      document.body.appendChild(notif);
+      setTimeout(() => {
+        notif.style.opacity = '0';
+        notif.style.transition = 'opacity 0.3s, transform 0.3s';
+        notif.style.transform = 'translateX(-50%) translateY(8px)';
+        setTimeout(() => notif.remove(), 300);
+      }, 2000);
+    }
+
+    function playTrackFromData(btn) {
+      try {
+        const data = JSON.parse(btn.dataset.track || '{}');
+        if (window.playTrack && data.id) {
+          window.playTrack(data.id, data.title, data.artist, data.cover, data.audioUrl);
+        }
+      } catch (err) {
+        console.error('Cannot play track:', err);
+      }
+    }
+
+    async function toggleLike(trackId, btnEl) {
+      try {
+        const res = await fetch(`/api/tracks/${trackId}/like`, { method: 'POST' });
+        const data = await res.json();
+        if (data.success) {
+          showNotification(data.liked ? 'Đã thích' : 'Đã bỏ thích');
+          if (!data.liked) {
+            const card = btnEl.closest('.card');
+            if (card) {
+              card.style.opacity = '0';
+              card.style.transform = 'translateY(6px)';
+              setTimeout(() => card.remove(), 250);
+            }
+          }
+        } else {
+          showNotification('Không thể cập nhật yêu thích');
+        }
+      } catch (err) {
+        console.error(err);
+        showNotification('Lỗi khi cập nhật yêu thích');
+      }
+    }
+  </script>
+</body>
+</html>

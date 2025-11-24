@@ -7,6 +7,14 @@ const { TrackCollection } = require('../config/db');
 
 const router = express.Router();
 
+const requireAuth = (req, res, next) => {
+  if (!req.session?.user) {
+    req.session.flash = { type: 'warning', message: 'Vui lòng đăng nhập để upload.' };
+    return req.session.save(() => res.redirect('/login'));
+  }
+  next();
+};
+
 cloudinary.config({
   cloud_name: process.env.CLOUDINARY_CLOUD_NAME,
   api_key: process.env.CLOUDINARY_API_KEY,
@@ -48,19 +56,20 @@ const upload = multer({
   limits: { fileSize: 50 * 1024 * 1024 }, 
 });
 
-router.get('/', (req, res) => {
+router.get('/', requireAuth, (req, res) => {
   res.render('upload', { title: 'Upload music' });
 });
 
 router.post(
   '/new',
+  requireAuth,
   upload.fields([
     { name: 'audio', maxCount: 1 },
     { name: 'cover', maxCount: 1 },
   ]),
   async (req, res) => {
     try {
-      const { title, artist } = req.body;
+      const { title, artist, genres, tags, mood, lyricsText, lyricsLRC } = req.body;
       const audio = req.files?.audio?.[0];
       const cover = req.files?.cover?.[0];
 
@@ -68,6 +77,16 @@ router.post(
         req.session.flash = { type: 'danger', message: 'Thiếu tiêu đề hoặc file audio.' };
         return res.redirect('/upload');
       }
+
+      const parsedGenres = (genres || '')
+        .split(',')
+        .map(g => g.trim())
+        .filter(Boolean);
+
+      const parsedTags = (tags || '')
+        .split(',')
+        .map(t => t.trim())
+        .filter(Boolean);
 
       const audioUrl = audio.path; 
       const coverUrl =
@@ -84,6 +103,11 @@ router.post(
         status: 'approved', 
         createdAt: new Date(),
         updatedAt: new Date(),
+        genres: parsedGenres,
+        tags: parsedTags,
+        mood: (mood || '').trim(),
+        lyricsText: (lyricsText || '').trim(),
+        lyricsLRC: (lyricsLRC || '').trim()
       });
 
       req.session.flash = { type: 'success', message: 'Upload thành công!' };

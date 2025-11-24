@@ -10,10 +10,7 @@ const requireAdmin = (req, res, next) => {
   }
   next();
 };
-
-// ============================================
-// DASHBOARD - Shows pending tracks
-// ============================================
+//dashboard
 router.get('/dashboard', requireAdmin, async (req, res) => {
   try {
     const pendingTracks = await TrackCollection
@@ -41,10 +38,7 @@ router.get('/dashboard', requireAdmin, async (req, res) => {
     res.status(500).send('Server error');
   }
 });
-
-// ============================================
-// SEARCH - Works like user search
-// ============================================
+//sẻarch tracks
 router.get('/search', requireAdmin, async (req, res) => {
   try {
     const { q, status } = req.query;
@@ -93,10 +87,7 @@ router.get('/search', requireAdmin, async (req, res) => {
     res.status(500).send('Server error');
   }
 });
-
-// ============================================
-// REPORTS - List all reports
-// ============================================
+//reports list
 router.get('/reports', requireAdmin, async (req, res) => {
   try {
     const { status } = req.query;
@@ -133,10 +124,7 @@ router.get('/reports', requireAdmin, async (req, res) => {
     res.status(500).send('Server error');
   }
 });
-
-// ============================================
-// DELETED TRACKS
-// ============================================
+//deleted tracks list
 router.get('/deleted', requireAdmin, async (req, res) => {
   try {
     const deletedTracks = await TrackCollection
@@ -164,10 +152,7 @@ router.get('/deleted', requireAdmin, async (req, res) => {
     res.status(500).send('Server error');
   }
 });
-
-// ============================================
-// TRACK ACTIONS (called from track detail page)
-// ============================================
+//track approval
 router.post('/tracks/:id/approve', requireAdmin, async (req, res) => {
   try {
     await TrackCollection.findByIdAndUpdate(req.params.id, { 
@@ -232,10 +217,7 @@ router.post('/tracks/:id/restore', requireAdmin, async (req, res) => {
     res.status(500).json({ success: false, error: err.message });
   }
 });
-
-// ============================================
-// REPORT ACTIONS
-// ============================================
+//report management
 router.post('/reports/:id/dismiss', requireAdmin, async (req, res) => {
   try {
     const { adminNote } = req.body;
@@ -269,10 +251,7 @@ router.post('/reports/:id/resolve', requireAdmin, async (req, res) => {
     res.status(500).json({ success: false, error: err.message });
   }
 });
-
-// ============================================
-// COMMENT DELETION
-// ============================================
+//comment management
 router.delete('/comments/:id', requireAdmin, async (req, res) => {
   try {
     await CommentCollection.findByIdAndDelete(req.params.id);

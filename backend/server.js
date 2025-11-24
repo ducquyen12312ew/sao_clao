@@ -8,6 +8,7 @@ const crypto = require('crypto');
 const passport = require('passport');
 const GoogleStrategy = require('passport-google-oauth20').Strategy;
 const nodemailer = require('nodemailer');
+const OPENAI_API_KEY = process.env.OPENAI_API_KEY || '';
 
 dotenv.config();
 
@@ -20,7 +21,8 @@ const {
   CommentCollection,
   FollowCollection,
   ReportCollection,
-  PasswordResetCollection
+  PasswordResetCollection,
+  TrackLikeCollection
 } = require('./config/db');
 
 const uploadRoutes = require('./routes/upload');
@@ -552,6 +554,35 @@ app.get(['/me', '/profile'], requireAuth, async (req, res) => {
   }
 });
 
+app.get('/likes', requireAuth, async (req, res) => {
+  try {
+    const userId = req.session.user.id;
+    const filter = getTrackFilter(req.session.user);
+    const baseFilter = { ...filter, deletedAt: null };
+
+    const likes = await TrackLikeCollection.find({ userId })
+      .sort({ createdAt: -1 })
+      .populate({
+        path: 'trackId',
+        match: baseFilter
+      })
+      .lean();
+
+    const tracks = likes
+      .map(l => l.trackId)
+      .filter(Boolean);
+
+    res.render('likes', {
+      title: 'Bài hát đã thích - SAOCLAO',
+      user: req.session.user,
+      tracks
+    });
+  } catch (err) {
+    console.error('Likes page error:', err);
+    res.status(500).send('Server error');
+  }
+});
+
 app.post('/api/plays/:trackId', requireAuth, async (req, res) => {
   try {
     const trackId = req.params.trackId;
@@ -717,11 +748,66 @@ app.get('/api/tracks/genre/:genre', requireAuth, async (req, res) => {
       genres: { $regex: new RegExp(genre, 'i') }
     }).limit(limit).lean();
     
-    res.json({ success: true, tracks, genre });
-  } catch (err) {
-    res.status(500).json({ success: false, tracks: [], error: err.message });
-  }
+  res.json({ success: true, tracks, genre });
+} catch (err) {
+  res.status(500).json({ success: false, tracks: [], error: err.message });
+}
 });
+
+async function callLyricsAI({ prompt, genre, mood, vibe, vocal, length }) {
+  if (!OPENAI_API_KEY) {
+    return {
+      title: `Bài hát từ gợi ý: ${prompt.slice(0, 30)}`,
+      lyrics: `Verse 1:\n${prompt}...\n\nChorus:\nHát vang cùng ${genre || 'giai điệu'}.`
+    };
+  }
+
+  const system = [
+    'Bạn là nhạc sĩ viết lời bài hát tiếng Việt.',
+    'Trả về JSON thuần có dạng {"title": "...", "lyrics": "..."}',
+    'Lyrics cần có verse/chorus rõ ràng, không dài quá 300 từ.'
+  ].join(' ');
+
+  const user = [
+    `Gợi ý: ${prompt}`,
+    genre ? `Thể loại: ${genre}` : '',
+    mood ? `Mood: ${mood}` : '',
+    vibe ? `Giai điệu: ${vibe}` : '',
+    vocal ? `Tone giọng: ${vocal}` : '',
+    length ? `Độ dài ước tính: ${length}` : ''
+  ].filter(Boolean).join('\n');
+
+  const res = await fetch('https://api.openai.com/v1/chat/completions', {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json',
+      Authorization: `Bearer ${OPENAI_API_KEY}`
+    },
+    body: JSON.stringify({
+      model: process.env.OPENAI_MODEL || 'gpt-4o-mini',
+      temperature: 0.8,
+      messages: [
+        { role: 'system', content: system },
+        { role: 'user', content: user }
+      ],
+      max_tokens: 500
+    })
+  });
+
+  if (!res.ok) {
+    const text = await res.text();
+    throw new Error(`OpenAI error ${res.status}: ${text}`);
+  }
+
+  const data = await res.json();
+  const content = data.choices?.[0]?.message?.content || '';
+  try {
+    const parsed = JSON.parse(content);
+    return { title: parsed.title || 'Bài hát mới', lyrics: parsed.lyrics || content };
+  } catch (err) {
+    return { title: 'Bài hát mới', lyrics: content };
+  }
+}
 
 app.get('/api/tracks/mood/:mood', requireAuth, async (req, res) => {
   try {
@@ -738,6 +824,29 @@ app.get('/api/tracks/mood/:mood', requireAuth, async (req, res) => {
     res.json({ success: true, tracks, mood });
   } catch (err) {
     res.status(500).json({ success: false, tracks: [], error: err.message });
+  }
+});
+
+app.post('/api/ai/generate-lyrics', requireAuth, async (req, res) => {
+  try {
+    const { prompt, genre, mood, vibe, vocal, length } = req.body || {};
+    if (!prompt || !prompt.trim()) {
+      return res.status(400).json({ success: false, message: 'Vui lòng nhập gợi ý.' });
+    }
+
+    const result = await callLyricsAI({
+      prompt: prompt.trim(),
+      genre: (genre || '').trim(),
+      mood: (mood || '').trim(),
+      vibe: (vibe || '').trim(),
+      vocal: (vocal || '').trim(),
+      length: (length || '').trim()
+    });
+
+    res.json({ success: true, ...result });
+  } catch (err) {
+    console.error('AI generate error:', err);
+    res.status(500).json({ success: false, message: 'Không thể tạo lời bài hát', error: err.message });
   }
 });
 
@@ -818,7 +927,12 @@ app.get('/track/:id', requireAuth, async (req, res) => {
     .limit(5)
     .select('_id title artist coverUrl genres playCount')
     .lean();
-    
+
+    const liked = await TrackLikeCollection.exists({
+      trackId: req.params.id,
+      userId: req.session.user.id
+    });
+
     const playlists = await PlaylistCollection.find({
       tracks: track._id
     })
@@ -833,7 +947,8 @@ app.get('/track/:id', requireAuth, async (req, res) => {
       comments,
       relatedTracks,
       playlists,
-      user: req.session.user
+      user: req.session.user,
+      liked: !!liked
     });
   } catch (err) {
     res.status(500).send('Server error');
@@ -842,17 +957,35 @@ app.get('/track/:id', requireAuth, async (req, res) => {
 
 app.post('/api/tracks/:id/like', requireAuth, async (req, res) => {
   try {
-    const track = await TrackCollection.findByIdAndUpdate(
-      req.params.id,
-      { $inc: { likes: 1 } },
-      { new: true }
-    );
-    
+    const trackId = req.params.id;
+    const userId = req.session.user.id;
+    const filter = getTrackFilter(req.session.user);
+
+    const track = await TrackCollection.findOne({
+      _id: trackId,
+      deletedAt: null,
+      ...filter
+    });
+
     if (!track) {
       return res.status(404).json({ success: false, message: 'Track not found' });
     }
+
+    const existing = await TrackLikeCollection.findOne({ trackId, userId });
+    let liked;
+
+    if (existing) {
+      await TrackLikeCollection.deleteOne({ _id: existing._id });
+      liked = false;
+    } else {
+      await TrackLikeCollection.create({ trackId, userId });
+      liked = true;
+    }
+
+    const likes = await TrackLikeCollection.countDocuments({ trackId });
+    await TrackCollection.findByIdAndUpdate(trackId, { likes });
     
-    res.json({ success: true, likes: track.likes });
+    res.json({ success: true, likes, liked });
   } catch (err) {
     res.status(500).json({ success: false, error: err.message });
   }

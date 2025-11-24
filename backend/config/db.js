@@ -149,6 +149,16 @@ const TrackSchema = new mongoose.Schema({
     type: Number,
     default: 0
   },
+  lyricsText: {
+    type: String,
+    default: '',
+    trim: true
+  },
+  lyricsLRC: {
+    type: String,
+    default: '',
+    trim: true
+  },
   createdAt: { 
     type: Date, 
     default: Date.now 
@@ -349,6 +359,28 @@ const PasswordResetSchema = new mongoose.Schema({
 
 PasswordResetSchema.index({ expiresAt: 1 }, { expireAfterSeconds: 0 });
 
+const TrackLikeSchema = new mongoose.Schema({
+  trackId: {
+    type: mongoose.Schema.Types.ObjectId,
+    ref: 'Track',
+    required: true,
+    index: true
+  },
+  userId: {
+    type: mongoose.Schema.Types.ObjectId,
+    ref: 'User',
+    required: true,
+    index: true
+  },
+  createdAt: {
+    type: Date,
+    default: Date.now,
+    index: true
+  }
+});
+
+TrackLikeSchema.index({ trackId: 1, userId: 1 }, { unique: true });
+
 const UserCollection = mongoose.model('User', UserSchema);
 const TrackCollection = mongoose.model('Track', TrackSchema);
 const PlayHistoryCollection = mongoose.model('PlayHistory', PlayHistorySchema);
@@ -357,6 +389,7 @@ const CommentCollection = mongoose.model('Comment', CommentSchema);
 const FollowCollection = mongoose.model('Follow', FollowSchema);
 const ReportCollection = mongoose.model('Report', ReportSchema);
 const PasswordResetCollection = mongoose.model('PasswordReset', PasswordResetSchema);
+const TrackLikeCollection = mongoose.model('TrackLike', TrackLikeSchema);
 
 module.exports = {
   connectDB,
@@ -368,5 +401,6 @@ module.exports = {
   FollowCollection,
   ReportCollection,
   PasswordResetCollection,
+  TrackLikeCollection,
   mongoose
 };
