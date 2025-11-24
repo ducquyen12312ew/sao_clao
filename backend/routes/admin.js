@@ -1,5 +1,5 @@
 const express = require('express');
-const { TrackCollection, CommentCollection, UserCollection, ReportCollection } = require('./config');
+const { TrackCollection, CommentCollection, UserCollection, ReportCollection } = require('../config/db');
 
 const router = express.Router();
 

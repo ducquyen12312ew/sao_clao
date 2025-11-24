@@ -4,7 +4,7 @@ const {
   FollowCollection, 
   TrackCollection,
   PlaylistCollection 
-} = require('./config');
+} = require('../config/db');
 
 const router = express.Router();
 

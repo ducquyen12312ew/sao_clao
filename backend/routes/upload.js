@@ -2,8 +2,8 @@ const path = require('path');
 const express = require('express');
 const multer = require('multer');
 const { v2: cloudinary } = require('cloudinary');
-const { CloudinaryStorage } = require('multer-storage-cloudinary');
-const { TrackCollection } = require('./config');
+const CloudinaryStorage = require('multer-storage-cloudinary');
+const { TrackCollection } = require('../config/db');
 
 const router = express.Router();
 

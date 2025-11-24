@@ -1,5 +1,5 @@
 const express = require('express');
-const { PlaylistCollection } = require('./config');
+const { PlaylistCollection } = require('../config/db');
 const router = express.Router();
 
 const requireAuth = (req, res, next) => {

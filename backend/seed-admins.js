@@ -1,5 +1,5 @@
 const bcrypt = require('bcrypt');
-const { connectDB, UserCollection } = require('./config');
+const { connectDB, UserCollection } = require('./config/db');
 
 async function seedAdmins() {
   try {

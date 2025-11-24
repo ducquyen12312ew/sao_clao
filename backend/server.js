@@ -4,6 +4,10 @@ const session = require('express-session');
 const MongoStore = require('connect-mongo');
 const bcrypt = require('bcrypt');
 const dotenv = require('dotenv');
+const crypto = require('crypto');
+const passport = require('passport');
+const GoogleStrategy = require('passport-google-oauth20').Strategy;
+const nodemailer = require('nodemailer');
 
 dotenv.config();
 
@@ -15,21 +19,23 @@ const {
   PlaylistCollection,
   CommentCollection,
   FollowCollection,
-  ReportCollection
-} = require('./config');
+  ReportCollection,
+  PasswordResetCollection
+} = require('./config/db');
 
-const uploadRoutes = require('./upload-routes');
-const playlistRoutes = require('./playlist-routes');
-const userRoutes = require('./user-routes');
-const settingsRoutes = require('./settings-routes');
-const adminRoutes = require('./admin-routes');
+const uploadRoutes = require('./routes/upload');
+const playlistRoutes = require('./routes/playlist');
+const userRoutes = require('./routes/user');
+const settingsRoutes = require('./routes/settings');
+const adminRoutes = require('./routes/admin');
 
 const app = express();
 const SALT_ROUNDS = 10;
+const PASSWORD_RULE_MESSAGE = 'Mật khẩu phải có ít nhất 8 ký tự, gồm chữ hoa, chữ thường, chữ số và ký tự đặc biệt.';
 
 app.set('view engine', 'ejs');
-app.set('views', path.join(__dirname, '..', 'views'));
-app.use('/public', express.static(path.join(__dirname, '..', 'public')));
+app.set('views', path.join(__dirname, '..', 'frontend', 'views'));
+app.use('/public', express.static(path.join(__dirname, '..', 'frontend', 'public')));
 
 app.use(express.urlencoded({ extended: true }));
 app.use(express.json());
@@ -50,17 +56,144 @@ app.use(session({
     mongoUrl: process.env.MONGO_URI || 'mongodb://127.0.0.1:27017/MusicCloud',
     dbName: 'MusicCloud',
     collectionName: 'sessions',
-    touchAfter: 24 * 3600,
-    crypto: { secret: sessionSecret }
+    touchAfter: 24 * 3600
   })
 }));
+
+app.use(passport.initialize());
+app.use(passport.session());
 
 app.use((req, res, next) => {
   res.locals.currentUser = req.session.user || null;
   res.locals.flash = req.session.flash || null;
   delete req.session.flash;
+  res.locals.oauthProviders = {
+    google: !!(passport._strategies && passport._strategies.google)
+  };
   next();
 });
+
+// Helpers
+const isStrongPassword = (password) => {
+  return (
+    typeof password === 'string' &&
+    password.length >= 8 &&
+    /[A-Z]/.test(password) &&
+    /[a-z]/.test(password) &&
+    /[0-9]/.test(password) &&
+    /[^A-Za-z0-9]/.test(password)
+  );
+};
+
+const buildSessionUser = (user) => ({
+  id: user._id,
+  name: user.name,
+  username: user.username,
+  avatarUrl: user.avatarUrl || '',
+  bio: user.bio || '',
+  role: user.role || 'user'
+});
+
+async function ensureUniqueUsername(base) {
+  const safeBase = (base || 'user').toLowerCase().replace(/[^a-z0-9_]/g, '') || `user${Date.now()}`;
+  let candidate = safeBase;
+  let counter = 1;
+  while (await UserCollection.findOne({ username: candidate })) {
+    candidate = `${safeBase}${counter}`;
+    counter += 1;
+  }
+  return candidate;
+}
+
+async function upsertOAuthUser(provider, profile) {
+  const email = profile.emails?.[0]?.value?.toLowerCase() || '';
+  const providerId = profile.id;
+  const displayName = profile.displayName || profile.name?.givenName || provider;
+  const usernameBase = (profile.username || (email ? email.split('@')[0] : `user_${providerId.slice(0, 6)}`)).toLowerCase();
+
+  let user = await UserCollection.findOne({ provider, providerId });
+  if (!user && email) {
+    user = await UserCollection.findOne({ email });
+  }
+
+  if (!user) {
+    const username = await ensureUniqueUsername(usernameBase);
+    const passwordHash = await bcrypt.hash(crypto.randomBytes(32).toString('hex'), SALT_ROUNDS);
+    user = await UserCollection.create({
+      name: displayName || username,
+      username,
+      email: email || `${username}@${provider}.local`,
+      passwordHash,
+      provider,
+      providerId
+    });
+  } else if (!user.provider || user.provider === 'local') {
+    user.provider = provider;
+    user.providerId = providerId;
+    await user.save();
+  }
+
+  return user;
+}
+
+passport.serializeUser((user, done) => done(null, user._id));
+passport.deserializeUser(async (id, done) => {
+  try {
+    const user = await UserCollection.findById(id);
+    done(null, user);
+  } catch (err) {
+    done(err);
+  }
+});
+
+const APP_BASE_URL = process.env.APP_BASE_URL || `http://localhost:${process.env.PORT || 3000}`;
+
+if (process.env.GOOGLE_CLIENT_ID && process.env.GOOGLE_CLIENT_SECRET) {
+  passport.use(new GoogleStrategy(
+    {
+      clientID: process.env.GOOGLE_CLIENT_ID,
+      clientSecret: process.env.GOOGLE_CLIENT_SECRET,
+      callbackURL: process.env.GOOGLE_CALLBACK_URL || `${APP_BASE_URL}/auth/google/callback`
+    },
+    async (accessToken, refreshToken, profile, done) => {
+      try {
+        const user = await upsertOAuthUser('google', profile);
+        done(null, user);
+      } catch (err) {
+        console.error('Google strategy error:', err);
+        done(err);
+      }
+    }
+  ));
+}
+
+const transporter = process.env.SMTP_HOST
+  ? nodemailer.createTransport({
+      host: process.env.SMTP_HOST,
+      port: Number(process.env.SMTP_PORT || 587),
+      secure: process.env.SMTP_SECURE === 'true',
+      auth: process.env.SMTP_USER
+        ? {
+            user: process.env.SMTP_USER,
+            pass: process.env.SMTP_PASS
+          }
+        : undefined
+    })
+  : null;
+
+const sendResetEmail = async (email, url) => {
+  if (!transporter) {
+    console.log('[RESET LINK]', url);
+    return;
+  }
+  await transporter.sendMail({
+    from: process.env.SMTP_FROM || process.env.SMTP_USER,
+    to: email,
+    subject: 'Reset mật khẩu SAOCLAO',
+    text: `Bạn đã yêu cầu đặt lại mật khẩu. Nhấn vào link sau để tiếp tục: ${url}`,
+    html: `<p>Bạn đã yêu cầu đặt lại mật khẩu.</p><p><a href="${url}">Nhấn vào đây để đặt lại mật khẩu</a></p>`
+  });
+};
 
 const requireAuth = (req, res, next) => {
   if (!req.session.user) {
@@ -113,9 +246,17 @@ app.post('/signup', async (req, res) => {
       req.session.flash = { type: 'danger', message: 'Vui lòng điền đầy đủ thông tin.' };
       return req.session.save(() => res.redirect('/signup'));
     }
+
+    if (!isStrongPassword(password)) {
+      req.session.flash = { type: 'danger', message: PASSWORD_RULE_MESSAGE };
+      return req.session.save(() => res.redirect('/signup'));
+    }
     
+    const normalizedEmail = (email || '').toLowerCase().trim();
+    const normalizedUsername = (username || '').toLowerCase().trim();
+
     const exists = await UserCollection.findOne({ 
-      $or: [{ email }, { username }] 
+      $or: [{ email: normalizedEmail }, { username: normalizedUsername }] 
     });
     
     if (exists) {
@@ -124,7 +265,7 @@ app.post('/signup', async (req, res) => {
     }
     
     const passwordHash = await bcrypt.hash(password, SALT_ROUNDS);
-    await UserCollection.create({ name, username, email, passwordHash });
+    await UserCollection.create({ name, username: normalizedUsername, email: normalizedEmail, passwordHash });
     
     req.session.flash = { type: 'success', message: 'Đăng ký thành công! Vui lòng đăng nhập để tiếp tục.' };
     req.session.save(() => res.redirect('/login'));
@@ -145,9 +286,10 @@ app.post('/login', async (req, res) => {
   
   try {
     const { identifier, password } = req.body;
+    const normalizedId = (identifier || '').toLowerCase().trim();
     
     const user = await UserCollection.findOne({ 
-      $or: [{ email: identifier }, { username: identifier }] 
+      $or: [{ email: normalizedId }, { username: normalizedId }] 
     });
     
     if (!user) { 
@@ -161,20 +303,17 @@ app.post('/login', async (req, res) => {
       return req.session.save(() => res.redirect('/login'));
     }
     
-    req.session.user = { 
-      id: user._id, 
-      name: user.name, 
-      username: user.username,
-      avatarUrl: user.avatarUrl || '',
-      bio: user.bio || '',
-      role: user.role || 'user'
-    };
-    
-    if (user.role === 'admin') {
-      return req.session.save(() => res.redirect('/admin/dashboard'));
-    }
-    
-    req.session.save(() => res.redirect('/profile'));
+    req.logIn(user, (err) => {
+      if (err) {
+        req.session.flash = { type: 'danger', message: 'Không thể đăng nhập.' };
+        return req.session.save(() => res.redirect('/login'));
+      }
+      req.session.user = buildSessionUser(user);
+      if (user.role === 'admin') {
+        return req.session.save(() => res.redirect('/admin/dashboard'));
+      }
+      return req.session.save(() => res.redirect('/profile'));
+    });
     
   } catch (err) {
     req.session.flash = { type: 'danger', message: 'Đã xảy ra lỗi. Vui lòng thử lại.' };
@@ -182,12 +321,132 @@ app.post('/login', async (req, res) => {
   }
 });
 
+// Social auth
+if (passport._strategies && passport._strategies.google) {
+  app.get('/auth/google', passport.authenticate('google', { scope: ['profile', 'email'] }));
+  app.get('/auth/google/callback', (req, res, next) => {
+    passport.authenticate('google', { failureRedirect: '/login' }, (err, user) => {
+      if (err) {
+        console.error('Google auth error:', err);
+        req.session.flash = { type: 'danger', message: 'Đăng nhập Google thất bại.' };
+        return req.session.save(() => res.redirect('/login'));
+      }
+      if (!user) {
+        req.session.flash = { type: 'danger', message: 'Không thể xác thực Google.' };
+        return req.session.save(() => res.redirect('/login'));
+      }
+      req.logIn(user, (loginErr) => {
+        if (loginErr) {
+          console.error('Google login session error:', loginErr);
+          req.session.flash = { type: 'danger', message: 'Không thể tạo phiên đăng nhập.' };
+          return req.session.save(() => res.redirect('/login'));
+        }
+        req.session.user = buildSessionUser(user);
+        return req.session.save(() => res.redirect('/profile'));
+      });
+    })(req, res, next);
+  });
+}
+
 const doLogout = (req, res) => {
   req.session.destroy(() => res.redirect('/'));
 };
 
 app.get('/logout', doLogout);
 app.post('/logout', doLogout);
+
+app.get('/forgot-password', (req, res) => {
+  if (req.session.user) return res.redirect('/profile');
+  res.render('forgot-password', { title: 'Quên mật khẩu' });
+});
+
+app.post('/forgot-password', async (req, res) => {
+  try {
+    const { email } = req.body;
+    if (!email) {
+      req.session.flash = { type: 'danger', message: 'Vui lòng nhập email.' };
+      return req.session.save(() => res.redirect('/forgot-password'));
+    }
+
+    const user = await UserCollection.findOne({ email: email.toLowerCase() });
+    if (user) {
+      await PasswordResetCollection.deleteMany({ userId: user._id });
+      const rawToken = crypto.randomBytes(32).toString('hex');
+      const tokenHash = crypto.createHash('sha256').update(rawToken).digest('hex');
+      const expiresAt = new Date(Date.now() + 1000 * 60 * 30); // 30 minutes
+      await PasswordResetCollection.create({ userId: user._id, tokenHash, expiresAt });
+      const resetUrl = `${APP_BASE_URL}/reset-password/${rawToken}`;
+      await sendResetEmail(user.email, resetUrl);
+    }
+
+    req.session.flash = { type: 'success', message: 'Nếu email hợp lệ, chúng tôi đã gửi link đặt lại mật khẩu.' };
+    req.session.save(() => res.redirect('/forgot-password'));
+  } catch (err) {
+    console.error('Forgot password error:', err);
+    req.session.flash = { type: 'danger', message: 'Có lỗi xảy ra. Vui lòng thử lại.' };
+    req.session.save(() => res.redirect('/forgot-password'));
+  }
+});
+
+app.get('/reset-password/:token', async (req, res) => {
+  const token = req.params.token;
+  const tokenHash = crypto.createHash('sha256').update(token).digest('hex');
+  const resetDoc = await PasswordResetCollection.findOne({
+    tokenHash,
+    used: false,
+    expiresAt: { $gt: new Date() }
+  });
+
+  if (!resetDoc) {
+    req.session.flash = { type: 'danger', message: 'Link đặt lại mật khẩu không hợp lệ hoặc đã hết hạn.' };
+    return req.session.save(() => res.redirect('/forgot-password'));
+  }
+
+  res.render('reset-password', { title: 'Đặt lại mật khẩu', token });
+});
+
+app.post('/reset-password/:token', async (req, res) => {
+  try {
+    const token = req.params.token;
+    const { password } = req.body;
+
+    if (!isStrongPassword(password)) {
+      req.session.flash = { type: 'danger', message: PASSWORD_RULE_MESSAGE };
+      return req.session.save(() => res.redirect(`/reset-password/${token}`));
+    }
+
+    const tokenHash = crypto.createHash('sha256').update(token).digest('hex');
+    const resetDoc = await PasswordResetCollection.findOne({
+      tokenHash,
+      used: false,
+      expiresAt: { $gt: new Date() }
+    });
+
+    if (!resetDoc) {
+      req.session.flash = { type: 'danger', message: 'Link đặt lại mật khẩu không hợp lệ hoặc đã hết hạn.' };
+      return req.session.save(() => res.redirect('/forgot-password'));
+    }
+
+    const user = await UserCollection.findById(resetDoc.userId);
+    if (!user) {
+      req.session.flash = { type: 'danger', message: 'Người dùng không tồn tại.' };
+      return req.session.save(() => res.redirect('/forgot-password'));
+    }
+
+    user.passwordHash = await bcrypt.hash(password, SALT_ROUNDS);
+    await user.save();
+
+    resetDoc.used = true;
+    await resetDoc.save();
+
+    req.session.flash = { type: 'success', message: 'Đã cập nhật mật khẩu. Vui lòng đăng nhập.' };
+    req.session.save(() => res.redirect('/login'));
+  } catch (err) {
+    console.error('Reset password error:', err);
+    req.session.flash = { type: 'danger', message: 'Không thể đặt lại mật khẩu.' };
+    req.session.save(() => res.redirect('/forgot-password'));
+  }
+});
 
 app.use('/upload', uploadRoutes);
 app.use('/playlists', playlistRoutes);
