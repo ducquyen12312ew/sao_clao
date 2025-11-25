@@ -40,7 +40,7 @@ async function clearSessions() {
     console.log('\n✓ Hoàn tất! Hãy khởi động lại server.');
     
   } catch (error) {
-    console.error('❌ Lỗi:', error.message);
+    console.error('Lỗi:', error.message);
     process.exit(1);
   } finally {
     await client.close();

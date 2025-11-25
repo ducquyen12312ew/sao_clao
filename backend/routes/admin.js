@@ -38,7 +38,7 @@ router.get('/dashboard', requireAdmin, async (req, res) => {
     res.status(500).send('Server error');
   }
 });
-//sẻarch tracks
+//search tracks
 router.get('/search', requireAdmin, async (req, res) => {
   try {
     const { q, status } = req.query;
