@@ -7,9 +7,25 @@ const { MongoClient } = require("mongodb");
 const { v2: cloudinary } = require("cloudinary");
 require("dotenv").config();
 
-const YTDLP_PATH = "D:\\yt-dlp\\yt-dlp.exe";
-const FFMPEG_BIN_DIR = "D:\\ffmpeg-8.0-essentials_build\\ffmpeg-8.0-essentials_build\\bin";
-process.env.PATH += `;${FFMPEG_BIN_DIR}`;
+const isWin = process.platform === "win32";
+
+// YTDLP_PATH:
+// - Trên macOS/Linux: chỉ cần đặt trong .env = /opt/homebrew/bin/yt-dlp
+// - Trên Windows: có thể để trong .env = D:\yt-dlp\yt-dlp.exe
+const YTDLP_PATH = process.env.YTDLP_PATH || (isWin ? "D:\\yt-dlp\\yt-dlp.exe" : "yt-dlp");
+
+// FFMPEG_BIN_DIR (optional):
+// - Trên macOS/Linux: /opt/homebrew/bin
+// - Trên Windows: D:\ffmpeg-8.0-essentials_build\ffmpeg-8.0-essentials_build\bin
+const FFMPEG_BIN_DIR = process.env.FFMPEG_BIN_DIR || (isWin
+  ? "D:\\ffmpeg-8.0-essentials_build\\ffmpeg-8.0-essentials_build\\bin"
+  : ""
+);
+
+// Thêm ffmpeg bin vào PATH (dùng path.delimiter cho cross-platform)
+if (FFMPEG_BIN_DIR) {
+  process.env.PATH += path.delimiter + FFMPEG_BIN_DIR;
+}
 
 const TMP_DIR = path.join(__dirname, "tmp_batch");
 if (!fs.existsSync(TMP_DIR)) fs.mkdirSync(TMP_DIR, { recursive: true });

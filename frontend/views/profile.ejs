@@ -165,41 +165,6 @@
     </div>
   </div>
 
-  <!-- Sonic Modal -->
-  <div class="modal" id="sonicModal">
-    <div class="modal-content">
-      <button class="modal-close" onclick="closeSonicModal()">
-        <i class="fa-solid fa-xmark"></i>
-      </button>
-      <h3 class="modal-title">Sonic Beat (MusicAPI)</h3>
-      <div class="form-group">
-        <label class="form-label">Mô tả beat</label>
-        <input type="text" class="form-input" id="sonicPrompt" placeholder="VD: lofi chill beat for studying">
-      </div>
-      <div class="form-group">
-        <label class="form-label">Model</label>
-        <select class="form-input" id="sonicModel">
-          <option value="sonic-v3-5">sonic-v3-5</option>
-          <option value="sonic-v3-4">sonic-v3-4</option>
-        </select>
-      </div>
-      <div class="form-group">
-        <label class="form-label">Kết quả</label>
-        <textarea class="form-textarea" id="sonicResult" placeholder="Kết quả API sẽ hiển thị tại đây" readonly></textarea>
-      </div>
-      <div class="modal-footer">
-        <div id="sonicStatus" class="ai-status" style="display:none;">Đang gọi Sonic...</div>
-        <div style="flex:1"></div>
-        <button class="btn btn-secondary" onclick="closeSonicModal()">Đóng</button>
-        <button class="btn btn-primary" onclick="callSonic()">Gọi Sonic</button>
-      </div>
-    </div>
-  </div>
-
-  <!-- Sonic Floating Button -->
-  <div class="sonic-fab" id="sonicFab" title="Sonic AI">
-    <img src="/public/img/saoclao.png" alt="Sonic" />
-  </div>
 
   <!-- Header -->
   <header class="header">
@@ -545,50 +510,6 @@ window.openAIModal = function() {
 window.closeAIModal = function() {
   document.getElementById('aiLyricsModal')?.classList.remove('active');
   stopPreview();
-};
-
-window.openSonicModal = function() {
-  document.getElementById('sonicModal')?.classList.add('active');
-};
-
-window.closeSonicModal = function() {
-  document.getElementById('sonicModal')?.classList.remove('active');
-};
-
-window.callSonic = async function() {
-  const statusEl = document.getElementById('sonicStatus');
-  const prompt = document.getElementById('sonicPrompt')?.value.trim();
-  const model = document.getElementById('sonicModel')?.value || 'sonic-v3-5';
-  const resultBox = document.getElementById('sonicResult');
-
-  if (!prompt) {
-    alert('Vui lòng nhập mô tả beat.');
-    return;
-  }
-
-  if (statusEl) {
-    statusEl.style.display = 'inline-block';
-    statusEl.textContent = 'Đang gọi Sonic...';
-  }
-
-  try {
-    const res = await fetch('/api/sonic/create', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ prompt, model })
-    });
-    const data = await res.json();
-    if (data.success) {
-      resultBox.value = JSON.stringify(data.data, null, 2);
-    } else {
-      resultBox.value = data.message || 'Không thể gọi Sonic';
-    }
-  } catch (err) {
-    console.error(err);
-    resultBox.value = 'Lỗi gọi Sonic';
-  } finally {
-    if (statusEl) statusEl.style.display = 'none';
-  }
 };
 
 window.generateLyrics = async function() {
@@ -1190,39 +1111,6 @@ window.addEventListener('DOMContentLoaded', () => {
   
   setTimeout(() => clearInterval(checkPlayer), 5000);
 
-  // Sonic FAB drag + click
-  const fab = document.getElementById('sonicFab');
-  if (fab) {
-    let isDragging = false;
-    let offsetX = 0;
-    let offsetY = 0;
-
-    const onMouseMove = (e) => {
-      if (!isDragging) return;
-      fab.style.left = `${e.clientX - offsetX}px`;
-      fab.style.top = `${e.clientY - offsetY}px`;
-    };
-
-    fab.addEventListener('mousedown', (e) => {
-      isDragging = true;
-      offsetX = e.clientX - fab.getBoundingClientRect().left;
-      offsetY = e.clientY - fab.getBoundingClientRect().top;
-      fab.style.position = 'fixed';
-      document.addEventListener('mousemove', onMouseMove);
-    });
-
-    document.addEventListener('mouseup', () => {
-      if (isDragging) {
-        isDragging = false;
-        document.removeEventListener('mousemove', onMouseMove);
-      }
-    });
-
-    fab.addEventListener('click', (e) => {
-      if (isDragging) return;
-      openSonicModal();
-    });
-  }
 });
 </script>
 </body>
