@@ -9,6 +9,7 @@ const passport = require('passport');
 const GoogleStrategy = require('passport-google-oauth20').Strategy;
 const nodemailer = require('nodemailer');
 const OPENAI_API_KEY = process.env.OPENAI_API_KEY || '';
+const SONIC_API_KEY = process.env.MUSICAPI_API_KEY || process.env.SONIC_API_KEY || '';
 
 dotenv.config();
 
@@ -868,6 +869,43 @@ app.post('/api/ai/generate-lyrics', requireAuth, async (req, res) => {
   } catch (err) {
     console.error('AI generate error:', err);
     res.status(500).json({ success: false, message: 'Không thể tạo lời bài hát', error: err.message });
+  }
+});
+
+app.post('/api/sonic/create', requireAuth, async (req, res) => {
+  try {
+    if (!SONIC_API_KEY) {
+      return res.status(400).json({ success: false, message: 'Thiếu MUSICAPI_API_KEY/SONIC_API_KEY' });
+    }
+    const { prompt, model } = req.body || {};
+    if (!prompt || !prompt.trim()) {
+      return res.status(400).json({ success: false, message: 'Vui lòng nhập mô tả beat.' });
+    }
+    const payload = {
+      custom_mode: false,
+      gpt_description_prompt: prompt.trim(),
+      mv: model || 'sonic-v3-5'
+    };
+
+    const sonicRes = await fetch('https://api.musicapi.ai/api/v1/sonic/create', {
+      method: 'POST',
+      headers: {
+        'Authorization': `Bearer ${SONIC_API_KEY}`,
+        'Content-Type': 'application/json'
+      },
+      body: JSON.stringify(payload)
+    });
+
+    if (!sonicRes.ok) {
+      const text = await sonicRes.text();
+      return res.status(sonicRes.status).json({ success: false, message: 'Sonic API lỗi', detail: text });
+    }
+
+    const data = await sonicRes.json();
+    res.json({ success: true, data });
+  } catch (err) {
+    console.error('Sonic create error:', err);
+    res.status(500).json({ success: false, message: 'Không thể gọi Sonic API', error: err.message });
   }
 });
 

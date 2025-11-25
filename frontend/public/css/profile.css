@@ -1259,6 +1259,33 @@ body::before {
   color: var(--accent);
 }
 
+.sonic-fab {
+  position: fixed;
+  bottom: 32px;
+  right: 32px;
+  width: 64px;
+  height: 64px;
+  border-radius: 50%;
+  background: radial-gradient(circle at 30% 30%, #7c3aed, #3b1f7a);
+  box-shadow: 0 12px 32px rgba(124, 58, 237, 0.4);
+  cursor: grab;
+  z-index: 2500;
+  display: grid;
+  place-items: center;
+  border: 1px solid rgba(255,255,255,0.15);
+}
+
+.sonic-fab img {
+  width: 40px;
+  height: 40px;
+  object-fit: contain;
+  filter: brightness(1.2);
+}
+
+.sonic-fab:active {
+  cursor: grabbing;
+}
+
 .btn {
   padding: 14px 28px;
   border-radius: 24px;
