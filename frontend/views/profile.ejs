@@ -48,6 +48,70 @@
     </div>
   </div>
 
+  <!-- AI Lyrics Modal -->
+  <div class="modal" id="aiLyricsModal">
+    <div class="modal-content">
+      <button class="modal-close" onclick="closeAIModal()">
+        <i class="fa-solid fa-xmark"></i>
+      </button>
+      <h3 class="modal-title">AI gợi ý bài hát</h3>
+      <div class="ai-layout">
+        <div class="ai-column">
+          <p style="color: var(--text-secondary); margin-bottom: 16px;">Nhập ý tưởng, chọn phong cách để AI viết lời cho bạn.</p>
+          <div class="form-group">
+            <label class="form-label">Ý tưởng / prompt</label>
+            <input type="text" class="form-input" id="aiPrompt" placeholder="VD: Một buổi chiều mưa nhớ người yêu cũ">
+          </div>
+          <div class="form-group">
+            <label class="form-label">Thể loại</label>
+            <input type="text" class="form-input" id="aiGenre" placeholder="ballad, pop, rap...">
+          </div>
+          <div class="form-group">
+            <label class="form-label">Mood</label>
+            <input type="text" class="form-input" id="aiMood" placeholder="vui tươi, trầm lắng...">
+          </div>
+          <div class="form-group">
+            <label class="form-label">Giai điệu / vibe</label>
+            <input type="text" class="form-input" id="aiVibe" placeholder="chill, sôi động, cinematic...">
+          </div>
+          <div class="form-group">
+            <label class="form-label">Tone giọng</label>
+            <input type="text" class="form-input" id="aiVocal" placeholder="nam cao, nữ trầm...">
+          </div>
+          <div class="form-group">
+            <label class="form-label">Độ dài mong muốn</label>
+            <input type="text" class="form-input" id="aiLength" placeholder="Ngắn, vừa, dài">
+          </div>
+          <div class="modal-footer" style="padding: 0;">
+            <div id="aiStatus" class="ai-status" style="display:none;">Đang tạo...</div>
+            <div style="flex:1"></div>
+            <button class="btn btn-secondary" onclick="closeAIModal()">Đóng</button>
+            <button class="btn btn-primary" onclick="generateLyrics()">Tạo lời</button>
+          </div>
+        </div>
+        <div class="ai-column ai-preview-panel">
+          <div class="ai-preview-header">
+            <div>
+              <div class="ai-preview-label">Bản xem trước</div>
+              <div class="ai-preview-title" id="aiPreviewTitle">Chưa có kết quả</div>
+            </div>
+            <div class="ai-preview-actions">
+              <button class="btn btn-secondary" onclick="playPreview()" id="aiPlayBtn">
+                <i class="fa-solid fa-play"></i> Phát
+              </button>
+              <button class="btn btn-secondary" onclick="stopPreview()" id="aiStopBtn">
+                <i class="fa-solid fa-stop"></i> Dừng
+              </button>
+            </div>
+          </div>
+          <div class="ai-preview" id="aiPreviewLines">
+            <p style="color: var(--text-secondary); text-align:center; margin:0;">Tạo lời để xem trước tại đây</p>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
   <!-- Header -->
   <header class="header">
     <div style="display: flex; align-items: center;">
@@ -87,6 +151,10 @@
       <button class="upload-btn" onclick="window.location.href='/upload'">
         <i class="fa-solid fa-cloud-arrow-up"></i>
         <span class="btn-text">Upload</span>
+      </button>
+      <button class="ai-btn" onclick="openAIModal()">
+        <i class="fa-solid fa-wand-magic-sparkles"></i>
+        <span class="btn-text">AI</span>
       </button>
 
       <a href="/users/<%= user.username %>" style="text-decoration: none;">
@@ -379,6 +447,56 @@ window.openCreatePlaylistModal = function() {
   
   const descInput = document.getElementById('playlistDescription');
   if (descInput) descInput.value = '';
+};
+
+window.openAIModal = function() {
+  document.getElementById('aiLyricsModal')?.classList.add('active');
+};
+
+window.closeAIModal = function() {
+  document.getElementById('aiLyricsModal')?.classList.remove('active');
+  stopPreview();
+};
+
+window.generateLyrics = async function() {
+  const statusEl = document.getElementById('aiStatus');
+  const prompt = document.getElementById('aiPrompt')?.value.trim();
+  const genre = document.getElementById('aiGenre')?.value.trim();
+  const mood = document.getElementById('aiMood')?.value.trim();
+  const vibe = document.getElementById('aiVibe')?.value.trim();
+  const vocal = document.getElementById('aiVocal')?.value.trim();
+  const length = document.getElementById('aiLength')?.value.trim();
+
+  if (!prompt) {
+    alert('Vui lòng nhập gợi ý.');
+    return;
+  }
+
+  if (statusEl) {
+    statusEl.textContent = 'Đang tạo...';
+    statusEl.style.display = 'inline-block';
+  }
+
+  try {
+    const res = await fetch('/api/ai/generate-lyrics', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ prompt, genre, mood, vibe, vocal, length })
+    });
+
+    const data = await res.json();
+    if (data.success) {
+      showNotification('Đã tạo lời, xem trước bên phải.');
+      renderPreview(data.lyrics || '', data.title || '');
+    } else {
+      alert(data.message || 'Không thể tạo lời');
+    }
+  } catch (err) {
+    console.error(err);
+    alert('Lỗi kết nối AI');
+  } finally {
+    if (statusEl) statusEl.style.display = 'none';
+  }
 };
 
 window.closeCreatePlaylistModal = function() {
@@ -778,10 +896,72 @@ if (!document.getElementById('notif-animations')) {
   document.head.appendChild(style);
 }
 
+let aiPreviewInterval = null;
+let aiPreviewLines = [];
+let aiPreviewIndex = 0;
+
+function renderPreview(lyrics, title) {
+  const container = document.getElementById('aiPreviewLines');
+  const titleEl = document.getElementById('aiPreviewTitle');
+  if (titleEl) titleEl.textContent = title || 'Bản xem trước';
+  if (!container) return;
+  
+  aiPreviewLines = (lyrics || '')
+    .split(/\r?\n/)
+    .map(l => l.trim())
+    .filter(Boolean);
+  aiPreviewIndex = 0;
+  stopPreview();
+
+  if (!aiPreviewLines.length) {
+    container.innerHTML = '<p style="color: var(--text-secondary); text-align:center; margin:0;">Chưa có lời</p>';
+    return;
+  }
+
+  container.innerHTML = aiPreviewLines.map((line, i) => 
+    `<div class="ai-line" data-idx="${i}">${line}</div>`
+  ).join('');
+}
+
+function highlightLine(idx) {
+  document.querySelectorAll('.ai-line').forEach(el => {
+    el.classList.remove('active', 'passed');
+  });
+  aiPreviewLines.forEach((_, i) => {
+    const el = document.querySelector(`.ai-line[data-idx="${i}"]`);
+    if (!el) return;
+    if (i < idx) el.classList.add('passed');
+    if (i === idx) el.classList.add('active');
+  });
+}
+
+window.playPreview = function() {
+  if (!aiPreviewLines.length) return;
+  stopPreview();
+  aiPreviewIndex = 0;
+  highlightLine(aiPreviewIndex);
+  aiPreviewInterval = setInterval(() => {
+    aiPreviewIndex += 1;
+    if (aiPreviewIndex >= aiPreviewLines.length) {
+      stopPreview();
+      return;
+    }
+    highlightLine(aiPreviewIndex);
+  }, 1600);
+};
+
+window.stopPreview = function() {
+  if (aiPreviewInterval) {
+    clearInterval(aiPreviewInterval);
+    aiPreviewInterval = null;
+  }
+};
+
 function initEventListeners() {
   document.addEventListener('keydown', (e) => {
     if (e.key === 'Escape') {
       closeCreatePlaylistModal();
+      closeAIModal();
     }
   });
   
