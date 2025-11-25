@@ -754,19 +754,36 @@ app.get('/api/tracks/genre/:genre', requireAuth, async (req, res) => {
 }
 });
 
-async function callLyricsAI({ prompt, genre, mood, vibe, vocal, length }) {
+async function callLyricsAI({ prompt, genre, mood, vibe, vocal, length, language, lengthChoice }) {
+  const targetLinesMap = {
+    short: { label: '5-6 dòng', min: 5, max: 6 },
+    medium: { label: '8-10 dòng', min: 8, max: 10 },
+    long: { label: '12-20 dòng', min: 12, max: 20 }
+  };
+  const len = targetLinesMap[lengthChoice] || targetLinesMap.medium;
+
   if (!OPENAI_API_KEY) {
+    const lines = [];
+    const total = len.max;
+    for (let i = 1; i <= total; i++) {
+      if (i === 1) lines.push(`Verse 1: ${prompt}`);
+      else if (i === Math.ceil(total / 2)) lines.push(`Chorus: ${genre || 'giai điệu'} vang lên cùng ${mood || 'cảm xúc'}`);
+      else lines.push(`Câu ${i}: ${prompt} (${vibe || 'giai điệu'})`);
+    }
     return {
-      title: `Bài hát từ gợi ý: ${prompt.slice(0, 30)}`,
-      lyrics: `Verse 1:\n${prompt}...\n\nChorus:\nHát vang cùng ${genre || 'giai điệu'}.`
+      title: `Bài hát từ gợi ý: ${prompt.slice(0, 40)}`,
+      lyrics: lines.join('\n')
     };
   }
 
   const system = [
-    'Bạn là nhạc sĩ viết lời bài hát tiếng Việt.',
+    'Bạn là nhạc sĩ viết lời bài hát.',
     'Trả về JSON thuần có dạng {"title": "...", "lyrics": "..."}',
-    'Lyrics cần có verse/chorus rõ ràng, không dài quá 300 từ.'
-  ].join(' ');
+    `Số dòng lời yêu cầu: ${len.label} (tối thiểu ${len.min} dòng, tối đa ${len.max} dòng).`,
+    'Cấu trúc gợi ý: Verse 1, Verse 2, Chorus, Bridge (nếu đủ dài).',
+    'Không dùng dấu "..." kết thúc dòng; viết rõ câu, mỗi dòng một câu.',
+    language ? `Viết bằng ngôn ngữ: ${language}` : 'Ưu tiên tiếng Việt.'
+  ].filter(Boolean).join(' ');
 
   const user = [
     `Gợi ý: ${prompt}`,
@@ -774,7 +791,9 @@ async function callLyricsAI({ prompt, genre, mood, vibe, vocal, length }) {
     mood ? `Mood: ${mood}` : '',
     vibe ? `Giai điệu: ${vibe}` : '',
     vocal ? `Tone giọng: ${vocal}` : '',
-    length ? `Độ dài ước tính: ${length}` : ''
+    length ? `Độ dài ước tính: ${length}` : '',
+    lengthChoice ? `Độ dài mong muốn: ${lengthChoice}` : '',
+    language ? `Ngôn ngữ: ${language}` : ''
   ].filter(Boolean).join('\n');
 
   const res = await fetch('https://api.openai.com/v1/chat/completions', {
@@ -785,12 +804,12 @@ async function callLyricsAI({ prompt, genre, mood, vibe, vocal, length }) {
     },
     body: JSON.stringify({
       model: process.env.OPENAI_MODEL || 'gpt-4o-mini',
-      temperature: 0.8,
+      temperature: 0.7,
       messages: [
         { role: 'system', content: system },
         { role: 'user', content: user }
       ],
-      max_tokens: 500
+      max_tokens: 800
     })
   });
 
@@ -829,7 +848,7 @@ app.get('/api/tracks/mood/:mood', requireAuth, async (req, res) => {
 
 app.post('/api/ai/generate-lyrics', requireAuth, async (req, res) => {
   try {
-    const { prompt, genre, mood, vibe, vocal, length } = req.body || {};
+    const { prompt, genre, mood, vibe, vocal, length, language, lengthChoice } = req.body || {};
     if (!prompt || !prompt.trim()) {
       return res.status(400).json({ success: false, message: 'Vui lòng nhập gợi ý.' });
     }
@@ -840,7 +859,9 @@ app.post('/api/ai/generate-lyrics', requireAuth, async (req, res) => {
       mood: (mood || '').trim(),
       vibe: (vibe || '').trim(),
       vocal: (vocal || '').trim(),
-      length: (length || '').trim()
+      length: (length || '').trim(),
+      language: (language || '').trim(),
+      lengthChoice: (lengthChoice || '').trim()
     });
 
     res.json({ success: true, ...result });
