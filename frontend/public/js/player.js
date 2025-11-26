@@ -140,6 +140,12 @@ class MusicPlayer {
       
       if (response.ok) {
         console.log('Play history recorded');
+        const playCountEl = document.getElementById('playCount');
+        if (playCountEl) {
+          const currentVal = parseInt(playCountEl.textContent, 10);
+          const nextVal = isNaN(currentVal) ? 1 : currentVal + 1;
+          playCountEl.textContent = nextVal;
+        }
       }
     } catch (err) {
       console.log('Could not save play history:', err);
@@ -157,16 +163,23 @@ class MusicPlayer {
     this.updateUI(track);
     this.audio.src = track.audioUrl;
     
-    const playPromise = this.audio.play();
-    
-    if (playPromise !== undefined) {
-      playPromise.then(() => {
-        if (this.playerEl) this.playerEl.classList.add('active');
-        this.saveState();
-        console.log('Playing:', track.title);
-      }).catch((error) => {
-        console.error('Play error:', error);
-      });
+    const onCanPlay = () => {
+      const playPromise = this.audio.play();
+      if (playPromise !== undefined) {
+        playPromise.then(() => {
+          if (this.playerEl) this.playerEl.classList.add('active');
+          this.saveState();
+          console.log('Playing:', track.title);
+        }).catch((error) => {
+          console.error('Play error:', error);
+        });
+      }
+      this.audio.removeEventListener('canplay', onCanPlay);
+    };
+    this.audio.addEventListener('canplay', onCanPlay);
+    // fallback nếu metadata đã sẵn sàng
+    if (this.audio.readyState >= 2) {
+      onCanPlay();
     }
   }
 

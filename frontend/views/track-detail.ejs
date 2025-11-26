@@ -1209,6 +1209,12 @@ function initPlayerUI() {
     if (isCurrentTrack && isPlaying) {
       icon.className = 'fa-solid fa-pause';
       mainPlayBtn.classList.add('playing');
+      const bottomCur = document.getElementById('bottomCurrentTime');
+      const bottomDur = document.getElementById('bottomDuration');
+      if (bottomCur) bottomCur.textContent = formatTime(audio.currentTime);
+      if (bottomDur && audio.duration && !isNaN(audio.duration)) {
+        bottomDur.textContent = formatTime(audio.duration);
+      }
     } else {
       icon.className = 'fa-solid fa-play';
       mainPlayBtn.classList.remove('playing');
