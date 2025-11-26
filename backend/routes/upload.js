@@ -42,7 +42,7 @@ const storage = new CloudinaryStorage({
 
 const fileFilter = (req, file, cb) => {
   if (file.fieldname === 'audio') {
-    return cb(null, /audio\/(mpeg|mp3|wav)/.test(file.mimetype));
+    return cb(null, /audio\/(mpeg|mp3|wav|aac|flac|m4a|mp4|ogg|opus|webm)/.test(file.mimetype));
   }
   if (file.fieldname === 'cover') {
     return cb(null, /image\/(png|jpe?g)/.test(file.mimetype));

@@ -316,7 +316,12 @@ class MusicPlayer {
     if (this.repeatMode === 'one') {
       this.audio.currentTime = 0;
       this.audio.play();
+      return;
     } else {
+      // remove current track from queue if repeat off
+      if (this.queue.length > 0 && this.queueIndex >= 0) {
+        this.removeFromQueue(this.queueIndex);
+      }
       this.playNext();
     }
   }
@@ -505,18 +510,23 @@ class MusicPlayer {
   }
 
   clearQueue() {
-    this.queue = [];
-    this.originalQueue = [];
-    this.queueIndex = -1;
-    this.audio.pause();
-    this.audio.src = '';
-    this.currentTrack = null;
+    // giữ bài đang phát, xóa phần còn lại
+    const current = this.currentTrack;
+    if (current) {
+      this.queue = [current];
+      this.originalQueue = [current];
+      this.queueIndex = 0;
+    } else {
+      this.queue = [];
+      this.originalQueue = [];
+      this.queueIndex = -1;
+      this.audio.pause();
+      this.audio.src = '';
+    }
     this.hasTrackedCurrentPlay = false;
-    
-    if (this.playerEl) {
+    if (this.playerEl && this.queue.length === 0) {
       this.playerEl.classList.remove('active');
     }
-    
     this.renderQueue();
     this.saveState();
     console.log('Queue cleared');
