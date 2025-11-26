@@ -1,5 +1,5 @@
 const express = require('express');
-const { PlaylistCollection } = require('./config');
+const { PlaylistCollection } = require('../config/db');
 const router = express.Router();
 
 const requireAuth = (req, res, next) => {
@@ -32,20 +32,32 @@ router.get('/', requireAuth, async (req, res) => {
 router.get('/:id', requireAuth, async (req, res) => {
   try {
     const userId = req.session.user.id;
-    const playlist = await PlaylistCollection.findOne({
-      _id: req.params.id,
-      userId
-    }).populate('tracks').lean();
+    const playlist = await PlaylistCollection.findById(req.params.id)
+      .populate('tracks')
+      .populate('userId', 'username name')
+      .lean();
 
     if (!playlist) {
       req.session.flash = { type: 'danger', message: 'Không tìm thấy playlist.' };
       return res.redirect('/playlists');
     }
 
+    const isOwner = playlist.userId.toString() === userId.toString();
+    if (!playlist.isPublic && !isOwner) {
+      req.session.flash = { type: 'danger', message: 'Playlist này ở chế độ riêng tư.' };
+      return res.redirect('/playlists');
+    }
+
+    if (!isOwner) {
+      const baseFilter = { status: 'approved', deletedAt: null };
+      playlist.tracks = (playlist.tracks || []).filter(t => t && (!t.status || t.status === baseFilter.status) && !t.deletedAt);
+    }
+
     res.render('playlist-detail', {
       title: `${playlist.name} - SAOCLAO`,
       user: req.session.user,
-      playlist
+      playlist,
+      isOwner
     });
   } catch (err) {
     console.error(err);
@@ -55,7 +67,7 @@ router.get('/:id', requireAuth, async (req, res) => {
 
 router.post('/create', requireAuth, async (req, res) => {
   try {
-    const { name, description } = req.body;
+    const { name, description, isPublic } = req.body;
     const userId = req.session.user.id;
 
     if (!name || !name.trim()) {
@@ -66,10 +78,11 @@ router.post('/create', requireAuth, async (req, res) => {
       name: name.trim(),
       description: description?.trim() || '',
       userId,
-      tracks: []
+      tracks: [],
+      isPublic: !!isPublic
     });
 
-    res.json({ success: true, playlist: { _id: playlist._id, name: playlist.name } });
+    res.json({ success: true, playlist: { _id: playlist._id, name: playlist.name, isPublic: playlist.isPublic } });
   } catch (err) {
     console.error(err);
     res.json({ success: false, message: 'Tạo playlist thất bại' });
@@ -146,7 +159,7 @@ router.post('/:id/delete', requireAuth, async (req, res) => {
 
 router.post('/:id/update', requireAuth, async (req, res) => {
   try {
-    const { name, description } = req.body;
+    const { name, description, isPublic } = req.body;
     const userId = req.session.user.id;
     const playlistId = req.params.id;
 
@@ -160,13 +173,37 @@ router.post('/:id/update', requireAuth, async (req, res) => {
       playlist.name = name.trim();
     }
     playlist.description = description?.trim() || '';
+    if (typeof isPublic !== 'undefined') {
+      playlist.isPublic = !!isPublic;
+    }
     playlist.updatedAt = new Date();
     await playlist.save();
 
-    res.json({ success: true, message: 'Đã cập nhật playlist' });
+    res.json({ success: true, message: 'Đã cập nhật playlist', isPublic: playlist.isPublic });
   } catch (err) {
     console.error(err);
     res.json({ success: false, message: 'Cập nhật thất bại' });
+  }
+});
+
+router.post('/:id/visibility', requireAuth, async (req, res) => {
+  try {
+    const { isPublic } = req.body;
+    const userId = req.session.user.id;
+    const playlist = await PlaylistCollection.findOne({ _id: req.params.id, userId });
+
+    if (!playlist) {
+      return res.json({ success: false, message: 'Không tìm thấy playlist' });
+    }
+
+    playlist.isPublic = !!isPublic;
+    playlist.updatedAt = new Date();
+    await playlist.save();
+
+    res.json({ success: true, isPublic: playlist.isPublic });
+  } catch (err) {
+    console.error(err);
+    res.json({ success: false, message: 'Không thể cập nhật chế độ công khai' });
   }
 });
 

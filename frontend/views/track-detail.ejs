@@ -180,6 +180,9 @@
         <a href="/playlists" class="nav-link">
           <i class="fa-solid fa-music"></i> Playlist của tôi
         </a>
+        <a href="/likes" class="nav-link">
+          <i class="fa-solid fa-heart"></i> Đã thích
+        </a>
       </nav>
     </div>
     
@@ -272,8 +275,8 @@
           
           <!-- ACTION BUTTONS -->
           <div class="action-buttons">
-            <button class="action-btn" id="likeBtn" data-track-id="<%= track._id %>">
-              <i class="fa-regular fa-heart"></i>
+            <button class="action-btn <%= liked ? 'liked' : '' %>" id="likeBtn" data-track-id="<%= track._id %>" data-liked="<%= liked ? 'true' : 'false' %>">
+              <i class="<%= liked ? 'fa-solid fa-heart' : 'fa-regular fa-heart' %>"></i>
               <span id="likeCount"><%= track.likes || 0 %></span>
             </button>
             <button class="action-btn" id="addToQueueBtn">
@@ -1243,9 +1246,10 @@ function initActions() {
         const res = await fetch(`/api/tracks/${trackId}/like`, { method: 'POST' });
         const data = await res.json();
         if (data.success) {
-          this.classList.toggle('liked');
+          this.dataset.liked = data.liked ? 'true' : 'false';
+          this.classList.toggle('liked', data.liked);
           const icon = this.querySelector('i');
-          icon.className = this.classList.contains('liked') ? 'fa-solid fa-heart' : 'fa-regular fa-heart';
+          icon.className = data.liked ? 'fa-solid fa-heart' : 'fa-regular fa-heart';
           document.getElementById('likeCount').textContent = data.likes;
         }
       } catch (err) {

@@ -7,12 +7,6 @@ const { MongoClient } = require("mongodb");
 const { v2: cloudinary } = require("cloudinary");
 require("dotenv").config();
 
-// const YTDLP_PATH = "D:\\yt-dlp\\yt-dlp.exe";
-// const FFMPEG_BIN_DIR = "D:\\ffmpeg-8.0-essentials_build\\ffmpeg-8.0-essentials_build\\bin";
-// process.env.PATH += `;${FFMPEG_BIN_DIR}`;
-
-//------------------------------- macos/linux example -------------------------------
-// Phát hiện OS
 const isWin = process.platform === "win32";
 
 // YTDLP_PATH:
@@ -32,7 +26,7 @@ const FFMPEG_BIN_DIR = process.env.FFMPEG_BIN_DIR || (isWin
 if (FFMPEG_BIN_DIR) {
   process.env.PATH += path.delimiter + FFMPEG_BIN_DIR;
 }
-//------------------------------------------------------------------------------------
+
 const TMP_DIR = path.join(__dirname, "tmp_batch");
 if (!fs.existsSync(TMP_DIR)) fs.mkdirSync(TMP_DIR, { recursive: true });
 

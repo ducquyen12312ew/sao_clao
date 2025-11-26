@@ -4,14 +4,10 @@ const {
   FollowCollection, 
   TrackCollection,
   PlaylistCollection 
-} = require('./config');
+} = require('../config/db');
 
 const router = express.Router();
-
-// ============================================
-// MIDDLEWARE
-// ============================================
-
+// Middleware to check authentication
 const requireAuth = (req, res, next) => {
   if (!req.session.user) {
     req.session.flash = { type: 'warning', message: 'Vui lòng đăng nhập.' };
@@ -19,10 +15,6 @@ const requireAuth = (req, res, next) => {
   }
   next();
 };
-
-// ============================================
-// PUBLIC PROFILE PAGE
-// ============================================
 
 router.get('/:username', async (req, res) => {
   try {
@@ -94,11 +86,7 @@ router.get('/:username', async (req, res) => {
     res.status(500).send('Server error');
   }
 });
-
-// ============================================
-// FOLLOW USER
-// ============================================
-
+//follow user
 router.post('/:username/follow', requireAuth, async (req, res) => {
   try {
     const username = req.params.username.toLowerCase();
@@ -155,9 +143,7 @@ router.post('/:username/follow', requireAuth, async (req, res) => {
   }
 });
 
-// ============================================
-// UNFOLLOW USER
-// ============================================
+//unfollow user
 
 router.post('/:username/unfollow', requireAuth, async (req, res) => {
   try {
@@ -203,11 +189,7 @@ router.post('/:username/unfollow', requireAuth, async (req, res) => {
     res.status(500).json({ success: false, message: 'Có lỗi xảy ra' });
   }
 });
-
-// ============================================
-// GET FOLLOWERS LIST
-// ============================================
-
+//get followers list
 router.get('/:username/followers', async (req, res) => {
   try {
     const username = req.params.username.toLowerCase();
@@ -235,11 +217,7 @@ router.get('/:username/followers', async (req, res) => {
     res.status(500).json({ success: false, message: 'Server error' });
   }
 });
-
-// ============================================
-// GET FOLLOWING LIST
-// ============================================
-
+//get following list
 router.get('/:username/following', async (req, res) => {
   try {
     const username = req.params.username.toLowerCase();

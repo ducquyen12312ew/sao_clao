@@ -246,6 +246,25 @@ body {
   line-height: 1.6;
 }
 
+.playlist-badge {
+  display: inline-flex;
+  padding: 8px 12px;
+  border-radius: 999px;
+  margin-top: 12px;
+  font-weight: 700;
+  font-size: 12px;
+  letter-spacing: 0.3px;
+  border: 1px solid var(--border-color);
+  color: var(--text-secondary);
+  background: rgba(255,255,255,0.04);
+}
+
+.playlist-badge.public {
+  color: #1db954;
+  border-color: rgba(29, 185, 84, 0.4);
+  background: rgba(29, 185, 84, 0.1);
+}
+
 /* Actions */
 .playlist-actions {
   padding: 32px 48px;

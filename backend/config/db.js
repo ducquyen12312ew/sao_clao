@@ -63,6 +63,15 @@ const UserSchema = new mongoose.Schema({
     type: Number,
     default: 0
   },
+  provider: {
+    type: String,
+    enum: ['local', 'google', 'facebook'],
+    default: 'local'
+  },
+  providerId: {
+    type: String,
+    default: ''
+  },
   createdAt: { 
     type: Date, 
     default: Date.now 
@@ -139,6 +148,16 @@ const TrackSchema = new mongoose.Schema({
   reportCount: {
     type: Number,
     default: 0
+  },
+  lyricsText: {
+    type: String,
+    default: '',
+    trim: true
+  },
+  lyricsLRC: {
+    type: String,
+    default: '',
+    trim: true
   },
   createdAt: { 
     type: Date, 
@@ -311,6 +330,56 @@ const ReportSchema = new mongoose.Schema({
 ReportSchema.index({ trackId: 1, status: 1 });
 ReportSchema.index({ reporterId: 1, trackId: 1 });
 
+const PasswordResetSchema = new mongoose.Schema({
+  userId: {
+    type: mongoose.Schema.Types.ObjectId,
+    ref: 'User',
+    required: true,
+    index: true
+  },
+  tokenHash: {
+    type: String,
+    required: true,
+    unique: true
+  },
+  expiresAt: {
+    type: Date,
+    required: true
+  },
+  used: {
+    type: Boolean,
+    default: false
+  },
+  createdAt: {
+    type: Date,
+    default: Date.now
+  }
+});
+
+PasswordResetSchema.index({ expiresAt: 1 }, { expireAfterSeconds: 0 });
+
+const TrackLikeSchema = new mongoose.Schema({
+  trackId: {
+    type: mongoose.Schema.Types.ObjectId,
+    ref: 'Track',
+    required: true,
+    index: true
+  },
+  userId: {
+    type: mongoose.Schema.Types.ObjectId,
+    ref: 'User',
+    required: true,
+    index: true
+  },
+  createdAt: {
+    type: Date,
+    default: Date.now,
+    index: true
+  }
+});
+
+TrackLikeSchema.index({ trackId: 1, userId: 1 }, { unique: true });
+
 const UserCollection = mongoose.model('User', UserSchema);
 const TrackCollection = mongoose.model('Track', TrackSchema);
 const PlayHistoryCollection = mongoose.model('PlayHistory', PlayHistorySchema);
@@ -318,6 +387,8 @@ const PlaylistCollection = mongoose.model('Playlist', PlaylistSchema);
 const CommentCollection = mongoose.model('Comment', CommentSchema);
 const FollowCollection = mongoose.model('Follow', FollowSchema);
 const ReportCollection = mongoose.model('Report', ReportSchema);
+const PasswordResetCollection = mongoose.model('PasswordReset', PasswordResetSchema);
+const TrackLikeCollection = mongoose.model('TrackLike', TrackLikeSchema);
 
 module.exports = {
   connectDB,
@@ -328,5 +399,7 @@ module.exports = {
   CommentCollection,
   FollowCollection,
   ReportCollection,
+  PasswordResetCollection,
+  TrackLikeCollection,
   mongoose
 };

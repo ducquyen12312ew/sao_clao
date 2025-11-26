@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title><%= title || 'Create account - SAOCLAO' %></title>
+  <title><%= title || 'Sign in - SAOCLAO' %></title>
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&display=swap" rel="stylesheet">
@@ -18,8 +18,7 @@
       align-items: center;
       justify-content: center;
       position: relative;
-      overflow-x: hidden;
-      padding: 120px 20px 60px;
+      overflow: hidden;
     }
     
     /* Musical notes floating */
@@ -112,7 +111,8 @@
       position: relative;
       z-index: 10;
       width: 100%;
-      max-width: 520px;
+      max-width: 440px;
+      padding: 40px;
     }
     
     /* Auth card - simple square */
@@ -150,12 +150,7 @@
     form {
       display: flex;
       flex-direction: column;
-      gap: 18px;
-    }
-    .input-row {
-      display: grid;
-      grid-template-columns: 1fr 1fr;
-      gap: 16px;
+      gap: 20px;
     }
     .input-group {
       position: relative;
@@ -212,7 +207,7 @@
       background: #fff;
       color: #000;
       border: 2px solid #fff;
-      margin-top: 12px;
+      margin-top: 8px;
     }
     .btn.primary:hover {
       transform: translateY(-2px);
@@ -230,6 +225,31 @@
       background: rgba(255, 255, 255, 0.05);
       border-color: #fff;
     }
+    .btn.social {
+      width: 100%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 10px;
+      font-size: 14px;
+      text-transform: none;
+      letter-spacing: 0;
+    }
+    .social-grid {
+      display: grid;
+      grid-template-columns: 1fr;
+      gap: 12px;
+    }
+    .forgot {
+      display: block;
+      text-align: right;
+      color: #888;
+      font-weight: 600;
+      font-size: 13px;
+      margin-top: 6px;
+      text-decoration: none;
+    }
+    .forgot:hover { color: #fff; }
     
     /* Flash message */
     .flash {
@@ -252,7 +272,7 @@
       color: #fff;
       border-color: rgba(255, 255, 255, 0.3);
     }
-    .flash.danger, .flash.warning {
+    .flash.danger {
       background: rgba(255, 255, 255, 0.05);
       color: #ff4444;
       border-color: rgba(255, 68, 68, 0.3);
@@ -310,36 +330,13 @@
       border-bottom-color: #fff;
     }
     
-    /* Terms */
-    .terms {
-      text-align: center;
-      color: #555;
-      font-size: 12px;
-      margin-top: 24px;
-      line-height: 1.6;
-    }
-    .terms a {
-      color: #888;
-      text-decoration: none;
-      transition: color 0.3s;
-      border-bottom: 1px solid rgba(136, 136, 136, 0.3);
-    }
-    .terms a:hover {
-      color: #fff;
-      border-bottom-color: #fff;
-    }
-    
     /* Responsive */
     @media (max-width: 768px) {
       .header { padding: 20px 24px; }
       .logo-img { height: 32px; }
-      .container { max-width: 100%; }
+      .container { padding: 24px; }
       .auth-card { padding: 36px 28px; }
       .auth-card h2 { font-size: 28px; }
-      .input-row { 
-        grid-template-columns: 1fr; 
-        gap: 18px;
-      }
     }
   </style>
 </head>
@@ -369,7 +366,7 @@
     <a class="logo-link" href="/">
       <img src="/public/img/saoclao.png" alt="SAOCLAO" class="logo-img">
     </a>
-    <a class="btn outline" href="/login">Sign in</a>
+    <a class="btn outline" href="/signup">Create account</a>
   </header>
   
   <% if (flash) { %>
@@ -379,42 +376,17 @@
   
   <main class="container">
     <div class="auth-card">
-      <h2>Join the beat</h2>
-      <p class="subtitle">Create your account and start sharing music</p>
+      <h2>Welcome back</h2>
+      <p class="subtitle">Sign in to continue to SAOCLAO</p>
       
-      <form method="post" action="/signup">
-        <div class="input-row">
-          <div class="input-group">
-            <label>Full Name</label>
-            <input 
-              name="name" 
-              required 
-              placeholder="John Doe" 
-              autocomplete="name"
-            >
-          </div>
-          
-          <div class="input-group">
-            <label>Username</label>
-            <input 
-              name="username" 
-              required 
-              placeholder="johndoe" 
-              autocomplete="username"
-              pattern="[a-zA-Z0-9_]{3,20}"
-              title="3-20 characters, letters, numbers, underscore only"
-            >
-          </div>
-        </div>
-        
+      <form method="post" action="/login">
         <div class="input-group">
-          <label>Email</label>
+          <label>Email or Username</label>
           <input 
-            type="email"
-            name="email" 
+            name="identifier" 
             required 
             placeholder="you@example.com" 
-            autocomplete="email"
+            autocomplete="username"
           >
         </div>
         
@@ -424,22 +396,27 @@
             type="password" 
             name="password" 
             required 
-            minlength="6" 
-            placeholder="Create a strong password" 
-            autocomplete="new-password"
+            minlength="8" 
+            placeholder="Enter your password" 
+            autocomplete="current-password"
           >
         </div>
+
+        <a href="/forgot-password" class="forgot">Forgot password?</a>
         
-        <button class="btn primary" type="submit">Create account</button>
+        <button class="btn primary" type="submit">Sign in</button>
       </form>
       
-      <p class="terms">
-        By signing up, you agree to our <a href="#">Terms</a> and <a href="#">Privacy Policy</a>
-      </p>
+      <% if (oauthProviders && oauthProviders.google) { %>
+        <div class="divider">or</div>
+        <div class="social-grid">
+          <a class="btn outline social" href="/auth/google">
+            <span>🔒</span> <span>Continue with Google</span>
+          </a>
+        </div>
+      <% } %>
       
-      <div class="divider">or</div>
-      
-      <p class="muted">Already have an account? <a href="/login">Sign in</a></p>
+      <p class="muted">Don't have an account? <a href="/signup">Create one</a></p>
     </div>
   </main>
 </body>

@@ -22,6 +22,10 @@
         <label class="form-label">Mô tả</label>
         <textarea class="form-input form-textarea" id="playlistDescription" placeholder="Mô tả về playlist"></textarea>
       </div>
+      <div class="form-group" style="display:flex; align-items:center; gap:10px;">
+        <input type="checkbox" id="playlistIsPublic" style="width:auto;">
+        <label class="form-label" for="playlistIsPublic" style="margin:0;">Công khai (public)</label>
+      </div>
       <div class="modal-footer">
         <button class="btn btn-secondary" onclick="closeModal()">Hủy</button>
         <button class="btn btn-primary" onclick="createPlaylist()">Tạo</button>
@@ -41,6 +45,9 @@
         </a>
         <a href="/playlists" class="nav-link active">
           <i class="fa-solid fa-music"></i> Playlist của tôi
+        </a>
+        <a href="/likes" class="nav-link">
+          <i class="fa-solid fa-heart"></i> Đã thích
         </a>
       </nav>
     </div>
@@ -98,6 +105,9 @@
             <div class="playlist-info">
               <div class="playlist-name"><%= playlist.name %></div>
               <div class="playlist-count"><%= trackCount %> bài hát</div>
+              <div class="playlist-badge <%= playlist.isPublic ? 'public' : '' %>">
+                <%= playlist.isPublic ? 'Công khai' : 'Riêng tư' %>
+              </div>
             </div>
           </a>
         <% }) %>
@@ -138,7 +148,7 @@
         const res = await fetch('/playlists/create', {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ name, description })
+          body: JSON.stringify({ name, description, isPublic: document.getElementById('playlistIsPublic').checked })
         });
         
         const data = await res.json();

@@ -45,6 +45,9 @@
         <a href="/playlists" class="nav-link active">
           <i class="fa-solid fa-music"></i> Playlist của tôi
         </a>
+        <a href="/likes" class="nav-link">
+          <i class="fa-solid fa-heart"></i> Đã thích
+        </a>
       </nav>
     </div>
     <div class="header-actions">
@@ -84,9 +87,12 @@
       <div class="playlist-type">Playlist</div>
       <h1 class="playlist-name"><%= playlist.name %></h1>
       <div class="playlist-meta">
-        <span><i class="fa-solid fa-user"></i> <%= user.username %></span>
+        <span><i class="fa-solid fa-user"></i> <%= playlist.userId?.username || user.username %></span>
         <span>•</span>
         <span><i class="fa-solid fa-music"></i> <%= playlist.tracks.length %> bài hát</span>
+      </div>
+      <div class="playlist-badge <%= playlist.isPublic ? 'public' : '' %>">
+        <%= playlist.isPublic ? 'Công khai' : 'Riêng tư' %>
       </div>
       <% if (playlist.description) { %>
         <div class="playlist-description"><%= playlist.description %></div>
@@ -103,12 +109,24 @@
         <i class="fa-solid fa-shuffle"></i>
       </button>
     <% } %>
+    <% if (isOwner) { %>
+      <button class="btn-action" onclick="toggleVisibility(this)" title="Chuyển chế độ công khai">
+        <i class="fa-solid fa-earth-americas"></i>
+      </button>
+    <% } %>
+    <% if (playlist.isPublic) { %>
+      <button class="btn-action" onclick="copyShareLink()" title="Sao chép link chia sẻ">
+        <i class="fa-solid fa-link"></i>
+      </button>
+    <% } %>
     <button class="btn-action" onclick="window.history.back()" title="Quay lại">
       <i class="fa-solid fa-arrow-left"></i>
     </button>
-    <button class="btn-action" onclick="deletePlaylist()" title="Xóa playlist">
-      <i class="fa-solid fa-trash"></i>
-    </button>
+    <% if (isOwner) { %>
+      <button class="btn-action" onclick="deletePlaylist()" title="Xóa playlist">
+        <i class="fa-solid fa-trash"></i>
+      </button>
+    <% } %>
   </div>
   
   <div class="tracks-container">
@@ -147,9 +165,11 @@
                       title="Phát">
                 <i class="fa-solid fa-play"></i>
               </button>
-              <button class="btn-track-action" onclick="removeTrack('<%= track._id %>')" title="Xóa">
-                <i class="fa-solid fa-xmark"></i>
-              </button>
+              <% if (isOwner) { %>
+                <button class="btn-track-action" onclick="removeTrack('<%= track._id %>')" title="Xóa">
+                  <i class="fa-solid fa-xmark"></i>
+                </button>
+              <% } %>
             </div>
           </div>
         <% }) %>
@@ -457,6 +477,34 @@
         console.error(err);
         alert('Có lỗi xảy ra');
       }
+    }
+
+    async function toggleVisibility(btn) {
+      try {
+        const nextState = !<%= playlist.isPublic ? 'true' : 'false' %>;
+        const res = await fetch('/playlists/<%= playlist._id %>/visibility', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ isPublic: nextState })
+        });
+        const data = await res.json();
+        if (data.success) {
+          alert(data.isPublic ? 'Đã bật chế độ công khai' : 'Đã chuyển về riêng tư');
+          location.reload();
+        } else {
+          alert(data.message || 'Không thể cập nhật chế độ công khai');
+        }
+      } catch (err) {
+        console.error(err);
+        alert('Có lỗi xảy ra');
+      }
+    }
+
+    function copyShareLink() {
+      const link = window.location.origin + '/playlists/<%= playlist._id %>';
+      navigator.clipboard.writeText(link).then(() => {
+        alert('Đã sao chép link chia sẻ');
+      }).catch(() => alert('Không thể sao chép link'));
     }
     
     // Update Playing State

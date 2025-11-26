@@ -17,12 +17,17 @@ git clone https://github.com/ducquyen12312ew/sao_clao.git
 cd sao_clao
 ```
 
-### 2. Cài đặt các gói phụ thuộc
+### 2. Cấu trúc thư mục
+- `backend/`: mã nguồn Node/Express, routes, cấu hình DB, script seed admin.
+- `frontend/`: `views/` (EJS) và `public/` (CSS/JS/ảnh) được server phục vụ statically.
+- `scripts/`: công cụ import nhạc từ YouTube.
+
+### 3. Cài đặt các gói phụ thuộc
 ```bash
 npm install
 ```
 
-### 3. Tạo file .env tại thư mục gốc
+### 4. Tạo file .env tại thư mục gốc
 ```bash
 cp .env.example .env
 ```
@@ -38,14 +43,32 @@ PORT=3000
 CLOUDINARY_CLOUD_NAME=your_cloud_name
 CLOUDINARY_API_KEY=your_api_key
 CLOUDINARY_API_SECRET=your_api_secret
+
+# OAuth (bật nếu muốn đăng nhập Google/Facebook)
+GOOGLE_CLIENT_ID=
+GOOGLE_CLIENT_SECRET=
+GOOGLE_CALLBACK_URL=http://localhost:3000/auth/google/callback
+APP_BASE_URL=http://localhost:3000
+
+# SMTP (Gmail/app password) để gửi mail reset password
+SMTP_HOST=smtp.gmail.com
+SMTP_PORT=587
+SMTP_USER=
+SMTP_PASS=
+SMTP_FROM=
 ```
 
-### 4. Khởi chạy ứng dụng
+### 5. Khởi chạy backend
 ```bash
 npm start
 ```
+Server mặc định chạy port 3000 và phục vụ view/static từ `frontend/`.
+- Mật khẩu khi đăng ký/đặt lại: tối thiểu 8 ký tự, có chữ hoa, chữ thường, số và ký tự đặc biệt.
 
-Ứng dụng sẽ chạy tại `http://localhost:3000`
+### 6. Seed tài khoản admin (tùy chọn)
+```bash
+node backend/seed-admins.js
+```
 
 ---
 
