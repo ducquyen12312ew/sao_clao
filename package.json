@@ -3,7 +3,9 @@
   "version": "1.0.0",
   "private": true,
   "scripts": {
-    "start": "node backend/server.js"
+    "start": "node backend/server.js",
+    "build-frontend": "cd frontend-react && npm install --no-audit --no-fund && npm run build",
+    "start:prod": "npm run build-frontend && NODE_ENV=production node backend/server.js"
   },
   "dependencies": {
     "bcrypt": "^5.1.1",

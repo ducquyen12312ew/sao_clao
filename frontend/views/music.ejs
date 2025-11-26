@@ -1,0 +1,31 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Music Spin Demo</title>
+  <link rel="stylesheet" href="/public/music.css">
+</head>
+<body>
+  <div class="container">
+    <h1>Music Spin</h1>
+    <div class="track-list">
+      <% tracks.forEach(track => { %>
+        <div class="track">
+          <div class="cover-wrapper">
+            <img
+              src="<%= track.imageUrl %>"
+              alt="<%= track.title %>"
+              class="cover"
+              data-track-id="<%= track.id %>"
+            >
+            <audio id="audio-<%= track.id %>" src="<%= track.audioUrl %>"></audio>
+          </div>
+          <div class="title"><%= track.title %></div>
+        </div>
+      <% }) %>
+    </div>
+  </div>
+  <script src="/public/music.js"></script>
+</body>
+</html>

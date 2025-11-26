@@ -168,3 +168,30 @@ node scripts/import-batch.js urls.txt quynhchi video
 - **Frontend:** EJS, CSS
 
 ---
+
+## Run (development)
+
+- Start backend (serves `/public` assets and API):
+
+```bash
+npm start
+```
+
+- Start frontend dev (React + Vite) in another terminal:
+
+```bash
+cd frontend-react
+npm install
+npm run dev
+```
+
+The Vite dev server proxies `/api` and `/public` to the backend at `http://localhost:3000`.
+
+## Run (production)
+
+Build the frontend and serve it from the backend with:
+
+```bash
+npm run start:prod
+```
+

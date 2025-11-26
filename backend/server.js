@@ -30,6 +30,7 @@ const playlistRoutes = require('./routes/playlist');
 const userRoutes = require('./routes/user');
 const settingsRoutes = require('./routes/settings');
 const adminRoutes = require('./routes/admin');
+const apiRoutes = require('./routes/api');
 
 const app = express();
 const SALT_ROUNDS = 10;
@@ -64,6 +65,9 @@ app.use(session({
 
 app.use(passport.initialize());
 app.use(passport.session());
+
+// API routes for React frontend
+app.use('/api', apiRoutes);
 
 app.use((req, res, next) => {
   res.locals.currentUser = req.session.user || null;
@@ -228,6 +232,16 @@ app.get('/', async (req, res) => {
   } catch (err) {
     res.status(500).send('Server error');
   }
+});
+
+// Demo music spin page
+app.get('/music', (req, res) => {
+  const tracks = [
+    { id: 1, title: 'Night Ride', imageUrl: 'https://images.unsplash.com/photo-1470229538611-16ba8c7ffbd7?w=400', audioUrl: 'https://file-examples.com/storage/fe27e5e73fc05b5e8ff1b3da/2017/11/file_example_MP3_700KB.mp3' },
+    { id: 2, title: 'Lofi Study', imageUrl: 'https://images.unsplash.com/photo-1446057520578-7050bf3acfa7?w=400', audioUrl: 'https://file-examples.com/storage/fe27e5e73fc05b5e8ff1b3da/2017/11/file_example_MP3_1MG.mp3' },
+    { id: 3, title: 'Synthwave', imageUrl: 'https://images.unsplash.com/photo-1501612780327-45045538702b?w=400', audioUrl: 'https://file-examples.com/storage/fe27e5e73fc05b5e8ff1b3da/2017/11/file_example_MP3_2MG.mp3' }
+  ];
+  res.render('music', { tracks });
 });
 
 app.get('/signup', (req, res) => {
@@ -1147,6 +1161,17 @@ app.get('/api/admin/notifications/count', requireAuth, async (req, res) => {
     res.status(500).json({ success: false });
   }
 });
+
+// Serve React production build when in production (after all API routes)
+if (process.env.NODE_ENV === 'production') {
+  const clientDist = path.join(__dirname, '..', 'frontend-react', 'dist');
+  app.use(express.static(clientDist));
+
+  // SPA fallback
+  app.get('*', (req, res) => {
+    res.sendFile(path.join(clientDist, 'index.html'));
+  });
+}
 
 app.use((req, res) => {
   res.status(404).render('404', { title: 'Not found' });

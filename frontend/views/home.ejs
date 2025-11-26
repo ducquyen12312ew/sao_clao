@@ -368,7 +368,7 @@
     .empty-state a:hover {
       opacity: 0.8;
     }
-    
+
     /* Responsive */
     @media (max-width: 1400px) {
       .cards { grid-template-columns: repeat(4, 1fr); }
@@ -398,6 +398,142 @@
       .cards { grid-template-columns: repeat(2, 1fr); gap: 16px; }
       .logo-img { height: 28px; }
       .btn { padding: 12px 24px; font-size: 14px; }
+    }
+
+    /* Sonic style gallery */
+    .sonic-showcase {
+      margin: 80px auto;
+      max-width: 1400px;
+      padding: 0 60px;
+    }
+
+    .sonic-header {
+      text-align: center;
+      margin-bottom: 32px;
+    }
+
+    .sonic-title {
+      font-size: 36px;
+      font-weight: 900;
+      letter-spacing: -1px;
+    }
+
+    .sonic-subtitle {
+      color: #b3b3b3;
+      margin-top: 8px;
+      font-size: 16px;
+    }
+
+    .sonic-stage {
+      position: relative;
+      height: 420px;
+      perspective: 1400px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 20px;
+    }
+
+    .sonic-card {
+      width: 280px;
+      height: 320px;
+      border-radius: 22px;
+      overflow: hidden;
+      background: #111;
+      box-shadow: 0 20px 50px rgba(0,0,0,0.45);
+      transform-style: preserve-3d;
+      transition: transform 0.6s ease, box-shadow 0.4s ease;
+      cursor: pointer;
+      position: relative;
+    }
+
+    .sonic-card img {
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+    }
+
+    .sonic-card.active {
+      transform: translateZ(120px) scale(1.08);
+      box-shadow: 0 30px 70px rgba(0,0,0,0.55);
+    }
+
+    .sonic-card.side {
+      transform: translateZ(40px) rotateY(-15deg);
+      opacity: 0.85;
+    }
+
+    .sonic-card.side.right {
+      transform: translateZ(40px) rotateY(15deg);
+    }
+
+    .sonic-card.spin {
+      animation: spinIn 0.8s ease forwards;
+    }
+
+    @keyframes spinIn {
+      from {
+        transform: perspective(1400px) rotateY(-180deg) translateZ(0) scale(0.9);
+        opacity: 0.4;
+      }
+      to {
+        transform: perspective(1400px) translateZ(120px) scale(1.08);
+        opacity: 1;
+      }
+    }
+
+    .sonic-controls {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 12px;
+      margin-top: 20px;
+    }
+
+    .sonic-btn {
+      width: 52px;
+      height: 52px;
+      border-radius: 50%;
+      border: 2px solid #fff;
+      background: transparent;
+      color: #fff;
+      cursor: pointer;
+      display: grid;
+      place-items: center;
+      font-size: 18px;
+      transition: all 0.2s;
+    }
+
+    .sonic-btn:hover {
+      background: rgba(255,255,255,0.1);
+      transform: translateY(-2px);
+    }
+
+    .sonic-caption {
+      text-align: center;
+      margin-top: 16px;
+      color: #b3b3b3;
+      font-size: 16px;
+      min-height: 46px;
+    }
+
+    @media (max-width: 1024px) {
+      .sonic-stage {
+        height: 360px;
+        gap: 12px;
+      }
+      .sonic-card {
+        width: 220px;
+        height: 260px;
+      }
+    }
+
+    @media (max-width: 768px) {
+      .sonic-showcase { padding: 0 24px; }
+      .sonic-stage { flex-direction: row; gap: 10px; }
+      .sonic-card { width: 160px; height: 200px; }
+      .sonic-title { font-size: 28px; }
+      .sonic-subtitle { font-size: 14px; }
     }
   </style>
 </head>
@@ -505,6 +641,38 @@
       <a href="/upload" class="btn primary">Upload your own</a>
     </section>
 
+    <!-- Sonic style carousel -->
+    <section class="sonic-showcase">
+      <div class="sonic-header">
+        <div class="sonic-title">Chạm để nghe gợi ý</div>
+        <div class="sonic-subtitle">Di chuột để xoay, click play để nghe audio demo</div>
+      </div>
+      <div class="sonic-stage" id="sonicStage">
+        <div class="sonic-card" data-idx="0">
+          <img src="https://images.unsplash.com/photo-1493225457124-a3eb161ffa5f?w=800" alt="cover 1">
+        </div>
+        <div class="sonic-card" data-idx="1">
+          <img src="https://images.unsplash.com/photo-1520523839897-bd0b52f945a0?w=800" alt="cover 2">
+        </div>
+        <div class="sonic-card" data-idx="2">
+          <img src="https://images.unsplash.com/photo-1511671782779-c97d3d27a1d4?w=800" alt="cover 3">
+        </div>
+        <div class="sonic-card" data-idx="3">
+          <img src="https://images.unsplash.com/photo-1470225620780-dba8ba36b745?w=800" alt="cover 4">
+        </div>
+        <div class="sonic-card" data-idx="4">
+          <img src="https://images.unsplash.com/photo-1521572267360-ee0c2909d518?w=800" alt="cover 5">
+        </div>
+      </div>
+      <div class="sonic-controls">
+        <button class="sonic-btn" id="sonicPrev"><i class="fa-solid fa-backward-step"></i></button>
+        <button class="sonic-btn" id="sonicPlay"><i class="fa-solid fa-play"></i></button>
+        <button class="sonic-btn" id="sonicNext"><i class="fa-solid fa-forward-step"></i></button>
+      </div>
+      <div class="sonic-caption" id="sonicCaption">Hover để xoay, click play để nghe.</div>
+      <audio id="sonicAudio"></audio>
+    </section>
+
     <section>
       <div class="trending-header">
         <h2>Trending</h2>
@@ -541,6 +709,105 @@
   <canvas id="snow-layer"></canvas>
 
   <script>
+    // Sonic carousel logic
+    (() => {
+      const items = [
+        {
+          title: 'Lofi night ride',
+          caption: 'Một chút mơ màng trên đường đêm',
+          audio: 'https://file-examples.com/storage/fe27e5e73fc05b5e8ff1b3da/2017/11/file_example_MP3_700KB.mp3'
+        },
+        {
+          title: 'Synth sunrise',
+          caption: 'Synthwave êm ái đón bình minh',
+          audio: 'https://file-examples.com/storage/fe27e5e73fc05b5e8ff1b3da/2017/11/file_example_MP3_1MG.mp3'
+        },
+        {
+          title: 'Indie breeze',
+          caption: 'Guitar mộc nhẹ nhàng',
+          audio: 'https://file-examples.com/storage/fe27e5e73fc05b5e8ff1b3da/2017/11/file_example_MP3_2MG.mp3'
+        },
+        {
+          title: 'Chill steps',
+          caption: 'Nhịp trống tối giản, chill bước chân',
+          audio: 'https://file-examples.com/storage/fe27e5e73fc05b5e8ff1b3da/2017/11/file_example_MP3_5MG.mp3'
+        },
+        {
+          title: 'Dreamscape',
+          caption: 'Không gian mơ với pad sâu',
+          audio: 'https://file-examples.com/storage/fe27e5e73fc05b5e8ff1b3da/2017/11/file_example_MP3_700KB.mp3'
+        }
+      ];
+
+      const cards = Array.from(document.querySelectorAll('.sonic-card'));
+      const captionEl = document.getElementById('sonicCaption');
+      const audioEl = document.getElementById('sonicAudio');
+      let active = 0;
+      let pendingPlay = false;
+
+      function setActive(idx, autoPlay = false) {
+        active = (idx + cards.length) % cards.length;
+        cards.forEach((card, i) => {
+          card.classList.remove('active', 'side', 'right');
+          if (i === active) {
+            card.classList.add('active');
+          } else if (i < active) {
+            card.classList.add('side');
+          } else {
+            card.classList.add('side', 'right');
+          }
+        });
+        const item = items[active];
+        if (captionEl && item) {
+          captionEl.textContent = `${item.title} — ${item.caption}`;
+        }
+
+        const target = cards[active];
+        if (target) {
+          target.classList.add('spin');
+          pendingPlay = autoPlay;
+          target.addEventListener('animationend', () => {
+            target.classList.remove('spin');
+            if (pendingPlay) {
+              playActive();
+              pendingPlay = false;
+            }
+          }, { once: true });
+        }
+      }
+
+      function playActive() {
+        const item = items[active];
+        if (audioEl && item?.audio) {
+          audioEl.pause();
+          audioEl.currentTime = 0;
+          audioEl.src = item.audio;
+          audioEl.play().catch(() => {});
+        }
+      }
+
+      cards.forEach((card, i) => {
+        card.addEventListener('mouseenter', () => setActive(i, false));
+        card.addEventListener('mousemove', (e) => {
+          const rect = card.getBoundingClientRect();
+          const x = (e.clientX - rect.left) / rect.width - 0.5;
+          const y = (e.clientY - rect.top) / rect.height - 0.5;
+          card.style.transform = `perspective(1000px) rotateY(${x * 10}deg) rotateX(${ -y * 10}deg) translateZ(${i === active ? 80 : 20}px)`;
+        });
+        card.addEventListener('mouseleave', () => {
+          card.style.transform = '';
+          setActive(active);
+        });
+        card.addEventListener('click', () => setActive(i, true));
+      });
+
+      document.getElementById('sonicPrev')?.addEventListener('click', () => setActive(active - 1, true));
+      document.getElementById('sonicNext')?.addEventListener('click', () => setActive(active + 1, true));
+      document.getElementById('sonicPlay')?.addEventListener('click', () => setActive(active, true));
+
+      setActive(2);
+    })();
+
     (() => {
       const canvas = document.getElementById('snow-layer');
       if (!canvas) return;
