@@ -709,10 +709,6 @@ class MusicPlayer {
   }
 }
 
-// ============================================
-// INITIALIZATION
-// ============================================
-
 window.player = null;
 
 window.addEventListener('DOMContentLoaded', () => {
@@ -720,11 +716,7 @@ window.addEventListener('DOMContentLoaded', () => {
   window.player = new MusicPlayer();
   console.log('Player ready:', window.player);
 });
-
-// ============================================
-// GLOBAL FUNCTIONS
-// ============================================
-
+//global function
 window.playTrack = function(id, title, artist, cover, audioUrl) {
   console.log('playTrack called:', { id, title, artist });
   
