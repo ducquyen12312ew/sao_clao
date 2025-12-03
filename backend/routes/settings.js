@@ -1,17 +1,26 @@
 const express = require('express');
 const multer = require('multer');
-const { v2: cloudinary } = require('cloudinary');
+const cloudinary = require('cloudinary');
 const CloudinaryStorage = require('multer-storage-cloudinary');
 const { UserCollection } = require('../config/db');
 
 const router = express.Router();
 
-// Cloudinary configuration
-cloudinary.config({
-  cloud_name: process.env.CLOUDINARY_CLOUD_NAME,
-  api_key: process.env.CLOUDINARY_API_KEY,
-  api_secret: process.env.CLOUDINARY_API_SECRET,
-});
+const isCloudinaryConfigured = !!(
+  process.env.CLOUDINARY_CLOUD_NAME &&
+  process.env.CLOUDINARY_API_KEY &&
+  process.env.CLOUDINARY_API_SECRET
+);
+
+if (isCloudinaryConfigured) {
+  cloudinary.v2.config({
+    cloud_name: process.env.CLOUDINARY_CLOUD_NAME,
+    api_key: process.env.CLOUDINARY_API_KEY,
+    api_secret: process.env.CLOUDINARY_API_SECRET,
+  });
+} else {
+  console.warn('[settings] Cloudinary env missing - avatar uploads will be blocked');
+}
 
 // Authentication middleware
 const requireAuth = (req, res, next) => {
@@ -22,7 +31,15 @@ const requireAuth = (req, res, next) => {
   next();
 };
 
-// Cloudinary storage configuration for avatar uploads
+const ensureCloudinaryConfigured = (req, res, next) => {
+  if (!isCloudinaryConfigured) {
+    req.session.flash = { type: 'danger', message: 'Thiết lập Cloudinary chưa sẵn sàng. Vui lòng cấu hình biến môi trường.' };
+    return req.session.save(() => res.redirect('/settings'));
+  }
+  next();
+};
+
+// Storage configuration (Cloudinary only)
 const storage = new CloudinaryStorage({
   cloudinary,
   params: {
@@ -50,6 +67,8 @@ const upload = multer({
   fileFilter, 
   limits: { fileSize: 2 * 1024 * 1024 }
 });
+
+const getCloudinaryUrl = (file) => file?.secure_url || file?.path || file?.url || '';
 
 // GET settings page
 router.get('/', requireAuth, async (req, res) => {
@@ -82,94 +101,112 @@ router.get('/', requireAuth, async (req, res) => {
 });
 
 // POST update profile
-router.post('/profile', requireAuth, upload.single('avatar'), async (req, res) => {
-  try {
-    const userId = req.session.user.id;
-    const { name, bio } = req.body;
-    
-    if (!name || name.trim().length === 0) {
-      req.session.flash = {
-        type: 'danger',
-        message: 'Name cannot be empty'
-      };
+router.post('/profile', requireAuth, ensureCloudinaryConfigured, (req, res) => {
+  upload.single('avatar')(req, res, async (err) => {
+    if (err) {
+      console.error('Avatar upload error:', err);
+      const message = err.code === 'LIMIT_FILE_SIZE'
+        ? 'Ảnh tối đa 2MB'
+        : err.message === 'Only images are allowed'
+        ? 'Chỉ chấp nhận file ảnh'
+        : 'Không thể upload ảnh. Thử lại sau.';
+      req.session.flash = { type: 'danger', message };
       return req.session.save(() => res.redirect('/settings'));
     }
-    
-    const updateData = {
-      name: name.trim(),
-      bio: bio ? bio.trim() : ''
-    };
-    
-    if (req.file) {
-      console.log('New avatar uploaded to Cloudinary:', req.file.path);
+
+    try {
+      const userId = req.session.user.id;
+      const { name, bio } = req.body;
       
-      const oldUser = await UserCollection.findById(userId).select('avatarUrl');
+      if (!name || name.trim().length === 0) {
+        req.session.flash = {
+          type: 'danger',
+          message: 'Name cannot be empty'
+        };
+        return req.session.save(() => res.redirect('/settings'));
+      }
       
-      updateData.avatarUrl = req.file.path;
+      const updateData = {
+        name: name.trim(),
+        bio: bio ? bio.trim() : ''
+      };
       
-      if (oldUser && oldUser.avatarUrl && oldUser.avatarUrl.includes('cloudinary.com')) {
-        try {
-          const matches = oldUser.avatarUrl.match(/\/musiccloud\/avatars\/([^/.]+)/);
-          
-          if (matches && matches[1]) {
-            const publicId = `musiccloud/avatars/${matches[1]}`;
-            console.log('Attempting to delete old avatar:', publicId);
+      if (req.file) {
+        const avatarUrl = getCloudinaryUrl(req.file);
+        if (!avatarUrl) {
+          req.session.flash = { type: 'danger', message: 'Không thể lấy URL ảnh từ Cloudinary.' };
+          return req.session.save(() => res.redirect('/settings'));
+        }
+        console.log('New avatar uploaded:', avatarUrl);
+        
+        const oldUser = await UserCollection.findById(userId).select('avatarUrl');
+        
+        updateData.avatarUrl = avatarUrl;
+        
+        if (isCloudinaryConfigured && oldUser && oldUser.avatarUrl && oldUser.avatarUrl.includes('cloudinary.com')) {
+          try {
+            const matches = oldUser.avatarUrl.match(/\/musiccloud\/avatars\/([^/.]+)/);
             
-            const result = await cloudinary.uploader.destroy(publicId);
-            console.log('Cloudinary delete result:', result);
+            if (matches && matches[1]) {
+              const publicId = `musiccloud/avatars/${matches[1]}`;
+              console.log('Attempting to delete old avatar:', publicId);
+              
+              const result = await cloudinary.v2.uploader.destroy(publicId);
+              console.log('Cloudinary delete result:', result);
+            }
+          } catch (err) {
+            console.error('Error deleting old avatar from Cloudinary:', err);
           }
-        } catch (err) {
-          console.error('Error deleting old avatar from Cloudinary:', err);
         }
       }
-    }
-    
-    const updatedUser = await UserCollection.findByIdAndUpdate(
-      userId,
-      { $set: updateData },
-      { new: true }
-    ).select('-passwordHash');
-    
-    if (!updatedUser) {
+      
+      const updatedUser = await UserCollection.findByIdAndUpdate(
+        userId,
+        { $set: updateData },
+        { new: true }
+      ).select('-passwordHash');
+      
+      if (!updatedUser) {
+        req.session.flash = {
+          type: 'danger',
+          message: 'Failed to update profile'
+        };
+        return req.session.save(() => res.redirect('/settings'));
+      }
+      
+      req.session.user = {
+        id: updatedUser._id.toString(),
+        name: updatedUser.name,
+        username: updatedUser.username,
+        avatarUrl: updatedUser.avatarUrl || '',
+        bio: updatedUser.bio || '',
+        role: updatedUser.role || 'user'
+      };
+
+      req.session.flash = {
+        type: 'success',
+        message: 'Profile updated successfully!'
+      };
+      
+      req.session.save((err) => {
+        if (err) {
+          console.error('Session save error:', err);
+        }
+        res.redirect('/settings');
+      });
+      
+    } catch (err) {
+      console.error('Update profile error:', err);
       req.session.flash = {
         type: 'danger',
-        message: 'Failed to update profile'
+        message: 'Failed to update profile. Please try again.'
       };
-      return req.session.save(() => res.redirect('/settings'));
+      req.session.save((err) => {
+        if (err) console.error('Session save error:', err);
+        res.redirect('/settings');
+      });
     }
-    
-    req.session.user = {
-      id: updatedUser._id.toString(),
-      name: updatedUser.name,
-      username: updatedUser.username,
-      avatarUrl: updatedUser.avatarUrl || '',
-      bio: updatedUser.bio || '',
-      role: updatedUser.role || 'user'
-    };
-
-    req.session.flash = {
-      type: 'success',
-      message: 'Profile updated successfully!'
-    };
-    
-    req.session.save((err) => {
-      if (err) {
-        console.error('Session save error:', err);
-      }
-      res.redirect('/settings');
-    });
-    
-  } catch (err) {
-    console.error('Update profile error:', err);
-    req.session.flash = {
-      type: 'danger',
-      message: 'Failed to update profile. Please try again.'
-    };
-    req.session.save((err) => {
-      if (err) console.error('Session save error:', err);
-      res.redirect('/settings');
-    });
-  }
+  });
 });
 
 module.exports = router;

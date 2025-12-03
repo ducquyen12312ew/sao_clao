@@ -578,6 +578,12 @@ class MusicPlayer {
   }
 
   saveState() {
+    // Only persist when a track is loaded; avoid storing empty/invalid state
+    if (!this.currentTrack || !this.currentTrack.audioUrl) {
+      localStorage.removeItem('playerState');
+      return;
+    }
+
     const state = {
       currentTrack: this.currentTrack,
       queue: this.queue,
@@ -609,6 +615,7 @@ class MusicPlayer {
       
       if (!state.currentTrack || !state.currentTrack.audioUrl) {
         console.log('Invalid saved state');
+        localStorage.removeItem('playerState');
         return;
       }
       

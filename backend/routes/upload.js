@@ -1,7 +1,7 @@
 const path = require('path');
 const express = require('express');
 const multer = require('multer');
-const { v2: cloudinary } = require('cloudinary');
+const cloudinary = require('cloudinary');
 const CloudinaryStorage = require('multer-storage-cloudinary');
 const { TrackCollection } = require('../config/db');
 
@@ -15,7 +15,13 @@ const requireAuth = (req, res, next) => {
   next();
 };
 
-cloudinary.config({
+const isCloudinaryConfigured = !!(
+  process.env.CLOUDINARY_CLOUD_NAME &&
+  process.env.CLOUDINARY_API_KEY &&
+  process.env.CLOUDINARY_API_SECRET
+);
+
+cloudinary.v2.config({
   cloud_name: process.env.CLOUDINARY_CLOUD_NAME,
   api_key: process.env.CLOUDINARY_API_KEY,
   api_secret: process.env.CLOUDINARY_API_SECRET,
@@ -56,6 +62,16 @@ const upload = multer({
   limits: { fileSize: 50 * 1024 * 1024 }, 
 });
 
+const ensureCloudinaryConfigured = (req, res, next) => {
+  if (!isCloudinaryConfigured) {
+    req.session.flash = { type: 'danger', message: 'Cloudinary chưa được cấu hình. Thêm CLOUDINARY_* vào env để upload.' };
+    return req.session.save(() => res.redirect('/upload'));
+  }
+  next();
+};
+
+const getCloudinaryUrl = (file) => file?.secure_url || file?.path || file?.url || '';
+
 router.get('/', requireAuth, (req, res) => {
   res.render('upload', { title: 'Upload music' });
 });
@@ -63,6 +79,7 @@ router.get('/', requireAuth, (req, res) => {
 router.post(
   '/new',
   requireAuth,
+  ensureCloudinaryConfigured,
   upload.fields([
     { name: 'audio', maxCount: 1 },
     { name: 'cover', maxCount: 1 },
@@ -88,11 +105,15 @@ router.post(
         .map(t => t.trim())
         .filter(Boolean);
 
-      const audioUrl = audio.path; 
-      const coverUrl =
-        cover?.path ||
+      const audioUrl = getCloudinaryUrl(audio);
+      const coverUrl = getCloudinaryUrl(cover) ||
         process.env.CLOUDINARY_DEFAULT_COVER_URL ||
         '';
+
+      if (!audioUrl) {
+        req.session.flash = { type: 'danger', message: 'Không lấy được URL audio từ Cloudinary.' };
+        return req.session.save(() => res.redirect('/upload'));
+      }
 
       await TrackCollection.create({
         title: title.trim(),
