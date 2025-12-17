@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html lang="vi">
+<html lang="en">
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -10,25 +10,25 @@
   <link rel="stylesheet" href="/public/css/playlists.css">
 </head>
 <body>
-  <!-- Modal tạo playlist -->
+  <!-- Create playlist modal -->
   <div class="modal" id="createModal">
     <div class="modal-content">
-      <h3 class="modal-title">Tạo playlist mới</h3>
+      <h3 class="modal-title">Create new playlist</h3>
       <div class="form-group">
-        <label class="form-label">Tên playlist</label>
-        <input type="text" class="form-input" id="playlistName" placeholder="Nhập tên playlist">
+        <label class="form-label">Playlist name</label>
+        <input type="text" class="form-input" id="playlistName" placeholder="Enter playlist name">
       </div>
       <div class="form-group">
-        <label class="form-label">Mô tả</label>
-        <textarea class="form-input form-textarea" id="playlistDescription" placeholder="Mô tả về playlist"></textarea>
+        <label class="form-label">Description</label>
+        <textarea class="form-input form-textarea" id="playlistDescription" placeholder="Describe your playlist"></textarea>
       </div>
       <div class="form-group" style="display:flex; align-items:center; gap:10px;">
         <input type="checkbox" id="playlistIsPublic" style="width:auto;">
-        <label class="form-label" for="playlistIsPublic" style="margin:0;">Công khai (public)</label>
+        <label class="form-label" for="playlistIsPublic" style="margin:0;">Public</label>
       </div>
       <div class="modal-footer">
-        <button class="btn btn-secondary" onclick="closeModal()">Hủy</button>
-        <button class="btn btn-primary" onclick="createPlaylist()">Tạo</button>
+        <button class="btn btn-secondary" onclick="closeModal()">Cancel</button>
+        <button class="btn btn-primary" onclick="createPlaylist()">Create</button>
       </div>
     </div>
   </div>
@@ -41,13 +41,13 @@
       </div>
       <nav class="nav-menu">
         <a href="/profile" class="nav-link">
-          <i class="fa-solid fa-house"></i> Trang chủ
+          <i class="fa-solid fa-house"></i> Home
         </a>
         <a href="/playlists" class="nav-link active">
-          <i class="fa-solid fa-music"></i> Playlist của tôi
+          <i class="fa-solid fa-music"></i> My playlists
         </a>
         <a href="/likes" class="nav-link">
-          <i class="fa-solid fa-heart"></i> Đã thích
+          <i class="fa-solid fa-heart"></i> Liked
         </a>
       </nav>
     </div>
@@ -62,7 +62,7 @@
         </div>
       </a>
       <form method="post" action="/logout" style="display:inline">
-        <button type="submit" class="btn-logout">Đăng xuất</button>
+        <button type="submit" class="btn-logout">Log out</button>
       </form>
     </div>
   </header>
@@ -70,9 +70,9 @@
   <!-- Main Content -->
   <div class="container">
     <div class="page-header">
-      <h1 class="page-title">Playlist của tôi</h1>
+      <h1 class="page-title">My playlists</h1>
       <button class="btn-create" onclick="openModal()">
-        <i class="fa-solid fa-plus"></i> Tạo playlist
+        <i class="fa-solid fa-plus"></i> Create playlist
       </button>
     </div>
     
@@ -104,9 +104,9 @@
             </div>
             <div class="playlist-info">
               <div class="playlist-name"><%= playlist.name %></div>
-              <div class="playlist-count"><%= trackCount %> bài hát</div>
+              <div class="playlist-count"><%= trackCount %> tracks</div>
               <div class="playlist-badge <%= playlist.isPublic ? 'public' : '' %>">
-                <%= playlist.isPublic ? 'Công khai' : 'Riêng tư' %>
+                <%= playlist.isPublic ? 'Public' : 'Private' %>
               </div>
             </div>
           </a>
@@ -114,10 +114,10 @@
       </div>
     <% } else { %>
       <div class="empty-state">
-        <h3>Chưa có playlist nào</h3>
-        <p>Tạo playlist đầu tiên của bạn ngay bây giờ</p>
+        <h3>No playlists yet</h3>
+        <p>Create your first playlist now</p>
         <button class="btn-create" onclick="openModal()">
-          <i class="fa-solid fa-plus"></i> Tạo playlist
+          <i class="fa-solid fa-plus"></i> Create playlist
         </button>
       </div>
     <% } %>
@@ -140,7 +140,7 @@
       const description = document.getElementById('playlistDescription').value.trim();
       
       if (!name) {
-        alert('Vui lòng nhập tên playlist');
+        alert('Please enter a playlist name');
         return;
       }
       
@@ -156,11 +156,11 @@
         if (data.success) {
           location.reload();
         } else {
-          alert(data.message || 'Tạo playlist thất bại');
+          alert(data.message || 'Failed to create playlist');
         }
       } catch (err) {
         console.error(err);
-        alert('Có lỗi xảy ra');
+        alert('An error occurred');
       }
     }
     

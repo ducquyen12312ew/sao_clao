@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html lang="vi">
+<html lang="en">
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
@@ -24,7 +24,7 @@
         <% if (isOwnProfile) { %>
         <% } %>
       <% } else { %>
-        <button class="btn btn-primary" onclick="window.location.href='/login'">Đăng nhập</button>
+        <button class="btn btn-primary" onclick="window.location.href='/login'">Sign in</button>
       <% } %>
     </div>
   </header>
@@ -84,7 +84,7 @@
                 <div>
                   <div class="track-meta">
                     <i class="fa-solid fa-clock"></i>
-                    <%= new Date(track.createdAt).toLocaleDateString('vi-VN') %>
+                    <%= new Date(track.createdAt).toLocaleDateString('en-US') %>
                   </div>
                   <div class="track-title-text"><%= track.title %></div>
                   <div class="track-artist-text"><%= track.artist %></div>
@@ -107,7 +107,7 @@
       <% } else { %>
         <div class="empty-state">
           <i class="fa-solid fa-music"></i>
-          <p>Chưa có tracks nào</p>
+          <p>No tracks yet</p>
         </div>
       <% } %>
     </div>

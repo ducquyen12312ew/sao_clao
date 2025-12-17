@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html lang="vi">
+<html lang="en">
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -52,7 +52,7 @@
       <% if (tracks.length === 0) { %>
         <div class="empty-state">
           <i class="fa-solid fa-check-circle"></i>
-          <p>Không có bài hát nào bị xóa</p>
+          <p>No deleted tracks</p>
         </div>
       <% } else { %>
         <div class="tracks-grid">
@@ -82,7 +82,7 @@
                 </div>
                 <div class="deleted-info">
                   <i class="fa-regular fa-clock"></i>
-                  Deleted: <%= new Date(track.deletedAt).toLocaleString('vi-VN') %>
+                  Deleted: <%= new Date(track.deletedAt).toLocaleString('en-US') %>
                 </div>
                 <% if (track.reportCount > 0) { %>
                   <div class="track-warning">
@@ -107,7 +107,7 @@
 
   <script>
     async function restoreTrack(id) {
-      if (!confirm('Khôi phục bài hát này?')) return;
+      if (!confirm('Restore this track?')) return;
       
       try {
         const res = await fetch(`/admin/tracks/${id}/restore`, { method: 'POST' });
@@ -118,7 +118,7 @@
         }
       } catch (err) {
         console.error(err);
-        alert('Có lỗi xảy ra');
+        alert('An error occurred');
       }
     }
   </script>

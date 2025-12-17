@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html lang="vi">
+<html lang="en">
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -51,13 +51,13 @@
         <input 
           type="text" 
           name="q" 
-          placeholder="Tìm kiếm bài hát, nghệ sĩ..." 
+          placeholder="Search songs, artists..." 
           value="<%= searchQuery %>" 
           class="search-input" 
           required
         >
         <select name="status" class="status-filter">
-          <option value="all" <%= currentStatus === 'all' ? 'selected' : '' %>>Tất cả trạng thái</option>
+          <option value="all" <%= currentStatus === 'all' ? 'selected' : '' %>>All statuses</option>
           <option value="pending" <%= currentStatus === 'pending' ? 'selected' : '' %>>Pending</option>
           <option value="approved" <%= currentStatus === 'approved' ? 'selected' : '' %>>Approved</option>
           <option value="rejected" <%= currentStatus === 'rejected' ? 'selected' : '' %>>Rejected</option>
@@ -81,7 +81,7 @@
       <% if (tracks.length === 0) { %>
         <div class="empty-state">
           <i class="fa-solid fa-magnifying-glass"></i>
-          <p>Không tìm thấy kết quả nào</p>
+          <p>No results found</p>
         </div>
       <% } else { %>
         <div class="tracks-grid">

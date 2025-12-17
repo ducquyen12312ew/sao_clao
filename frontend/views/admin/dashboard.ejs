@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html lang="vi">
+<html lang="en">
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -61,11 +61,11 @@
         <input 
           type="text" 
           name="q" 
-          placeholder="Tìm kiếm bài hát, nghệ sĩ..." 
+          placeholder="Search songs, artists..." 
           class="search-input"
         >
         <select name="status" class="status-filter">
-          <option value="all">Tất cả trạng thái</option>
+          <option value="all">All statuses</option>
           <option value="pending">Pending</option>
           <option value="approved">Approved</option>
           <option value="rejected">Rejected</option>
@@ -90,7 +90,7 @@
       <% if (tracks.length === 0) { %>
         <div class="empty-state">
           <i class="fa-solid fa-check-circle"></i>
-          <p>Không có bài hát đang chờ duyệt</p>
+          <p>No tracks pending approval</p>
         </div>
       <% } else { %>
         <div class="tracks-grid">
@@ -120,7 +120,7 @@
                     @<%= track.userId.username %>
                   </span>
                   <span class="track-date">
-                    <%= new Date(track.createdAt).toLocaleDateString('vi-VN') %>
+                    <%= new Date(track.createdAt).toLocaleDateString('en-US') %>
                   </span>
                 </div>
                 <% if (track.reportCount > 0) { %>

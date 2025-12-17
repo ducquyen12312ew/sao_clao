@@ -235,6 +235,15 @@
       text-transform: none;
       letter-spacing: 0;
     }
+    .google-icon {
+      display: inline-flex;
+      align-items: center;
+    }
+    .google-icon svg {
+      width: 18px;
+      height: 18px;
+      display: block;
+    }
     .social-grid {
       display: grid;
       grid-template-columns: 1fr;
@@ -411,7 +420,15 @@
         <div class="divider">or</div>
         <div class="social-grid">
           <a class="btn outline social" href="/auth/google">
-            <span>🔒</span> <span>Continue with Google</span>
+            <span class="google-icon" aria-hidden="true">
+              <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 48 48">
+                <path fill="#EA4335" d="M24 9.5c3.54 0 6 1.54 7.38 2.84l5.44-5.44C33.94 3.4 29.29 1.5 24 1.5 14.78 1.5 7.09 6.93 3.7 14.04l6.33 4.91C11.27 13.58 17.07 9.5 24 9.5z"/>
+                <path fill="#4285F4" d="M46.5 24.5c0-1.57-.14-3.08-.41-4.5H24v9h12.7c-.55 2.96-2.22 5.48-4.73 7.18l7.2 5.6C43.74 38.26 46.5 31.88 46.5 24.5z"/>
+                <path fill="#FBBC05" d="M10.03 28.95c-.5-1.48-.78-3.05-.78-4.65s.28-3.17.78-4.65l-6.33-4.91C1.97 16.43 1.5 19.14 1.5 21.85s.47 5.42 1.35 7.78l7.18-5.68z"/>
+                <path fill="#34A853" d="M24 46.5c6.29 0 11.57-2.07 15.43-5.62l-7.2-5.6c-2.04 1.37-4.66 2.18-8.23 2.18-6.93 0-12.82-4.68-14.93-11.04l-7.18 5.68C7.09 41.07 14.78 46.5 24 46.5z"/>
+              </svg>
+            </span>
+            <span>Continue with Google</span>
           </a>
         </div>
       <% } %>

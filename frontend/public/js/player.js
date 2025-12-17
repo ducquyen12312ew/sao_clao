@@ -86,7 +86,7 @@ class MusicPlayer {
     this.audio.addEventListener('timeupdate', () => {
       this.updateProgress();
       this.checkPlayTracking();
-      this.saveState(); // Auto-save state khi thời gian thay đổi
+      this.saveState(); // Auto-save state when time changes
     });
     
     this.audio.addEventListener('loadedmetadata', () => this.updateDuration());
@@ -94,16 +94,16 @@ class MusicPlayer {
     
     this.audio.addEventListener('play', () => {
       this.updatePlayButton(true);
-      this.saveState(); // Save khi play
+      this.saveState(); // Save on play
     });
     
     this.audio.addEventListener('pause', () => {
       this.updatePlayButton(false);
-      this.saveState(); // Save khi pause
+      this.saveState(); // Save on pause
     });
     
     this.audio.addEventListener('seeked', () => {
-      this.saveState(); // Save khi seek
+      this.saveState(); // Save on seek
     });
     
     // Keyboard shortcuts
@@ -706,10 +706,6 @@ class MusicPlayer {
   }
 }
 
-// ============================================
-// INITIALIZATION
-// ============================================
-
 window.player = null;
 
 window.addEventListener('DOMContentLoaded', () => {
@@ -718,15 +714,11 @@ window.addEventListener('DOMContentLoaded', () => {
   console.log('Player ready:', window.player);
 });
 
-// ============================================
-// GLOBAL FUNCTIONS
-// ============================================
-
 window.playTrack = function(id, title, artist, cover, audioUrl) {
   console.log('playTrack called:', { id, title, artist });
   
   if (!window.player) {
-    alert('Player chưa sẵn sàng. Vui lòng đợi vài giây và thử lại.');
+    alert('Player is not ready. Please wait a few seconds and try again.');
     return;
   }
   

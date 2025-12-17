@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html lang="vi">
+<html lang="en">
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -45,7 +45,7 @@
     <div class="search-section">
       <form action="/admin/reports" method="get" class="search-form">
         <select name="status" class="status-filter" onchange="this.form.submit()">
-          <option value="all" <%= currentStatus === 'all' ? 'selected' : '' %>>Tất cả</option>
+          <option value="all" <%= currentStatus === 'all' ? 'selected' : '' %>>All</option>
           <option value="pending" <%= currentStatus === 'pending' ? 'selected' : '' %>>Pending</option>
           <option value="reviewed" <%= currentStatus === 'reviewed' ? 'selected' : '' %>>Reviewed</option>
           <option value="resolved" <%= currentStatus === 'resolved' ? 'selected' : '' %>>Resolved</option>
@@ -64,7 +64,7 @@
       <% if (reports.length === 0) { %>
         <div class="empty-state">
           <i class="fa-solid fa-check-circle"></i>
-          <p>Không có báo cáo nào</p>
+          <p>No reports</p>
         </div>
       <% } else { %>
         <div class="reports-list">
@@ -73,15 +73,15 @@
               <div class="report-header">
                 <div class="report-reason">
                   <% if (report.reason === 'copyright') { %>
-                    <i class="fa-solid fa-copyright"></i> Vi phạm bản quyền
+                    <i class="fa-solid fa-copyright"></i> Copyright violation
                   <% } else if (report.reason === 'inappropriate') { %>
-                    <i class="fa-solid fa-ban"></i> Nội dung không phù hợp
+                    <i class="fa-solid fa-ban"></i> Inappropriate content
                   <% } else if (report.reason === 'spam') { %>
-                    <i class="fa-solid fa-circle-exclamation"></i> Spam/Lừa đảo
+                    <i class="fa-solid fa-circle-exclamation"></i> Spam/Scam
                   <% } else if (report.reason === 'misleading') { %>
-                    <i class="fa-solid fa-triangle-exclamation"></i> Thông tin sai lệch
+                    <i class="fa-solid fa-triangle-exclamation"></i> Misleading information
                   <% } else { %>
-                    <i class="fa-solid fa-ellipsis"></i> Khác
+                    <i class="fa-solid fa-ellipsis"></i> Other
                   <% } %>
                 </div>
                 <span class="report-status-badge <%= report.status %>">
@@ -112,14 +112,14 @@
                   <% } else { %>
                     <div class="report-track-deleted">
                       <i class="fa-solid fa-trash"></i>
-                      Track đã bị xóa
+                      Track was deleted
                     </div>
                   <% } %>
                 </div>
                 
                 <% if (report.description) { %>
                   <div class="report-description">
-                    <strong>Mô tả:</strong>
+                    <strong>Description:</strong>
                     <p><%= report.description %></p>
                   </div>
                 <% } %>
@@ -134,7 +134,7 @@
                   </div>
                   <div class="report-date">
                     <i class="fa-regular fa-clock"></i>
-                    <%= new Date(report.createdAt).toLocaleString('vi-VN') %>
+                    <%= new Date(report.createdAt).toLocaleString('en-US') %>
                   </div>
                 </div>
                 
@@ -143,7 +143,7 @@
                     <div class="review-info">
                       <i class="fa-solid fa-user-check"></i>
                       Reviewed by: <strong>@<%= report.reviewedBy.username %></strong>
-                      on <%= new Date(report.reviewedAt).toLocaleString('vi-VN') %>
+                      on <%= new Date(report.reviewedAt).toLocaleString('en-US') %>
                     </div>
                     <% if (report.adminNote) { %>
                       <div class="review-note">

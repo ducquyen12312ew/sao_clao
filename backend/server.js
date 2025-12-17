@@ -200,9 +200,7 @@ const sendResetEmail = async (email, url) => {
 const requireAuth = (req, res, next) => {
   if (!req.session.user) {
     req.session.flash = { type: 'warning', message: 'Vui lòng đăng nhập.' };
-    return req.session.save((err) => {
-      res.redirect('/login');
-    });
+    return req.session.save(() => res.redirect('/login'));
   }
   next();
 };
@@ -211,35 +209,42 @@ const getTrackFilter = (user) => {
   return user?.role === 'admin' ? {} : { status: 'approved' };
 };
 
-app.get('/', async (req, res) => {
+app.get('/', (req, res) => {
+  if (req.session.user) {
+    return res.redirect('/home');
+  }
+  return res.render('landing', { title: 'SAOCLAO' });
+});
+
+app.get('/home', requireAuth, async (req, res) => {
   try {
-    if (req.session.user) return res.redirect('/profile');
-    
     const tracks = await TrackCollection
       .find({ status: 'approved', deletedAt: null })
       .sort({ createdAt: -1 })
-      .limit(12)
+      .limit(18)
       .lean();
-    
-    res.render('home', { 
-      title: 'MusicCloud - Discover. Get Discovered.', 
-      tracks 
+
+    return res.render('home', {
+      title: 'SAOCLAO',
+      tracks,
+      user: req.session.user
     });
   } catch (err) {
-    res.status(500).send('Server error');
+    console.error('Home render error:', err);
+    return res.status(500).send('Server error');
   }
 });
 
 app.get('/signup', (req, res) => {
   if (req.session.user) {
     req.session.flash = { type: 'info', message: 'Bạn đã đăng nhập rồi.' };
-    return req.session.save(() => res.redirect('/'));
+    return req.session.save(() => res.redirect('/home'));
   }
   res.render('signup', { title: 'Create account' });
 });
 
 app.post('/signup', async (req, res) => {
-  if (req.session.user) return res.redirect('/');
+  if (req.session.user) return res.redirect('/home');
 
   try {
     const { name, username, email, password } = req.body;
@@ -267,10 +272,11 @@ app.post('/signup', async (req, res) => {
     }
     
     const passwordHash = await bcrypt.hash(password, SALT_ROUNDS);
-    await UserCollection.create({ name, username: normalizedUsername, email: normalizedEmail, passwordHash });
+    const newUser = await UserCollection.create({ name, username: normalizedUsername, email: normalizedEmail, passwordHash });
     
-    req.session.flash = { type: 'success', message: 'Đăng ký thành công! Vui lòng đăng nhập để tiếp tục.' };
-    req.session.save(() => res.redirect('/login'));
+    req.session.user = buildSessionUser(newUser);
+    req.session.flash = { type: 'success', message: 'Chào mừng bạn đến SAOCLAO!' };
+    req.session.save(() => res.redirect('/home'));
     
   } catch (err) {
     req.session.flash = { type: 'danger', message: 'Đăng ký thất bại. Vui lòng thử lại.' };
@@ -279,12 +285,31 @@ app.post('/signup', async (req, res) => {
 });
 
 app.get('/login', (req, res) => {
-  if (req.session.user) return res.redirect('/profile');
+  if (req.session.user) return res.redirect('/home');
   res.render('login', { title: 'Sign in' });
 });
 
+app.get('/feed', requireAuth, async (req, res) => {
+  try {
+    const tracks = await TrackCollection
+      .find({ status: 'approved', deletedAt: null })
+      .sort({ createdAt: -1 })
+      .limit(12)
+      .lean();
+
+    return res.render('feed', {
+      title: 'Your Feed - SAOCLAO',
+      tracks,
+      user: req.session.user
+    });
+  } catch (err) {
+    console.error('Feed render error:', err);
+    return res.status(500).send('Server error');
+  }
+});
+
 app.post('/login', async (req, res) => {
-  if (req.session.user) return res.redirect('/profile');
+  if (req.session.user) return res.redirect('/home');
   
   try {
     const { identifier, password } = req.body;
@@ -314,7 +339,7 @@ app.post('/login', async (req, res) => {
       if (user.role === 'admin') {
         return req.session.save(() => res.redirect('/admin/dashboard'));
       }
-      return req.session.save(() => res.redirect('/profile'));
+      return req.session.save(() => res.redirect('/home'));
     });
     
   } catch (err) {
@@ -344,7 +369,7 @@ if (passport._strategies && passport._strategies.google) {
           return req.session.save(() => res.redirect('/login'));
         }
         req.session.user = buildSessionUser(user);
-        return req.session.save(() => res.redirect('/profile'));
+        return req.session.save(() => res.redirect('/home'));
       });
     })(req, res, next);
   });

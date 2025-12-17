@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html lang="vi">
+<html lang="en">
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -24,8 +24,8 @@
   
   <main class="container">
     <div class="page-header">
-      <h1>Tải lên bài hát của bạn</h1>
-      <p>Để có chất lượng tốt nhất, sử dụng định dạng WAV, FLAC, AIFF hoặc ALAC. Kích thước tối đa 4GB.</p>
+      <h1>Upload your track</h1>
+      <p>For best quality, use WAV, FLAC, AIFF, or ALAC. Maximum size 4GB.</p>
     </div>
     
     <div class="upload-box" id="uploadBox">
@@ -35,12 +35,12 @@
         </svg>
       </div>
       <div class="upload-text">
-        <h3>Kéo thả file nhạc vào đây để bắt đầu</h3>
-        <p>hoặc</p>
+        <h3>Drag and drop your audio here to start</h3>
+        <p>or</p>
       </div>
       <input type="file" id="audioFile" class="file-input" accept=".mp3,.wav,audio/*">
       <button class="choose-btn" onclick="document.getElementById('audioFile').click()">
-        Chọn file
+        Choose file
       </button>
     </div>
     
@@ -57,64 +57,64 @@
 
       <div class="ai-box">
         <div>
-          <h3 class="ai-title">AI gợi ý bài hát</h3>
-          <p class="ai-desc">Nhập một ý tưởng, chọn phong cách rồi để AI viết lời.</p>
+          <h3 class="ai-title">AI song ideas</h3>
+          <p class="ai-desc">Enter an idea, pick a style, and let AI write lyrics.</p>
         </div>
         <div class="form-group">
-          <label>Ý tưởng / prompt</label>
-          <input type="text" id="aiPrompt" placeholder="VD: Một buổi chiều mưa nhớ người yêu cũ">
+          <label>Idea / prompt</label>
+          <input type="text" id="aiPrompt" placeholder="Ex: A rainy afternoon missing an old love">
         </div>
         <div class="form-row">
           <div class="form-group half">
-            <label>Thể loại</label>
+            <label>Genre</label>
             <input type="text" id="aiGenre" placeholder="ballad, pop, rap...">
           </div>
           <div class="form-group half">
             <label>Mood</label>
-            <input type="text" id="aiMood" placeholder="vui tươi, trầm lắng...">
+            <input type="text" id="aiMood" placeholder="bright, mellow...">
           </div>
         </div>
         <div class="form-row">
           <div class="form-group half">
-            <label>Giai điệu / vibe</label>
-            <input type="text" id="aiVibe" placeholder="chill, sôi động, cinematic...">
+            <label>Melody / vibe</label>
+            <input type="text" id="aiVibe" placeholder="chill, upbeat, cinematic...">
           </div>
           <div class="form-group half">
-            <label>Tone giọng</label>
-            <input type="text" id="aiVocal" placeholder="nam cao, nữ trầm...">
+            <label>Vocal tone</label>
+            <input type="text" id="aiVocal" placeholder="high male, low female...">
           </div>
         </div>
         <div class="form-group">
-          <label>Độ dài mong muốn</label>
-          <input type="text" id="aiLength" placeholder="Ngắn, vừa, dài">
+          <label>Desired length</label>
+          <input type="text" id="aiLength" placeholder="Short, medium, long">
         </div>
         <div class="ai-actions">
-          <button type="button" class="btn btn-secondary" id="aiFillDemo">Dán demo</button>
-          <button type="button" class="btn btn-primary" id="aiGenerate">Tạo lời bằng AI</button>
-          <div id="aiStatus" class="ai-status" style="display:none;">Đang tạo...</div>
+          <button type="button" class="btn btn-secondary" id="aiFillDemo">Paste demo</button>
+          <button type="button" class="btn btn-primary" id="aiGenerate">Generate lyrics with AI</button>
+          <div id="aiStatus" class="ai-status" style="display:none;">Generating...</div>
         </div>
       </div>
       
       <div class="form-group">
-        <label>Tên bài hát <span class="required">*</span></label>
-        <input type="text" name="title" required placeholder="Nhập tên bài hát">
+        <label>Song title <span class="required">*</span></label>
+        <input type="text" name="title" required placeholder="Enter song title">
       </div>
       
       <div class="form-group">
-        <label>Nghệ sĩ</label>
-        <input type="text" name="artist" placeholder="Tên nghệ sĩ">
+        <label>Artist</label>
+        <input type="text" name="artist" placeholder="Artist name">
       </div>
 
       <div class="form-row">
         <div class="form-group half">
-          <label>Thể loại (genre)</label>
+          <label>Genre</label>
           <input type="text" name="genres" placeholder="VD: pop, indie, lo-fi">
-          <small class="form-hint">Nhập nhiều giá trị, cách nhau bởi dấu phẩy</small>
+          <small class="form-hint">Enter multiple values separated by commas</small>
         </div>
         <div class="form-group half">
           <label>Tags</label>
           <input type="text" name="tags" placeholder="VD: chill, study, workout">
-          <small class="form-hint">Nhập nhiều giá trị, cách nhau bởi dấu phẩy</small>
+          <small class="form-hint">Enter multiple values separated by commas</small>
         </div>
       </div>
 
@@ -125,32 +125,32 @@
 
       <div class="form-group">
         <label>Lyrics (text)</label>
-        <textarea name="lyricsText" rows="4" placeholder="Nhập lời bài hát dạng text thường"></textarea>
+        <textarea name="lyricsText" rows="4" placeholder="Enter lyrics in plain text"></textarea>
       </div>
 
       <div class="form-group">
         <label>Lyrics (LRC)</label>
         <textarea name="lyricsLRC" rows="4" placeholder="[00:12.00] Line 1&#10;[00:25.50] Line 2"></textarea>
-        <small class="form-hint">Tùy chọn, hỗ trợ đồng bộ chữ karaoke</small>
+        <small class="form-hint">Optional, supports karaoke-style sync</small>
       </div>
       
       <div class="form-group">
-        <label>Ảnh bìa</label>
+        <label>Cover image</label>
         <div class="image-upload">
           <div class="image-preview empty" id="imagePreview">🖼</div>
           <div class="image-info">
-            <p>PNG hoặc JPG, khuyến nghị 3000x3000px.<br>Tối đa 5MB.</p>
+            <p>PNG or JPG, recommended 3000x3000px.<br>Up to 5MB.</p>
             <input type="file" name="cover" id="coverFile" accept="image/*" style="display:none;">
             <button type="button" class="image-btn" onclick="document.getElementById('coverFile').click()">
-              Chọn ảnh
+              Choose image
             </button>
           </div>
         </div>
       </div>
       
       <div class="form-actions">
-        <button type="button" class="btn btn-secondary" onclick="window.location.href='/'">Hủy</button>
-        <button type="submit" class="btn btn-primary">Tải lên</button>
+        <button type="button" class="btn btn-secondary" onclick="window.location.href='/'">Cancel</button>
+        <button type="submit" class="btn btn-primary">Upload</button>
       </div>
     </form>
   </main>
@@ -224,22 +224,22 @@
     const aiFillDemo = document.getElementById('aiFillDemo');
 
     aiFillDemo?.addEventListener('click', () => {
-      aiPrompt.value = 'Một người trẻ nhớ về tuổi thơ bên dòng sông';
+      aiPrompt.value = 'A young person reminiscing about childhood by the river';
       aiGenre.value = 'ballad';
-      aiMood.value = 'hoài niệm, ấm áp';
-      aiVibe.value = 'mộc mạc, guitar nhẹ';
-      aiVocal.value = 'nam trung';
-      aiLength.value = 'vừa';
+      aiMood.value = 'nostalgic, warm';
+      aiVibe.value = 'acoustic, gentle guitar';
+      aiVocal.value = 'baritone male';
+      aiLength.value = 'medium';
     });
 
     aiBtn?.addEventListener('click', async () => {
       if (!aiPrompt.value.trim()) {
-        alert('Vui lòng nhập gợi ý.');
+        alert('Please enter a prompt.');
         aiPrompt.focus();
         return;
       }
       aiStatus.style.display = 'inline-block';
-      aiStatus.textContent = 'Đang tạo...';
+      aiStatus.textContent = 'Generating...';
       aiBtn.disabled = true;
 
       try {
@@ -260,13 +260,13 @@
         if (data.success) {
           document.querySelector('input[name="title"]').value = data.title || '';
           document.querySelector('textarea[name="lyricsText"]').value = data.lyrics || '';
-          aiStatus.textContent = 'Đã chèn vào form ✓';
+          aiStatus.textContent = 'Inserted into form ✓';
         } else {
-          aiStatus.textContent = data.message || 'Không tạo được lời.';
+          aiStatus.textContent = data.message || 'Could not generate lyrics.';
         }
       } catch (err) {
         console.error(err);
-        aiStatus.textContent = 'Lỗi kết nối AI.';
+        aiStatus.textContent = 'AI connection error.';
       } finally {
         aiBtn.disabled = false;
         setTimeout(() => aiStatus.style.display = 'none', 2500);

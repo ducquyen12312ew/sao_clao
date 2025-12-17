@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html lang="vi">
+<html lang="en">
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -14,16 +14,16 @@
   <div class="context-menu" id="contextMenu">
     <div class="context-menu-item" onclick="addToQueue(window.contextTrack)">
       <i class="fa-solid fa-list"></i>
-      <span>Thêm vào hàng đợi</span>
+      <span>Add to queue</span>
     </div>
     <div class="context-menu-divider"></div>
     <div class="context-menu-item">
       <i class="fa-solid fa-heart"></i>
-      <span>Thêm vào playlist</span>
+      <span>Add to playlist</span>
       <i class="fa-solid fa-chevron-right" style="margin-left: auto; font-size: 12px;"></i>
       <div class="context-submenu" id="playlistSubmenu">
         <div class="submenu-item create-new" onclick="openCreatePlaylistModal()">
-          <i class="fa-solid fa-plus"></i> Tạo playlist mới
+          <i class="fa-solid fa-plus"></i> Create new playlist
         </div>
       </div>
     </div>
@@ -32,18 +32,18 @@
   <!-- Create Playlist Modal -->
   <div class="modal" id="createPlaylistModal">
     <div class="modal-content">
-      <h3 class="modal-title">Tạo playlist mới</h3>
+      <h3 class="modal-title">Create new playlist</h3>
       <div class="form-group">
-        <label class="form-label">Tên playlist</label>
-        <input type="text" class="form-input" id="playlistName" placeholder="Nhập tên playlist">
+        <label class="form-label">Playlist name</label>
+        <input type="text" class="form-input" id="playlistName" placeholder="Enter playlist name">
       </div>
       <div class="form-group">
-        <label class="form-label">Mô tả</label>
-        <textarea class="form-input form-textarea" id="playlistDescription" placeholder="Mô tả về playlist (không bắt buộc)"></textarea>
+        <label class="form-label">Description</label>
+        <textarea class="form-input form-textarea" id="playlistDescription" placeholder="Describe the playlist (optional)"></textarea>
       </div>
       <div class="modal-footer">
-        <button class="btn btn-secondary" onclick="closeCreatePlaylistModal()">Hủy</button>
-        <button class="btn btn-primary" onclick="createPlaylist()">Tạo</button>
+        <button class="btn btn-secondary" onclick="closeCreatePlaylistModal()">Cancel</button>
+        <button class="btn btn-primary" onclick="createPlaylist()">Create</button>
       </div>
     </div>
   </div>
@@ -54,23 +54,23 @@
       <button class="modal-close" onclick="closeAIModal()">
         <i class="fa-solid fa-xmark"></i>
       </button>
-      <h3 class="modal-title">AI gợi ý bài hát</h3>
+      <h3 class="modal-title">AI song ideas</h3>
       <div class="ai-layout">
         <div class="ai-column">
-          <p style="color: var(--text-secondary); margin-bottom: 16px;">Nhập ý tưởng, chọn phong cách để AI viết lời cho bạn.</p>
+          <p style="color: var(--text-secondary); margin-bottom: 16px;">Enter an idea, choose a style, and let AI write lyrics.</p>
           <% const genres = ['Pop', 'Ballad', 'Acoustic', 'Indie', 'Lo-fi', 'Rock', 'Hip-hop', 'R&B', 'EDM', 'Jazz', 'Blues', 'Country', 'Classical', 'Folk', 'Metal', 'Trance', 'House', 'Chill', 'Lofi', 'K-pop', 'J-pop', 'V-pop']; %>
-          <% const moods = ['Vui tươi', 'Buồn', 'Trầm lắng', 'Hào hứng', 'Nhẹ nhàng', 'Mạnh mẽ', 'Lãng mạn', 'Hoài niệm', 'Dữ dội', 'Bay bổng']; %>
-          <% const vibes = ['Chill', 'Sôi động', 'Cinematic', 'Dance', 'Mộc mạc', 'Synthwave', 'Acoustic', 'Future bass']; %>
-          <% const vocals = ['Nam cao', 'Nam trung', 'Nam trầm', 'Nữ cao', 'Nữ trung', 'Nữ trầm', 'Rap']; %>
-          <% const languages = [{ label: 'Tiếng Việt', value: 'vi' }, { label: 'Tiếng Anh', value: 'en' }, { label: 'Tiếng Nhật', value: 'ja' }, { label: 'Tiếng Hàn', value: 'ko' }]; %>
+          <% const moods = ['Bright', 'Sad', 'Calm', 'Excited', 'Gentle', 'Bold', 'Romantic', 'Nostalgic', 'Intense', 'Dreamy']; %>
+          <% const vibes = ['Chill', 'Upbeat', 'Cinematic', 'Dance', 'Raw', 'Synthwave', 'Acoustic', 'Future bass']; %>
+          <% const vocals = ['Male high', 'Male mid', 'Male low', 'Female high', 'Female mid', 'Female low', 'Rap']; %>
+          <% const languages = [{ label: 'Vietnamese', value: 'vi' }, { label: 'English', value: 'en' }, { label: 'Japanese', value: 'ja' }, { label: 'Korean', value: 'ko' }]; %>
           <div class="form-group">
-            <label class="form-label">Ý tưởng / prompt</label>
-            <input type="text" class="form-input" id="aiPrompt" placeholder="VD: Một buổi chiều mưa nhớ người yêu cũ">
+            <label class="form-label">Idea / prompt</label>
+            <input type="text" class="form-input" id="aiPrompt" placeholder="Ex: A rainy afternoon missing an old love">
           </div>
           <div class="form-group">
-            <label class="form-label">Thể loại</label>
+            <label class="form-label">Genre</label>
             <div class="input-with-dropdown">
-              <input type="text" class="form-input" id="aiGenre" placeholder="Chọn hoặc nhập thêm">
+              <input type="text" class="form-input" id="aiGenre" placeholder="Select or type more">
               <button type="button" class="dropdown-toggle" data-target="aiGenreOptions"><i class="fa-solid fa-caret-down"></i></button>
             </div>
             <div class="dropdown-menu" id="aiGenreOptions">
@@ -82,7 +82,7 @@
           <div class="form-group">
             <label class="form-label">Mood</label>
             <div class="input-with-dropdown">
-              <input type="text" class="form-input" id="aiMood" placeholder="vui tươi, trầm lắng...">
+              <input type="text" class="form-input" id="aiMood" placeholder="bright, mellow...">
               <button type="button" class="dropdown-toggle" data-target="aiMoodOptions"><i class="fa-solid fa-caret-down"></i></button>
             </div>
             <div class="dropdown-menu" id="aiMoodOptions">
@@ -92,9 +92,9 @@
             </div>
           </div>
           <div class="form-group">
-            <label class="form-label">Giai điệu / vibe</label>
+            <label class="form-label">Melody / vibe</label>
             <div class="input-with-dropdown">
-              <input type="text" class="form-input" id="aiVibe" placeholder="chill, sôi động, cinematic...">
+              <input type="text" class="form-input" id="aiVibe" placeholder="chill, upbeat, cinematic...">
               <button type="button" class="dropdown-toggle" data-target="aiVibeOptions"><i class="fa-solid fa-caret-down"></i></button>
             </div>
             <div class="dropdown-menu" id="aiVibeOptions">
@@ -104,9 +104,9 @@
             </div>
           </div>
           <div class="form-group">
-            <label class="form-label">Tone giọng</label>
+            <label class="form-label">Vocal tone</label>
             <div class="input-with-dropdown">
-              <input type="text" class="form-input" id="aiVocal" placeholder="nam cao, nữ trầm...">
+              <input type="text" class="form-input" id="aiVocal" placeholder="high male, low female...">
               <button type="button" class="dropdown-toggle" data-target="aiVocalOptions"><i class="fa-solid fa-caret-down"></i></button>
             </div>
             <div class="dropdown-menu" id="aiVocalOptions">
@@ -116,17 +116,17 @@
             </div>
           </div>
           <div class="form-group">
-            <label class="form-label">Độ dài mong muốn</label>
+            <label class="form-label">Desired length</label>
             <select class="form-input" id="aiLengthChoice">
-              <option value="short">Ngắn (5-6 câu)</option>
-              <option value="medium" selected>Vừa (8-10 câu)</option>
-              <option value="long">Dài (12-20 câu)</option>
+              <option value="short">Short (5-6 lines)</option>
+              <option value="medium" selected>Medium (8-10 lines)</option>
+              <option value="long">Long (12-20 lines)</option>
             </select>
           </div>
           <div class="form-group">
-            <label class="form-label">Ngôn ngữ</label>
+            <label class="form-label">Language</label>
             <div class="input-with-dropdown">
-              <input type="text" class="form-input" id="aiLanguage" placeholder="Chọn ngôn ngữ (vi, en, ja, ko)">
+              <input type="text" class="form-input" id="aiLanguage" placeholder="Choose language (vi, en, ja, ko)">
               <button type="button" class="dropdown-toggle" data-target="aiLanguageOptions"><i class="fa-solid fa-caret-down"></i></button>
             </div>
             <div class="dropdown-menu" id="aiLanguageOptions">
@@ -136,29 +136,29 @@
             </div>
           </div>
           <div class="modal-footer" style="padding: 0;">
-            <div id="aiStatus" class="ai-status" style="display:none;">Đang tạo...</div>
+            <div id="aiStatus" class="ai-status" style="display:none;">Generating...</div>
             <div style="flex:1"></div>
-            <button class="btn btn-secondary" onclick="closeAIModal()">Đóng</button>
-            <button class="btn btn-primary" onclick="generateLyrics()">Tạo lời</button>
+            <button class="btn btn-secondary" onclick="closeAIModal()">Close</button>
+            <button class="btn btn-primary" onclick="generateLyrics()">Generate lyrics</button>
           </div>
         </div>
         <div class="ai-column ai-preview-panel">
           <div class="ai-preview-header">
             <div>
-              <div class="ai-preview-label">Bản xem trước</div>
-              <div class="ai-preview-title" id="aiPreviewTitle">Chưa có kết quả</div>
+              <div class="ai-preview-label">Preview</div>
+              <div class="ai-preview-title" id="aiPreviewTitle">No results yet</div>
             </div>
             <div class="ai-preview-actions">
               <button class="btn btn-secondary" onclick="playPreview()" id="aiPlayBtn">
-                <i class="fa-solid fa-play"></i> Phát
+                <i class="fa-solid fa-play"></i> Play
               </button>
               <button class="btn btn-secondary" onclick="stopPreview()" id="aiStopBtn">
-                <i class="fa-solid fa-stop"></i> Dừng
+                <i class="fa-solid fa-stop"></i> Stop
               </button>
             </div>
           </div>
           <div class="ai-preview" id="aiPreviewLines">
-            <p style="color: var(--text-secondary); text-align:center; margin:0;">Tạo lời để xem trước tại đây</p>
+            <p style="color: var(--text-secondary); text-align:center; margin:0;">Generate lyrics to preview them here</p>
           </div>
         </div>
       </div>
@@ -177,7 +177,7 @@
       <nav class="nav-menu">
         <a href="/profile" class="nav-link active">
           <i class="fa-solid fa-house"></i>
-          <span>Trang chủ</span>
+          <span>Home</span>
         </a>
         <a href="/playlists" class="nav-link">
           <i class="fa-solid fa-music"></i>
@@ -185,7 +185,7 @@
         </a>
         <a href="/likes" class="nav-link">
           <i class="fa-solid fa-heart"></i>
-          <span>Đã thích</span>
+          <span>Liked</span>
         </a>
       </nav>
     </div>
@@ -194,7 +194,7 @@
       <div class="search-icon">
         <i class="fa-solid fa-magnifying-glass"></i>
       </div>
-      <input type="text" class="search-input" id="searchInput" placeholder="Tìm bài hát, nghệ sĩ...">
+      <input type="text" class="search-input" id="searchInput" placeholder="Search songs, artists...">
       <button class="search-clear" id="searchClear">
         <i class="fa-solid fa-xmark"></i>
       </button>
@@ -218,7 +218,7 @@
       </a>
 
       <form method="post" action="/logout" style="display:inline; margin-left: 8px;">
-        <button type="submit" class="btn-logout">Đăng xuất</button>
+        <button type="submit" class="btn-logout">Log out</button>
       </form>
     </div>
   </header>
@@ -229,7 +229,7 @@
       <!-- Recommendations Section -->
       <section class="section" id="recommendations-section">
         <div class="section-header">
-          <h2 class="section-title">Có thể bạn thích</h2>
+          <h2 class="section-title">You might like</h2>
         </div>
         
         <% if (moreOfWhatYouLike && moreOfWhatYouLike.length > 0) { %>
@@ -251,15 +251,15 @@
                 </a>
                 <div class="card-info">
                   <div class="card-title"><%= track.title %></div>
-                  <div class="card-artist"><%= track.artist || 'Nghệ sĩ không rõ' %></div>
+                  <div class="card-artist"><%= track.artist || 'Unknown artist' %></div>
                 </div>
               </div>
             <% }) %>
           </div>
         <% } else { %>
           <div class="empty-state">
-            <h3>Chưa có gợi ý</h3>
-            <p>Nghe thêm nhạc để nhận gợi ý cá nhân hóa</p>
+            <h3>No suggestions yet</h3>
+            <p>Listen to more music to get personalized recommendations</p>
           </div>
         <% } %>
       </section>
@@ -268,7 +268,7 @@
       <% if (recentlyPlayed && recentlyPlayed.length > 0) { %>
       <section class="section" id="recently-played-section">
         <div class="section-header">
-          <h2 class="section-title">Nghe gần đây</h2>
+          <h2 class="section-title">Recently played</h2>
         </div>
         <div class="cards-grid">
           <% recentlyPlayed.forEach((track) => { %>
@@ -288,7 +288,7 @@
               </a>
               <div class="card-info">
                 <div class="card-title"><%= track.title %></div>
-                <div class="card-artist"><%= track.artist || 'Nghệ sĩ không rõ' %></div>
+                <div class="card-artist"><%= track.artist || 'Unknown artist' %></div>
               </div>
             </div>
           <% }) %>
@@ -299,8 +299,8 @@
       <!-- Playlists Section -->
       <section class="section" id="playlists-section">
         <div class="section-header">
-          <h2 class="section-title">Playlist của tôi</h2>
-          <a href="/playlists" class="view-all">Xem tất cả</a>
+          <h2 class="section-title">My playlists</h2>
+          <a href="/playlists" class="view-all">View all</a>
         </div>
         
         <% if (playlists && playlists.length > 0) { %>
@@ -331,15 +331,15 @@
                 </div>
                 <div class="playlist-info">
                   <div class="playlist-name"><%= playlist.name %></div>
-                  <div class="playlist-count"><%= trackCount %> bài hát</div>
+                  <div class="playlist-count"><%= trackCount %> tracks</div>
                 </div>
               </a>
             <% }) %>
           </div>
         <% } else { %>
           <div class="empty-state">
-            <h3>Chưa có playlist nào</h3>
-            <p>Tạo playlist đầu tiên của bạn</p>
+            <h3>No playlists yet</h3>
+            <p>Create your first playlist</p>
           </div>
         <% } %>
       </section>
@@ -350,7 +350,7 @@
     
     <!-- Right Sidebar -->
     <aside class="right-sidebar" id="rightSidebar">
-      <h3 class="sidebar-title">Đang phát</h3>
+      <h3 class="sidebar-title">Now playing</h3>
       <div class="now-playing-card">
         <div class="now-playing-image" id="sidebarImage"></div>
         <div class="now-playing-info">
@@ -369,8 +369,8 @@
   <!-- Queue Panel -->
   <div class="queue-panel" id="queuePanel">
     <div class="queue-header">
-      <h3 class="queue-title">Hàng đợi</h3>
-      <button class="queue-clear" onclick="player.clearQueue()">Xóa tất cả</button>
+      <h3 class="queue-title">Queue</h3>
+      <button class="queue-clear" onclick="player.clearQueue()">Clear all</button>
     </div>
     <div class="queue-list" id="queueList"></div>
   </div>
@@ -381,8 +381,8 @@
       <div class="player-left">
         <div class="player-thumb" id="playerThumb"></div>
         <div class="player-info">
-          <div class="player-title" id="playerTitle">Tên bài hát</div>
-          <div class="player-artist" id="playerArtist">Nghệ sĩ</div>
+          <div class="player-title" id="playerTitle">Song title</div>
+          <div class="player-artist" id="playerArtist">Artist</div>
         </div>
       </div>
       
@@ -468,21 +468,21 @@ window.playTrackFromSearch = function(id, title, artist, cover, audioUrl) {
 
 window.addToQueue = function(track) {
   if (!track) {
-    showNotification('Lỗi: Không có bài hát');
+    showNotification('Error: No track selected');
     return;
   }
   
   if (!window.player) {
-    showNotification('Lỗi: Player chưa sẵn sàng');
+    showNotification('Error: Player is not ready');
     return;
   }
   
   const success = window.player.addToQueue(track);
   
   if (success) {
-    showNotification('Đã thêm vào hàng đợi');
+    showNotification('Added to queue');
   } else {
-    showNotification('Bài hát đã có trong hàng đợi');
+    showNotification('Track is already in the queue');
   }
   
   closeContextMenu();
@@ -523,12 +523,12 @@ window.generateLyrics = async function() {
   const language = document.getElementById('aiLanguage')?.value.trim();
 
   if (!prompt) {
-    alert('Vui lòng nhập gợi ý.');
+    alert('Please enter a prompt.');
     return;
   }
 
   if (statusEl) {
-    statusEl.textContent = 'Đang tạo...';
+    statusEl.textContent = 'Generating...';
     statusEl.style.display = 'inline-block';
   }
 
@@ -541,14 +541,14 @@ window.generateLyrics = async function() {
 
     const data = await res.json();
     if (data.success) {
-      showNotification('Đã tạo lời, xem trước bên phải.');
+      showNotification('Lyrics generated; preview on the right.');
       renderPreview(data.lyrics || '', data.title || '');
     } else {
-      alert(data.message || 'Không thể tạo lời');
+      alert(data.message || 'Could not generate lyrics');
     }
   } catch (err) {
     console.error(err);
-    alert('Lỗi kết nối AI');
+    alert('AI connection error');
   } finally {
     if (statusEl) statusEl.style.display = 'none';
   }
@@ -572,7 +572,7 @@ window.createPlaylist = async function() {
   const description = descInput?.value.trim();
   
   if (!name) {
-    showNotification('Vui lòng nhập tên playlist');
+    showNotification('Please enter a playlist name');
     return;
   }
   
@@ -586,7 +586,7 @@ window.createPlaylist = async function() {
     const data = await res.json();
     
     if (data.success) {
-      showNotification('Tạo playlist thành công');
+      showNotification('Playlist created successfully');
       closeCreatePlaylistModal();
       
       await loadPlaylists();
@@ -597,10 +597,10 @@ window.createPlaylist = async function() {
       
       setTimeout(() => location.reload(), 1000);
     } else {
-      showNotification(data.message || 'Tạo playlist thất bại');
+      showNotification(data.message || 'Failed to create playlist');
     }
   } catch (err) {
-    showNotification('Có lỗi xảy ra');
+    showNotification('An error occurred');
   }
 };
 
@@ -669,7 +669,7 @@ function initSearch() {
       return;
     }
     
-    searchDropdown.innerHTML = '<div class="search-dropdown-loading"><i class="fa-solid fa-spinner fa-spin"></i> Đang tìm kiếm...</div>';
+    searchDropdown.innerHTML = '<div class="search-dropdown-loading"><i class="fa-solid fa-spinner fa-spin"></i> Searching...</div>';
     searchDropdown.classList.add('active');
     
     searchTimeout = setTimeout(async () => {
@@ -681,10 +681,10 @@ function initSearch() {
         if (data.success) {
           displaySearchResults(data.users || [], data.tracks || [], query);
         } else {
-          searchDropdown.innerHTML = '<div class="search-dropdown-empty">Không tìm thấy kết quả</div>';
+          searchDropdown.innerHTML = '<div class="search-dropdown-empty">No results found</div>';
         }
       } catch (err) {
-        searchDropdown.innerHTML = '<div class="search-dropdown-empty">Lỗi khi tìm kiếm</div>';
+        searchDropdown.innerHTML = '<div class="search-dropdown-empty">Search error</div>';
       }
     }, 300);
   });
@@ -724,14 +724,14 @@ function displaySearchResults(users, tracks, query) {
   if (!searchDropdown) return;
   
   if (users.length === 0 && tracks.length === 0) {
-    searchDropdown.innerHTML = '<div class="search-dropdown-empty">Không tìm thấy kết quả</div>';
+    searchDropdown.innerHTML = '<div class="search-dropdown-empty">No results found</div>';
     return;
   }
   
   let html = '';
   
   if (users.length > 0) {
-    html += '<div class="search-section-title">Nghệ sĩ</div>';
+    html += '<div class="search-section-title">Artists</div>';
     
     users.slice(0, 5).forEach(user => {
       const avatarHtml = user.avatarUrl 
@@ -745,7 +745,7 @@ function displaySearchResults(users, tracks, query) {
           </div>
           <div class="search-dropdown-info">
             <div class="search-dropdown-title">${user.name || user.username}</div>
-            <div class="search-dropdown-artist">@${user.username} • ${user.trackCount || 0} bài hát</div>
+            <div class="search-dropdown-artist">@${user.username} • ${user.trackCount || 0} tracks</div>
           </div>
           <div class="search-dropdown-badge">
             <i class="fa-solid fa-user"></i>
@@ -756,7 +756,7 @@ function displaySearchResults(users, tracks, query) {
   }
   
   if (tracks.length > 0) {
-    html += '<div class="search-section-title">Bài hát</div>';
+    html += '<div class="search-section-title">Songs</div>';
     
     tracks.slice(0, 8).forEach(track => {
       const trackTitle = track.title.replace(/'/g, "\\'").replace(/"/g, '&quot;');
@@ -821,7 +821,7 @@ function updatePlaylistSubmenu() {
   
   submenu.innerHTML = `
     <div class="submenu-item create-new" onclick="openCreatePlaylistModal()">
-      <i class="fa-solid fa-plus"></i> Tạo playlist mới
+      <i class="fa-solid fa-plus"></i> Create new playlist
     </div>
   `;
   
@@ -876,7 +876,7 @@ function closeContextMenu() {
 
 async function addToPlaylist(playlistId) {
   if (!window.contextTrack) {
-    showNotification('Lỗi: Không có bài hát được chọn');
+    showNotification('Error: No track selected');
     return;
   }
   
@@ -890,12 +890,12 @@ async function addToPlaylist(playlistId) {
     const data = await res.json();
     
     if (data.success) {
-      showNotification(data.message || 'Đã thêm vào playlist');
+      showNotification(data.message || 'Added to playlist');
     } else {
-      showNotification(data.message || 'Thêm thất bại');
+      showNotification(data.message || 'Could not add to playlist');
     }
   } catch (err) {
-    showNotification('Có lỗi xảy ra');
+    showNotification('An error occurred');
   }
 }
 
@@ -958,7 +958,7 @@ let aiPreviewIndex = 0;
 function renderPreview(lyrics, title) {
   const container = document.getElementById('aiPreviewLines');
   const titleEl = document.getElementById('aiPreviewTitle');
-  if (titleEl) titleEl.textContent = title || 'Bản xem trước';
+  if (titleEl) titleEl.textContent = title || 'Preview';
   if (!container) return;
   
   aiPreviewLines = (lyrics || '')
@@ -969,7 +969,7 @@ function renderPreview(lyrics, title) {
   stopPreview();
 
   if (!aiPreviewLines.length) {
-    container.innerHTML = '<p style="color: var(--text-secondary); text-align:center; margin:0;">Chưa có lời</p>';
+    container.innerHTML = '<p style="color: var(--text-secondary); text-align:center; margin:0;">No lyrics yet</p>';
     return;
   }
 
