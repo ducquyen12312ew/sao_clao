@@ -33,7 +33,7 @@ const adminRoutes = require('./routes/admin');
 
 const app = express();
 const SALT_ROUNDS = 10;
-const PASSWORD_RULE_MESSAGE = 'Mật khẩu phải có ít nhất 8 ký tự, gồm chữ hoa, chữ thường, chữ số và ký tự đặc biệt.';
+const PASSWORD_RULE_MESSAGE = 'Password must be at least 8 characters with uppercase, lowercase, numbers, and special characters.';
 
 app.set('view engine', 'ejs');
 app.set('views', path.join(__dirname, '..', 'frontend', 'views'));
@@ -191,15 +191,15 @@ const sendResetEmail = async (email, url) => {
   await transporter.sendMail({
     from: process.env.SMTP_FROM || process.env.SMTP_USER,
     to: email,
-    subject: 'Reset mật khẩu SAOCLAO',
-    text: `Bạn đã yêu cầu đặt lại mật khẩu. Nhấn vào link sau để tiếp tục: ${url}`,
-    html: `<p>Bạn đã yêu cầu đặt lại mật khẩu.</p><p><a href="${url}">Nhấn vào đây để đặt lại mật khẩu</a></p>`
+    subject: 'Reset SAOCLAO password',
+    text: `You requested a password reset. Click the following link to continue: ${url}`,
+    html: `<p>You requested a password reset.</p><p><a href="${url}">Click here to reset your password</a></p>`
   });
 };
 
 const requireAuth = (req, res, next) => {
   if (!req.session.user) {
-    req.session.flash = { type: 'warning', message: 'Vui lòng đăng nhập.' };
+    req.session.flash = { type: 'warning', message: 'Please sign in.' };
     return req.session.save(() => res.redirect('/login'));
   }
   next();
@@ -237,7 +237,7 @@ app.get('/home', requireAuth, async (req, res) => {
 
 app.get('/signup', (req, res) => {
   if (req.session.user) {
-    req.session.flash = { type: 'info', message: 'Bạn đã đăng nhập rồi.' };
+    req.session.flash = { type: 'info', message: 'You are already signed in.' };
     return req.session.save(() => res.redirect('/home'));
   }
   res.render('signup', { title: 'Create account' });
@@ -250,7 +250,7 @@ app.post('/signup', async (req, res) => {
     const { name, username, email, password } = req.body;
     
     if (!name || !username || !email || !password) {
-      req.session.flash = { type: 'danger', message: 'Vui lòng điền đầy đủ thông tin.' };
+      req.session.flash = { type: 'danger', message: 'Please fill in all required fields.' };
       return req.session.save(() => res.redirect('/signup'));
     }
 
@@ -267,7 +267,7 @@ app.post('/signup', async (req, res) => {
     });
     
     if (exists) {
-      req.session.flash = { type: 'warning', message: 'Email hoặc username đã tồn tại.' };
+      req.session.flash = { type: 'warning', message: 'Email or username already exists.' };
       return req.session.save(() => res.redirect('/signup'));
     }
     
@@ -275,11 +275,11 @@ app.post('/signup', async (req, res) => {
     const newUser = await UserCollection.create({ name, username: normalizedUsername, email: normalizedEmail, passwordHash });
     
     req.session.user = buildSessionUser(newUser);
-    req.session.flash = { type: 'success', message: 'Chào mừng bạn đến SAOCLAO!' };
+    req.session.flash = { type: 'success', message: 'Welcome to SAOCLAO!' };
     req.session.save(() => res.redirect('/home'));
     
   } catch (err) {
-    req.session.flash = { type: 'danger', message: 'Đăng ký thất bại. Vui lòng thử lại.' };
+    req.session.flash = { type: 'danger', message: 'Sign up failed. Please try again.' };
     req.session.save(() => res.redirect('/signup'));
   }
 });
@@ -308,6 +308,64 @@ app.get('/feed', requireAuth, async (req, res) => {
   }
 });
 
+app.get('/library', requireAuth, async (req, res) => {
+  try {
+    const userId = req.session.user.id;
+    const filter = getTrackFilter(req.session.user);
+    const baseFilter = { ...filter, deletedAt: null };
+
+    const recentPlays = await PlayHistoryCollection
+      .find({ userId })
+      .sort({ playedAt: -1 })
+      .limit(20)
+      .populate({ path: 'trackId', match: baseFilter })
+      .lean();
+
+    const seenRecent = new Set();
+    const recentlyPlayed = [];
+    for (const doc of recentPlays) {
+      if (doc.trackId && !seenRecent.has(doc.trackId._id.toString())) {
+        seenRecent.add(doc.trackId._id.toString());
+        recentlyPlayed.push(doc.trackId);
+      }
+    }
+
+    const likedDocs = await TrackLikeCollection
+      .find({ userId })
+      .sort({ createdAt: -1 })
+      .limit(20)
+      .populate({ path: 'trackId', match: baseFilter })
+      .lean();
+    const likedTracks = likedDocs.map(d => d.trackId).filter(Boolean);
+
+    const playlists = await PlaylistCollection
+      .find({ userId })
+      .populate({ path: 'tracks', match: baseFilter })
+      .sort({ updatedAt: -1 })
+      .limit(12)
+      .lean();
+
+    const followingDocs = await FollowCollection
+      .find({ followerId: userId })
+      .populate({ path: 'followingId', select: 'username name avatarUrl followersCount' })
+      .lean();
+    const followingUsers = followingDocs.map(d => d.followingId).filter(Boolean);
+
+    res.render('library', {
+      title: 'Library - SAOCLAO',
+      user: req.session.user,
+      recentlyPlayed,
+      likedTracks,
+      playlists,
+      followingUsers,
+      historyTracks: recentlyPlayed // reuse recent plays
+    });
+  } catch (err) {
+    console.error('Library render error:', err);
+    res.status(500).send('Server error');
+  }
+});
+
 app.post('/login', async (req, res) => {
   if (req.session.user) return res.redirect('/home');
   
@@ -320,19 +378,19 @@ app.post('/login', async (req, res) => {
     });
     
     if (!user) { 
-      req.session.flash = { type: 'danger', message: 'Sai thông tin đăng nhập.' }; 
+      req.session.flash = { type: 'danger', message: 'Invalid credentials.' }; 
       return req.session.save(() => res.redirect('/login'));
     }
     
     const ok = await bcrypt.compare(password, user.passwordHash);
     if (!ok) { 
-      req.session.flash = { type: 'danger', message: 'Sai thông tin đăng nhập.' }; 
+      req.session.flash = { type: 'danger', message: 'Invalid credentials.' }; 
       return req.session.save(() => res.redirect('/login'));
     }
     
     req.logIn(user, (err) => {
       if (err) {
-        req.session.flash = { type: 'danger', message: 'Không thể đăng nhập.' };
+        req.session.flash = { type: 'danger', message: 'Unable to sign in.' };
         return req.session.save(() => res.redirect('/login'));
       }
       req.session.user = buildSessionUser(user);
@@ -343,7 +401,7 @@ app.post('/login', async (req, res) => {
     });
     
   } catch (err) {
-    req.session.flash = { type: 'danger', message: 'Đã xảy ra lỗi. Vui lòng thử lại.' };
+    req.session.flash = { type: 'danger', message: 'An error occurred. Please try again.' };
     req.session.save(() => res.redirect('/login'));
   }
 });
@@ -355,17 +413,17 @@ if (passport._strategies && passport._strategies.google) {
     passport.authenticate('google', { failureRedirect: '/login' }, (err, user) => {
       if (err) {
         console.error('Google auth error:', err);
-        req.session.flash = { type: 'danger', message: 'Đăng nhập Google thất bại.' };
+        req.session.flash = { type: 'danger', message: 'Google login failed.' };
         return req.session.save(() => res.redirect('/login'));
       }
       if (!user) {
-        req.session.flash = { type: 'danger', message: 'Không thể xác thực Google.' };
+        req.session.flash = { type: 'danger', message: 'Unable to authenticate with Google.' };
         return req.session.save(() => res.redirect('/login'));
       }
       req.logIn(user, (loginErr) => {
         if (loginErr) {
           console.error('Google login session error:', loginErr);
-          req.session.flash = { type: 'danger', message: 'Không thể tạo phiên đăng nhập.' };
+          req.session.flash = { type: 'danger', message: 'Unable to create login session.' };
           return req.session.save(() => res.redirect('/login'));
         }
         req.session.user = buildSessionUser(user);
@@ -384,14 +442,14 @@ app.post('/logout', doLogout);
 
 app.get('/forgot-password', (req, res) => {
   if (req.session.user) return res.redirect('/profile');
-  res.render('forgot-password', { title: 'Quên mật khẩu' });
+  res.render('forgot-password', { title: 'Forgot password' });
 });
 
 app.post('/forgot-password', async (req, res) => {
   try {
     const { email } = req.body;
     if (!email) {
-      req.session.flash = { type: 'danger', message: 'Vui lòng nhập email.' };
+      req.session.flash = { type: 'danger', message: 'Please enter your email.' };
       return req.session.save(() => res.redirect('/forgot-password'));
     }
 
@@ -406,11 +464,11 @@ app.post('/forgot-password', async (req, res) => {
       await sendResetEmail(user.email, resetUrl);
     }
 
-    req.session.flash = { type: 'success', message: 'Nếu email hợp lệ, chúng tôi đã gửi link đặt lại mật khẩu.' };
+    req.session.flash = { type: 'success', message: 'If the email is valid, we have sent a reset link.' };
     req.session.save(() => res.redirect('/forgot-password'));
   } catch (err) {
     console.error('Forgot password error:', err);
-    req.session.flash = { type: 'danger', message: 'Có lỗi xảy ra. Vui lòng thử lại.' };
+    req.session.flash = { type: 'danger', message: 'An error occurred. Please try again.' };
     req.session.save(() => res.redirect('/forgot-password'));
   }
 });
@@ -425,11 +483,11 @@ app.get('/reset-password/:token', async (req, res) => {
   });
 
   if (!resetDoc) {
-    req.session.flash = { type: 'danger', message: 'Link đặt lại mật khẩu không hợp lệ hoặc đã hết hạn.' };
+    req.session.flash = { type: 'danger', message: 'Reset link is invalid or expired.' };
     return req.session.save(() => res.redirect('/forgot-password'));
   }
 
-  res.render('reset-password', { title: 'Đặt lại mật khẩu', token });
+  res.render('reset-password', { title: 'Reset password', token });
 });
 
 app.post('/reset-password/:token', async (req, res) => {
@@ -450,13 +508,13 @@ app.post('/reset-password/:token', async (req, res) => {
     });
 
     if (!resetDoc) {
-      req.session.flash = { type: 'danger', message: 'Link đặt lại mật khẩu không hợp lệ hoặc đã hết hạn.' };
+      req.session.flash = { type: 'danger', message: 'Reset link is invalid or expired.' };
       return req.session.save(() => res.redirect('/forgot-password'));
     }
 
     const user = await UserCollection.findById(resetDoc.userId);
     if (!user) {
-      req.session.flash = { type: 'danger', message: 'Người dùng không tồn tại.' };
+      req.session.flash = { type: 'danger', message: 'User not found.' };
       return req.session.save(() => res.redirect('/forgot-password'));
     }
 
@@ -466,11 +524,11 @@ app.post('/reset-password/:token', async (req, res) => {
     resetDoc.used = true;
     await resetDoc.save();
 
-    req.session.flash = { type: 'success', message: 'Đã cập nhật mật khẩu. Vui lòng đăng nhập.' };
+    req.session.flash = { type: 'success', message: 'Password updated. Please sign in.' };
     req.session.save(() => res.redirect('/login'));
   } catch (err) {
     console.error('Reset password error:', err);
-    req.session.flash = { type: 'danger', message: 'Không thể đặt lại mật khẩu.' };
+    req.session.flash = { type: 'danger', message: 'Could not reset password.' };
     req.session.save(() => res.redirect('/forgot-password'));
   }
 });
@@ -598,7 +656,7 @@ app.get('/likes', requireAuth, async (req, res) => {
       .filter(Boolean);
 
     res.render('likes', {
-      title: 'Bài hát đã thích - SAOCLAO',
+      title: 'Liked tracks - SAOCLAO',
       user: req.session.user,
       tracks
     });
@@ -781,9 +839,9 @@ app.get('/api/tracks/genre/:genre', requireAuth, async (req, res) => {
 
 async function callLyricsAI({ prompt, genre, mood, vibe, vocal, length, language, lengthChoice }) {
   const targetLinesMap = {
-    short: { label: '5-6 dòng', min: 5, max: 6 },
-    medium: { label: '8-10 dòng', min: 8, max: 10 },
-    long: { label: '12-20 dòng', min: 12, max: 20 }
+    short: { label: '5-6 lines', min: 5, max: 6 },
+    medium: { label: '8-10 lines', min: 8, max: 10 },
+    long: { label: '12-20 lines', min: 12, max: 20 }
   };
   const len = targetLinesMap[lengthChoice] || targetLinesMap.medium;
 
@@ -792,33 +850,33 @@ async function callLyricsAI({ prompt, genre, mood, vibe, vocal, length, language
     const total = len.max;
     for (let i = 1; i <= total; i++) {
       if (i === 1) lines.push(`Verse 1: ${prompt}`);
-      else if (i === Math.ceil(total / 2)) lines.push(`Chorus: ${genre || 'giai điệu'} vang lên cùng ${mood || 'cảm xúc'}`);
-      else lines.push(`Câu ${i}: ${prompt} (${vibe || 'giai điệu'})`);
+      else if (i === Math.ceil(total / 2)) lines.push(`Chorus: ${genre || 'melody'} rises with ${mood || 'emotion'}`);
+      else lines.push(`Line ${i}: ${prompt} (${vibe || 'vibe'})`);
     }
     return {
-      title: `Bài hát từ gợi ý: ${prompt.slice(0, 40)}`,
+      title: `Song from prompt: ${prompt.slice(0, 40)}`,
       lyrics: lines.join('\n')
     };
   }
 
   const system = [
-    'Bạn là nhạc sĩ viết lời bài hát.',
-    'Trả về JSON thuần có dạng {"title": "...", "lyrics": "..."}',
-    `Số dòng lời yêu cầu: ${len.label} (tối thiểu ${len.min} dòng, tối đa ${len.max} dòng).`,
-    'Cấu trúc gợi ý: Verse 1, Verse 2, Chorus, Bridge (nếu đủ dài).',
-    'Không dùng dấu "..." kết thúc dòng; viết rõ câu, mỗi dòng một câu.',
-    language ? `Viết bằng ngôn ngữ: ${language}` : 'Ưu tiên tiếng Việt.'
+    'You are a songwriter.',
+    'Return pure JSON: {"title": "...", "lyrics": "..."}',
+    `Required line count: ${len.label} (min ${len.min}, max ${len.max}).`,
+    'Structure suggestion: Verse 1, Verse 2, Chorus, Bridge (if long enough).',
+    'Do not end lines with "..."; write complete sentences, one per line.',
+    language ? `Write in language: ${language}` : 'Prefer English if not specified.'
   ].filter(Boolean).join(' ');
 
   const user = [
-    `Gợi ý: ${prompt}`,
-    genre ? `Thể loại: ${genre}` : '',
+    `Prompt: ${prompt}`,
+    genre ? `Genre: ${genre}` : '',
     mood ? `Mood: ${mood}` : '',
-    vibe ? `Giai điệu: ${vibe}` : '',
-    vocal ? `Tone giọng: ${vocal}` : '',
-    length ? `Độ dài ước tính: ${length}` : '',
-    lengthChoice ? `Độ dài mong muốn: ${lengthChoice}` : '',
-    language ? `Ngôn ngữ: ${language}` : ''
+    vibe ? `Vibe: ${vibe}` : '',
+    vocal ? `Vocal tone: ${vocal}` : '',
+    length ? `Estimated length: ${length}` : '',
+    lengthChoice ? `Desired length: ${lengthChoice}` : '',
+    language ? `Language: ${language}` : ''
   ].filter(Boolean).join('\n');
 
   const res = await fetch('https://api.openai.com/v1/chat/completions', {
@@ -847,9 +905,9 @@ async function callLyricsAI({ prompt, genre, mood, vibe, vocal, length, language
   const content = data.choices?.[0]?.message?.content || '';
   try {
     const parsed = JSON.parse(content);
-    return { title: parsed.title || 'Bài hát mới', lyrics: parsed.lyrics || content };
+    return { title: parsed.title || 'New song', lyrics: parsed.lyrics || content };
   } catch (err) {
-    return { title: 'Bài hát mới', lyrics: content };
+    return { title: 'New song', lyrics: content };
   }
 }
 
@@ -875,7 +933,7 @@ app.post('/api/ai/generate-lyrics', requireAuth, async (req, res) => {
   try {
     const { prompt, genre, mood, vibe, vocal, length, language, lengthChoice } = req.body || {};
     if (!prompt || !prompt.trim()) {
-      return res.status(400).json({ success: false, message: 'Vui lòng nhập gợi ý.' });
+      return res.status(400).json({ success: false, message: 'Please provide a prompt.' });
     }
 
     const result = await callLyricsAI({
@@ -892,7 +950,7 @@ app.post('/api/ai/generate-lyrics', requireAuth, async (req, res) => {
     res.json({ success: true, ...result });
   } catch (err) {
     console.error('AI generate error:', err);
-    res.status(500).json({ success: false, message: 'Không thể tạo lời bài hát', error: err.message });
+    res.status(500).json({ success: false, message: 'Could not generate lyrics', error: err.message });
   }
 });
 
@@ -1071,7 +1129,7 @@ app.delete('/api/comments/:id', requireAuth, async (req, res) => {
     if (req.session.user.role !== 'admin') {
       return res.status(403).json({ 
         success: false, 
-        message: 'Chỉ admin mới có quyền xóa comment' 
+        message: 'Only admin can delete comment' 
       });
     }
     
@@ -1082,20 +1140,20 @@ app.delete('/api/comments/:id', requireAuth, async (req, res) => {
     if (!comment) {
       return res.status(404).json({ 
         success: false, 
-        message: 'Comment không tồn tại' 
+        message: 'Comment not found' 
       });
     }
     
     res.json({ 
       success: true, 
-      message: 'Đã xóa comment' 
+      message: 'Comment deleted' 
     });
     
   } catch (err) {
     console.error('Delete comment error:', err);
     res.status(500).json({ 
       success: false, 
-      message: 'Có lỗi xảy ra' 
+      message: 'An error occurred' 
     });
   }
 });
@@ -1120,7 +1178,7 @@ app.post('/api/tracks/:id/report', requireAuth, async (req, res) => {
     if (existingReport) {
       return res.status(400).json({ 
         success: false, 
-        message: 'Bạn đã báo cáo bài hát này rồi' 
+        message: 'You have already reported this track' 
       });
     }
     
@@ -1137,12 +1195,12 @@ app.post('/api/tracks/:id/report', requireAuth, async (req, res) => {
     
     res.json({ 
       success: true, 
-      message: 'Đã gửi báo cáo. Admin sẽ xem xét trong thời gian sớm nhất.' 
+      message: 'Report sent. Admin will review soon.' 
     });
     
   } catch (err) {
     console.error('Report error:', err);
-    res.status(500).json({ success: false, message: 'Có lỗi xảy ra' });
+    res.status(500).json({ success: false, message: 'An error occurred' });
   }
 });
 

@@ -1,0 +1,472 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title><%= title || 'Library - SAOCLAO' %></title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+  <style>
+    :root {
+      --bg: #0a0a0a;
+      --card: #151515;
+      --border: #1f1f1f;
+      --muted: #b3b3b3;
+      --text: #f5f5f5;
+      --accent: #ff5500;
+    }
+    * { box-sizing: border-box; }
+    body {
+      margin: 0;
+      font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+      background: var(--bg);
+      color: var(--text);
+      min-height: 100vh;
+    }
+    a { color: inherit; text-decoration: none; }
+    img { display: block; max-width: 100%; }
+    .topbar {
+      position: sticky;
+      top: 0;
+      z-index: 20;
+      background: rgba(10,10,10,0.9);
+      backdrop-filter: blur(12px);
+      border-bottom: 1px solid var(--border);
+      padding: 14px 24px;
+      display: flex;
+      align-items: center;
+      gap: 18px;
+    }
+    .logo { display: flex; align-items: center; gap: 10px; font-weight: 900; letter-spacing: -0.5px; }
+    .logo img { height: 28px; }
+    .nav { display: flex; align-items: center; gap: 18px; font-weight: 700; font-size: 14px; }
+    .nav a { padding: 8px 10px; border-radius: 8px; color: var(--muted); transition: color 0.2s, background 0.2s; }
+    .nav a.active { color: var(--text); background: rgba(255, 85, 0, 0.12); }
+    .search {
+      flex: 1;
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      background: #1a1a1a;
+      border: 1px solid var(--border);
+      padding: 10px 14px;
+      border-radius: 999px;
+      max-width: 620px;
+    }
+    .search input {
+      background: transparent;
+      border: none;
+      outline: none;
+      color: var(--text);
+      font-size: 14px;
+      width: 100%;
+    }
+    .actions { display: flex; align-items: center; gap: 12px; }
+    .btn {
+      padding: 10px 16px;
+      border-radius: 999px;
+      border: 1px solid var(--border);
+      background: #1a1a1a;
+      color: var(--text);
+      font-weight: 700;
+      font-size: 13px;
+      cursor: pointer;
+      transition: all 0.2s;
+    }
+    .btn.primary { background: var(--accent); border-color: var(--accent); color: #0a0a0a; }
+    .btn.ghost { background: transparent; color: var(--accent); border-color: rgba(255,85,0,0.35); }
+    .user-avatar {
+      width: 34px; height: 34px; border-radius: 50%;
+      background: linear-gradient(135deg, #ff9966, #ff5e62);
+      display: grid; place-items: center;
+      font-weight: 800; font-size: 14px;
+    }
+    .avatar-menu { position: relative; }
+    .avatar-btn {
+      display: flex; align-items: center; gap: 8px;
+      background: transparent; border: 1px solid var(--border);
+      border-radius: 999px; padding: 6px 10px; color: var(--text);
+      cursor: pointer;
+    }
+    .avatar-btn i { font-size: 12px; color: var(--muted); }
+    .avatar-dropdown {
+      position: absolute; right: 0; top: 44px;
+      background: #0f0f0f; border: 1px solid var(--border);
+      border-radius: 12px; min-width: 200px;
+      box-shadow: 0 16px 40px rgba(0,0,0,0.45);
+      padding: 8px; display: none; z-index: 30;
+    }
+    .avatar-dropdown a {
+      display: flex; align-items: center; gap: 10px;
+      padding: 10px; border-radius: 8px; font-weight: 700; color: var(--text);
+    }
+    .avatar-dropdown a:hover { background: rgba(255,255,255,0.06); }
+    .avatar-dropdown i { width: 16px; text-align: center; }
+    .more-menu { position: relative; }
+    .more-dropdown {
+      position: absolute; right: 0; top: 44px;
+      background: #0f0f0f; border: 1px solid var(--border);
+      border-radius: 12px; min-width: 240px;
+      box-shadow: 0 16px 40px rgba(0,0,0,0.45);
+      padding: 8px 0; display: none; z-index: 30;
+    }
+    .more-dropdown a {
+      display: block; padding: 12px 14px;
+      font-weight: 800; color: var(--text);
+    }
+    .more-dropdown a:hover { background: rgba(255,255,255,0.06); }
+    .more-section { border-top: 1px solid var(--border); margin-top: 6px; padding-top: 6px; }
+    .page { padding: 24px; }
+    .tabs {
+      display: flex;
+      gap: 18px;
+      font-size: 20px;
+      font-weight: 800;
+      margin-bottom: 24px;
+      flex-wrap: wrap;
+    }
+    .tab {
+      cursor: pointer;
+      color: var(--muted);
+      padding: 8px 0;
+      border-bottom: 3px solid transparent;
+    }
+    .tab.active {
+      color: var(--text);
+      border-bottom-color: var(--text);
+    }
+    .section {
+      margin-bottom: 28px;
+    }
+    .section h3 { margin: 0 0 12px; font-size: 18px; }
+    .grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(180px, 1fr));
+      gap: 16px;
+    }
+    .card {
+      background: var(--card);
+      border: 1px solid var(--border);
+      border-radius: 14px;
+      padding: 12px;
+      min-height: 100%;
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
+      transition: transform 0.2s, border-color 0.2s;
+    }
+    .card:hover { transform: translateY(-2px); border-color: rgba(255,85,0,0.3); }
+    .cover {
+      width: 100%;
+      aspect-ratio: 1;
+      border-radius: 12px;
+      overflow: hidden;
+      background: #222;
+      position: relative;
+    }
+    .cover.circle { border-radius: 50%; }
+    .title { font-weight: 800; font-size: 15px; margin: 0; color: var(--text); }
+    .meta { color: var(--muted); font-size: 13px; margin: 0; }
+    .empty {
+      padding: 60px 20px;
+      text-align: center;
+      color: var(--muted);
+      font-weight: 700;
+      font-size: 18px;
+    }
+    .filter-row {
+      display: flex;
+      align-items: center;
+      justify-content: flex-end;
+      gap: 12px;
+      margin-bottom: 12px;
+    }
+    .pill {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      padding: 6px 10px;
+      border-radius: 999px;
+      background: #1e1e1e;
+      color: var(--muted);
+      font-weight: 700;
+      font-size: 12px;
+    }
+    @media (max-width: 768px) {
+      .topbar { flex-wrap: wrap; gap: 10px; }
+      .nav { width: 100%; order: 3; }
+      .search { order: 2; }
+      .actions { order: 4; width: 100%; justify-content: flex-end; }
+      .page { padding: 16px; }
+      .tabs { font-size: 16px; }
+    }
+  </style>
+</head>
+<body>
+  <% 
+    const currentUser = typeof user !== 'undefined' ? user : null;
+    const recent = Array.isArray(recentlyPlayed) ? recentlyPlayed : [];
+    const likes = Array.isArray(likedTracks) ? likedTracks : [];
+    const myPlaylists = Array.isArray(playlists) ? playlists : [];
+    const following = Array.isArray(followingUsers) ? followingUsers : [];
+    const historyList = Array.isArray(historyTracks) ? historyTracks : [];
+  %>
+  <header class="topbar">
+    <a class="logo" href="/home">
+      <img src="/public/img/saoclao.png" alt="SAOCLAO">
+      <span>SAOCLAO</span>
+    </a>
+    <nav class="nav">
+      <a href="/home">Home</a>
+      <a href="/feed">Feed</a>
+      <a href="/library" class="active">Library</a>
+    </nav>
+    <div class="search">
+      <i class="fa-solid fa-magnifying-glass" style="color:var(--muted);"></i>
+      <input type="text" placeholder="Search your library">
+    </div>
+    <div class="actions">
+      <button class="icon-btn" title="Messages"><i class="fa-regular fa-envelope"></i></button>
+      <button class="icon-btn" title="Notifications"><i class="fa-regular fa-bell"></i></button>
+      <div class="more-menu">
+        <button class="icon-btn" id="moreBtn" title="More options"><i class="fa-solid fa-ellipsis"></i></button>
+        <div class="more-dropdown" id="moreDropdown">
+          <a href="/about">About us</a>
+          <a href="/legal">Legal</a>
+          <a href="/copyright">Copyright</a>
+          <div class="more-section">
+            <a href="/apps">Mobile apps</a>
+            <a href="/creators">For Creators</a>
+            <a href="/newsroom">Newsroom</a>
+            <a href="/jobs">Jobs</a>
+            <a href="/developers">Developers</a>
+            <a href="/store">SAOCLAO Store</a>
+          </div>
+          <div class="more-section">
+            <a href="/support">Support</a>
+            <a href="/shortcuts">Keyboard shortcuts</a>
+          </div>
+          <div class="more-section">
+            <a href="/subscription">Subscription</a>
+            <a href="/settings">Settings</a>
+            <a href="/logout">Sign out</a>
+          </div>
+        </div>
+      </div>
+      <a href="/upload" class="btn">Upload</a>
+      <a href="/pro" class="btn ghost">Try Artist Pro</a>
+      <div class="avatar-menu">
+        <button class="avatar-btn" id="avatarBtn">
+          <div class="user-avatar"><%= (currentUser && currentUser.username ? currentUser.username.charAt(0).toUpperCase() : 'S') %></div>
+          <i class="fa-solid fa-chevron-down"></i>
+        </button>
+        <div class="avatar-dropdown" id="avatarDropdown">
+          <a href="/profile"><i class="fa-regular fa-user"></i> Profile</a>
+          <a href="/likes"><i class="fa-regular fa-heart"></i> Likes</a>
+          <a href="/playlists"><i class="fa-solid fa-compact-disc"></i> Playlists</a>
+          <a href="/library#stations"><i class="fa-solid fa-tower-broadcast"></i> Stations</a>
+          <a href="/library#following"><i class="fa-regular fa-user"></i> Following</a>
+          <a href="/feed"><i class="fa-solid fa-user-plus"></i> Who to follow</a>
+          <a href="/pro"><i class="fa-solid fa-star"></i> Try Artist Pro</a>
+          <a href="/home"><i class="fa-solid fa-chart-column"></i> Insights</a>
+          <a href="/upload"><i class="fa-solid fa-sliders"></i> Tracks</a>
+          <a href="/upload"><i class="fa-solid fa-arrows-rotate"></i> Distribute</a>
+        </div>
+      </div>
+    </div>
+  </header>
+
+  <div class="page">
+    <div class="tabs">
+      <div class="tab active" data-tab="overview">Overview</div>
+      <div class="tab" data-tab="likes">Likes</div>
+      <div class="tab" data-tab="playlists">Playlists</div>
+      <div class="tab" data-tab="albums">Albums</div>
+      <div class="tab" data-tab="stations">Stations</div>
+      <div class="tab" data-tab="following">Following</div>
+      <div class="tab" data-tab="history">History</div>
+    </div>
+
+    <div class="tab-panel" data-panel="overview">
+      <div class="section">
+        <h3>Recently played</h3>
+        <% if (recent.length) { %>
+          <div class="grid">
+            <% recent.slice(0, 8).forEach(item => { %>
+              <div class="card">
+                <div class="cover <%= item.artist ? '' : 'circle' %>">
+                  <img src="<%= item.coverUrl || 'https://images.unsplash.com/photo-1511379938547-c1f69419868d?w=400' %>" alt="<%= item.title %>">
+                </div>
+                <p class="title"><%= item.title %></p>
+                <p class="meta"><%= item.artist || 'Unknown artist' %></p>
+              </div>
+            <% }) %>
+          </div>
+        <% } else { %>
+          <div class="empty">No recent plays yet</div>
+        <% } %>
+      </div>
+
+      <div class="section">
+        <h3>Likes</h3>
+        <% if (likes.length) { %>
+          <div class="grid">
+            <% likes.slice(0, 6).forEach(item => { %>
+              <div class="card">
+                <div class="cover">
+                  <img src="<%= item.coverUrl || 'https://images.unsplash.com/photo-1470229538611-16ba8c7ffbd7?w=400' %>" alt="<%= item.title %>">
+                </div>
+                <p class="title"><%= item.title %></p>
+                <p class="meta"><%= item.artist || 'Unknown artist' %></p>
+              </div>
+            <% }) %>
+          </div>
+        <% } else { %>
+          <div class="empty">You haven’t liked any tracks yet</div>
+        <% } %>
+      </div>
+    </div>
+
+    <div class="tab-panel" data-panel="likes" style="display:none;">
+      <div class="section">
+        <h3>Hear the tracks you've liked:</h3>
+        <% if (likes.length) { %>
+          <div class="grid">
+            <% likes.map(item => (
+              `<div class="card">
+                <div class="cover">
+                  <img src="${item.coverUrl || 'https://images.unsplash.com/photo-1470229538611-16ba8c7ffbd7?w=400'}" alt="${item.title}">
+                </div>
+                <p class="title">${item.title}</p>
+                <p class="meta">${item.artist || 'Unknown artist'}</p>
+              </div>`
+            )).join('') %>
+          </div>
+        <% } else { %>
+          <div class="empty">You haven't liked any tracks yet</div>
+        <% } %>
+      </div>
+    </div>
+
+    <div class="tab-panel" data-panel="playlists" style="display:none;">
+      <div class="filter-row">
+        <div class="pill"><i class="fa-solid fa-sliders"></i> All</div>
+        <div class="search" style="max-width:220px; background:#0f0f0f;">
+          <i class="fa-solid fa-magnifying-glass" style="color:var(--muted);"></i>
+          <input type="text" placeholder="Filter playlists">
+        </div>
+      </div>
+      <% if (myPlaylists.length) { %>
+        <div class="grid">
+          <% myPlaylists.map(pl => (
+            `<div class="card">
+              <div class="cover">
+                <img src="${(pl.coverUrl || (pl.tracks && pl.tracks[0]?.coverUrl) || 'https://images.unsplash.com/photo-1500530855697-b586d89ba3ee?w=400')}" alt="${pl.name}">
+              </div>
+              <p class="title">${pl.name}</p>
+              <p class="meta">${pl.tracks ? pl.tracks.length : 0} tracks</p>
+            </div>`
+          )).join('') %>
+        </div>
+      <% } else { %>
+        <div class="empty">No playlists yet</div>
+      <% } %>
+    </div>
+
+    <div class="tab-panel" data-panel="albums" style="display:none;">
+      <div class="empty">You haven't liked any albums yet</div>
+    </div>
+
+    <div class="tab-panel" data-panel="stations" style="display:none;">
+      <div class="empty">You have not liked any stations yet</div>
+    </div>
+
+    <div class="tab-panel" data-panel="following" style="display:none;">
+      <div class="section">
+        <h3>Hear what the people you follow have posted:</h3>
+        <% if (following.length) { %>
+          <div class="grid">
+            <% following.map(f => (
+              `<div class="card">
+                <div class="cover circle">
+                  <img src="${f.avatarUrl || 'https://images.unsplash.com/photo-1524504388940-b1c1722653e1?w=300'}" alt="${f.username}">
+                </div>
+                <p class="title">${f.name || f.username}</p>
+                <p class="meta">${f.followersCount || 0} followers</p>
+              </div>`
+            )).join('') %>
+          </div>
+        <% } else { %>
+          <div class="empty">You're not following anyone yet</div>
+        <% } %>
+      </div>
+    </div>
+
+    <div class="tab-panel" data-panel="history" style="display:none;">
+      <div class="section">
+        <h3>Recently played:</h3>
+        <% if (historyList.length) { %>
+          <div class="grid">
+            <% historyList.slice(0, 10).forEach(item => { %>
+              <div class="card">
+                <div class="cover">
+                  <img src="<%= item.coverUrl || 'https://images.unsplash.com/photo-1500530855697-b586d89ba3ee?w=400' %>" alt="<%= item.title %>">
+                </div>
+                <p class="title"><%= item.title %></p>
+                <p class="meta"><%= item.artist || 'Unknown artist' %></p>
+              </div>
+            <% }) %>
+          </div>
+        <% } else { %>
+          <div class="empty">No listening history yet</div>
+        <% } %>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    const avatarBtn = document.getElementById('avatarBtn');
+    const avatarDropdown = document.getElementById('avatarDropdown');
+    const moreBtn = document.getElementById('moreBtn');
+    const moreDropdown = document.getElementById('moreDropdown');
+    const closeMenus = (e) => {
+      if (avatarDropdown && !avatarDropdown.contains(e.target) && !avatarBtn.contains(e.target)) {
+        avatarDropdown.style.display = 'none';
+      }
+      if (moreDropdown && !moreDropdown.contains(e.target) && !moreBtn.contains(e.target)) {
+        moreDropdown.style.display = 'none';
+      }
+    };
+    avatarBtn?.addEventListener('click', (e) => {
+      e.stopPropagation();
+      if (avatarDropdown) {
+        const isOpen = avatarDropdown.style.display === 'block';
+        avatarDropdown.style.display = isOpen ? 'none' : 'block';
+        if (moreDropdown) moreDropdown.style.display = 'none';
+      }
+    });
+    moreBtn?.addEventListener('click', (e) => {
+      e.stopPropagation();
+      if (moreDropdown) {
+        const isOpen = moreDropdown.style.display === 'block';
+        moreDropdown.style.display = isOpen ? 'none' : 'block';
+        if (avatarDropdown) avatarDropdown.style.display = 'none';
+      }
+    });
+    document.addEventListener('click', closeMenus);
+
+    document.querySelectorAll('.tab').forEach(tab => {
+      tab.addEventListener('click', () => {
+        document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
+        tab.classList.add('active');
+        const target = tab.dataset.tab;
+        document.querySelectorAll('.tab-panel').forEach(panel => {
+          panel.style.display = panel.dataset.panel === target ? 'block' : 'none';
+        });
+      });
+    });
+  </script>
+</body>
+</html>

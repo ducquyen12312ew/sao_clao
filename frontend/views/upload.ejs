@@ -7,14 +7,260 @@
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&display=swap" rel="stylesheet">
-  <link rel="stylesheet" href="/public/css/upload.css">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+  <style>
+    :root {
+      --bg: #0a0a0a;
+      --panel: #111;
+      --card: #161616;
+      --border: #1f1f1f;
+      --text: #f5f5f5;
+      --muted: #b3b3b3;
+      --accent: #ff5500;
+    }
+    * { box-sizing: border-box; }
+    body {
+      margin: 0;
+      font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+      background: var(--bg);
+      color: var(--text);
+      min-height: 100vh;
+    }
+    a { color: inherit; text-decoration: none; }
+    .header {
+      padding: 14px 20px;
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      background: #0d0d0d;
+      border-bottom: 1px solid var(--border);
+      position: sticky;
+      top: 0;
+      z-index: 10;
+      color: var(--muted);
+      font-weight: 800;
+    }
+    .logo-link img { height: 26px; filter: grayscale(1) brightness(1.3); }
+    .container {
+      max-width: 1180px;
+      margin: 0 auto;
+      padding: 24px 24px 80px;
+    }
+    .usage-bar {
+      background: #151515;
+      border: 1px solid var(--border);
+      border-radius: 14px;
+      padding: 14px 16px;
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      margin-bottom: 24px;
+    }
+    .usage-track {
+      flex: 1;
+      height: 6px;
+      background: #1f1f1f;
+      border-radius: 999px;
+      overflow: hidden;
+    }
+    .usage-fill {
+      width: 0%;
+      height: 100%;
+      background: #4d4d4d;
+    }
+    .usage-meta {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      color: var(--muted);
+      font-weight: 700;
+      font-size: 13px;
+    }
+    .btn {
+      padding: 12px 18px;
+      border-radius: 999px;
+      border: 1px solid var(--border);
+      background: #1a1a1a;
+      color: var(--text);
+      font-weight: 800;
+      font-size: 14px;
+      cursor: pointer;
+      transition: all 0.2s;
+    }
+    .btn.primary { background: #fff; color: #000; border-color: #fff; }
+    .btn.secondary { background: transparent; color: var(--text); }
+    .page-header h1 { margin: 0 0 8px; font-size: 28px; }
+    .page-header p { margin: 0 0 18px; color: var(--muted); font-weight: 600; }
+    .upload-box {
+      background: #0f0f0f;
+      border: 1px dashed #3a3a3a;
+      border-radius: 16px;
+      padding: 80px 60px;
+      text-align: center;
+      transition: border-color 0.2s, background 0.2s;
+    }
+    .upload-box.dragover {
+      border-color: var(--accent);
+      background: rgba(255, 85, 0, 0.08);
+    }
+    .upload-icon {
+      width: 80px; height: 80px; margin: 0 auto 16px;
+      border-radius: 50%;
+      background: #1a1a1a;
+      display: grid; place-items: center;
+      color: #fff;
+    }
+    .upload-text h3 { margin: 0 0 6px; font-size: 18px; }
+    .upload-text p { margin: 0 0 12px; color: var(--muted); }
+    .choose-btn {
+      padding: 12px 22px;
+      border-radius: 999px;
+      border: none;
+      background: #fff;
+      color: #000;
+      font-weight: 800;
+      cursor: pointer;
+    }
+    .details-form {
+      display: none;
+      margin-top: 24px;
+      background: #0f0f0f;
+      border: 1px solid var(--border);
+      border-radius: 16px;
+      padding: 20px;
+    }
+    .details-form.active { display: block; }
+    .form-group { margin-bottom: 16px; }
+    .form-group label { display: block; font-weight: 700; color: var(--muted); margin-bottom: 8px; font-size: 13px; letter-spacing: 0.3px; text-transform: uppercase; }
+    .form-group input, .form-group textarea {
+      width: 100%;
+      padding: 12px 14px;
+      border-radius: 10px;
+      border: 1px solid var(--border);
+      background: #151515;
+      color: var(--text);
+      font-size: 14px;
+      font-family: 'Inter', sans-serif;
+    }
+    .form-group textarea { resize: vertical; min-height: 90px; }
+    .form-row { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
+    .form-hint { color: var(--muted); font-size: 12px; }
+    .audio-info {
+      display: none;
+      align-items: center;
+      gap: 12px;
+      background: #151515;
+      border: 1px solid var(--border);
+      padding: 12px 14px;
+      border-radius: 12px;
+      margin-bottom: 16px;
+    }
+    .audio-info .icon { font-size: 20px; }
+    .ai-box {
+      background: #151515;
+      border: 1px solid var(--border);
+      border-radius: 14px;
+      padding: 16px;
+      margin-bottom: 16px;
+    }
+    .ai-title { margin: 0 0 6px; font-size: 18px; }
+    .ai-desc { margin: 0 0 12px; color: var(--muted); }
+    .ai-actions { display: flex; gap: 10px; align-items: center; }
+    .btn-secondary {
+      padding: 10px 14px;
+      border-radius: 10px;
+      border: 1px solid var(--border);
+      background: #1a1a1a;
+      color: var(--text);
+      font-weight: 700;
+      cursor: pointer;
+    }
+    .btn-primary {
+      padding: 10px 14px;
+      border-radius: 10px;
+      border: none;
+      background: #fff;
+      color: #000;
+      font-weight: 800;
+      cursor: pointer;
+    }
+    .ai-status { color: var(--muted); font-weight: 700; }
+    .image-upload {
+      display: flex;
+      gap: 12px;
+      align-items: center;
+    }
+    .image-preview {
+      width: 96px; height: 96px;
+      border-radius: 12px;
+      background: #151515;
+      border: 1px solid var(--border);
+      display: grid;
+      place-items: center;
+      overflow: hidden;
+      color: var(--muted);
+    }
+    .image-preview img { width: 100%; height: 100%; object-fit: cover; }
+    .image-btn {
+      padding: 10px 14px;
+      border-radius: 10px;
+      border: 1px solid var(--border);
+      background: #1a1a1a;
+      color: var(--text);
+      font-weight: 700;
+      cursor: pointer;
+    }
+    .form-actions { display: flex; gap: 10px; justify-content: flex-end; margin-top: 12px; }
+    .btn-secondary:hover, .image-btn:hover, .btn:hover { border-color: rgba(255,85,0,0.35); }
+
+    .record-bar {
+      margin-top: 18px;
+      background: #111;
+      border: 1px solid var(--border);
+      border-radius: 12px;
+      padding: 16px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      color: var(--text);
+      gap: 12px;
+      flex-wrap: wrap;
+    }
+    .record-bar .left {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      font-weight: 800;
+    }
+    .record-bar .desc {
+      color: var(--muted);
+      font-weight: 600;
+      font-size: 13px;
+    }
+    .footer-links {
+      margin-top: 32px;
+      color: var(--muted);
+      font-size: 13px;
+      display: flex;
+      gap: 10px;
+      flex-wrap: wrap;
+      justify-content: center;
+    }
+    .footer-links a { color: var(--muted); text-decoration: none; }
+    @media (max-width: 768px) {
+      .container { padding: 16px; }
+      .form-row { grid-template-columns: 1fr; }
+      .upload-box { padding: 48px 24px; }
+    }
+  </style>
 
 </head>
 <body>
   <header class="header">
-    <a class="logo-link" href="/">
+    <a class="logo-link" href="/home">
       <img src="/public/img/saoclao.png" alt="SAOCLAO" class="logo-img">
     </a>
+    <span style="font-weight:800; letter-spacing:-0.2px;">Upload</span>
   </header>
   
   <% if (flash) { %>
@@ -23,25 +269,41 @@
   <% } %>
   
   <main class="container">
+    <div class="usage-bar">
+      <div class="usage-meta"><i class="fa-solid fa-cloud-arrow-up"></i> 0% of uploads used</div>
+      <div class="usage-track"><div class="usage-fill"></div></div>
+      <div class="usage-meta">0 of 180 minutes</div>
+      <button class="btn">Get unlimited uploads</button>
+    </div>
+
     <div class="page-header">
-      <h1>Upload your track</h1>
+      <h1>Upload your audio files.</h1>
       <p>For best quality, use WAV, FLAC, AIFF, or ALAC. Maximum size 4GB.</p>
     </div>
     
     <div class="upload-box" id="uploadBox">
       <div class="upload-icon">
-        <svg viewBox="0 0 80 80">
-          <path d="M40,10 C23,10 10,23 10,40 C10,57 23,70 40,70 C57,70 70,57 70,40 C70,23 57,10 40,10 Z M40,50 L30,40 L35,40 L35,30 L45,30 L45,40 L50,40 Z"/>
-        </svg>
+        <i class="fa-solid fa-cloud-arrow-up" style="font-size:30px;"></i>
       </div>
       <div class="upload-text">
-        <h3>Drag and drop your audio here to start</h3>
-        <p>or</p>
+        <h3>Drag and drop audio files to get started.</h3>
+        <p style="margin-bottom:14px;">or</p>
       </div>
       <input type="file" id="audioFile" class="file-input" accept=".mp3,.wav,audio/*">
       <button class="choose-btn" onclick="document.getElementById('audioFile').click()">
-        Choose file
+        Choose files
       </button>
+    </div>
+
+    <div class="record-bar">
+      <div class="left">
+        <i class="fa-solid fa-microphone"></i>
+        <div>
+          <div style="font-weight:800;">Or record with a microphone</div>
+          <div class="desc">Upload recorded voice memos, updates, news, or intros to new releases.</div>
+        </div>
+      </div>
+      <i class="fa-solid fa-chevron-down" style="color:var(--muted);"></i>
     </div>
     
     <form method="post" action="/upload/new" enctype="multipart/form-data" id="detailsForm" class="details-form">
@@ -154,6 +416,16 @@
       </div>
     </form>
   </main>
+  <div class="footer-links">
+    <a href="/legal">Legal</a>·
+    <a href="/privacy">Privacy</a>·
+    <a href="/cookies">Cookie Policy</a>·
+    <a href="/cookie-manager">Cookie Manager</a>·
+    <a href="/imprint">Imprint</a>·
+    <a href="/about">About us</a>·
+    <a href="/copyright">Copyright</a>·
+    <a href="/feedback">Feedback</a>
+  </div>
   
   <script>
     const audioFile = document.getElementById('audioFile');

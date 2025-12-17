@@ -127,6 +127,80 @@
       font-weight: 800;
       font-size: 14px;
     }
+    .icon-btn {
+      width: 36px; height: 36px;
+      border-radius: 50%;
+      border: 1px solid var(--border);
+      background: #1a1a1a;
+      color: var(--text);
+      display: grid;
+      place-items: center;
+      cursor: pointer;
+      transition: all 0.2s;
+    }
+    .icon-btn:hover { border-color: rgba(255,85,0,0.35); }
+    .avatar-menu { position: relative; }
+    .avatar-btn {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      background: transparent;
+      border: 1px solid var(--border);
+      border-radius: 999px;
+      padding: 6px 10px;
+      color: var(--text);
+      cursor: pointer;
+    }
+    .avatar-btn i { font-size: 12px; color: var(--muted); }
+    .avatar-dropdown {
+      position: absolute;
+      right: 0;
+      top: 44px;
+      background: #0f0f0f;
+      border: 1px solid var(--border);
+      border-radius: 12px;
+      min-width: 200px;
+      box-shadow: 0 16px 40px rgba(0,0,0,0.45);
+      padding: 8px;
+      display: none;
+      z-index: 30;
+    }
+    .avatar-dropdown a {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      padding: 10px;
+      border-radius: 8px;
+      font-weight: 700;
+      color: var(--text);
+    }
+    .avatar-dropdown a:hover {
+      background: rgba(255,255,255,0.06);
+    }
+    .avatar-dropdown i { width: 16px; text-align: center; }
+
+    .more-menu { position: relative; }
+    .more-dropdown {
+      position: absolute;
+      right: 0;
+      top: 44px;
+      background: #0f0f0f;
+      border: 1px solid var(--border);
+      border-radius: 12px;
+      min-width: 240px;
+      box-shadow: 0 16px 40px rgba(0,0,0,0.45);
+      padding: 8px 0;
+      display: none;
+      z-index: 30;
+    }
+    .more-dropdown a {
+      display: block;
+      padding: 12px 14px;
+      font-weight: 800;
+      color: var(--text);
+    }
+    .more-dropdown a:hover { background: rgba(255,255,255,0.06); }
+    .more-section { border-top: 1px solid var(--border); margin-top: 6px; padding-top: 6px; }
     .content {
       display: grid;
       grid-template-columns: 3fr 1.15fr;
@@ -366,9 +440,53 @@
         <input type="text" placeholder="Search for artists, tracks, podcasts">
       </div>
       <div class="actions">
+        <button class="icon-btn" title="Messages"><i class="fa-regular fa-envelope"></i></button>
+        <button class="icon-btn" title="Notifications"><i class="fa-regular fa-bell"></i></button>
+        <div class="more-menu">
+          <button class="icon-btn" id="moreBtn" title="More options"><i class="fa-solid fa-ellipsis"></i></button>
+          <div class="more-dropdown" id="moreDropdown">
+            <a href="/about">About us</a>
+            <a href="/legal">Legal</a>
+            <a href="/copyright">Copyright</a>
+            <div class="more-section">
+              <a href="/apps">Mobile apps</a>
+              <a href="/creators">For Creators</a>
+              <a href="/newsroom">Newsroom</a>
+              <a href="/jobs">Jobs</a>
+              <a href="/developers">Developers</a>
+              <a href="/store">SAOCLAO Store</a>
+            </div>
+            <div class="more-section">
+              <a href="/support">Support</a>
+              <a href="/shortcuts">Keyboard shortcuts</a>
+            </div>
+            <div class="more-section">
+              <a href="/subscription">Subscription</a>
+              <a href="/settings">Settings</a>
+              <a href="/logout">Sign out</a>
+            </div>
+          </div>
+        </div>
         <a href="/upload" class="btn">Upload</a>
         <a href="/pro" class="btn ghost">Try Artist Pro</a>
-        <div class="user-avatar"><%= (currentUser && currentUser.username ? currentUser.username.charAt(0).toUpperCase() : 'S') %></div>
+        <div class="avatar-menu">
+          <button class="avatar-btn" id="avatarBtn">
+            <div class="user-avatar"><%= (currentUser && currentUser.username ? currentUser.username.charAt(0).toUpperCase() : 'S') %></div>
+            <i class="fa-solid fa-chevron-down"></i>
+          </button>
+          <div class="avatar-dropdown" id="avatarDropdown">
+            <a href="/profile"><i class="fa-regular fa-user"></i> Profile</a>
+            <a href="/likes"><i class="fa-regular fa-heart"></i> Likes</a>
+            <a href="/playlists"><i class="fa-solid fa-compact-disc"></i> Playlists</a>
+            <a href="/library#stations"><i class="fa-solid fa-tower-broadcast"></i> Stations</a>
+            <a href="/library#following"><i class="fa-regular fa-user"></i> Following</a>
+            <a href="/feed"><i class="fa-solid fa-user-plus"></i> Who to follow</a>
+            <a href="/pro"><i class="fa-solid fa-star"></i> Try Artist Pro</a>
+            <a href="/home"><i class="fa-solid fa-chart-column"></i> Insights</a>
+            <a href="/upload"><i class="fa-solid fa-sliders"></i> Tracks</a>
+            <a href="/upload"><i class="fa-solid fa-arrows-rotate"></i> Distribute</a>
+          </div>
+        </div>
       </div>
     </header>
 <%
@@ -624,5 +742,41 @@
       </aside>
     </main>
   </div>
+
+  <script>
+    const avatarBtn = document.getElementById('avatarBtn');
+    const avatarDropdown = document.getElementById('avatarDropdown');
+    const moreBtn = document.getElementById('moreBtn');
+    const moreDropdown = document.getElementById('moreDropdown');
+
+    const closeMenus = (e) => {
+      if (avatarDropdown && !avatarDropdown.contains(e.target) && !avatarBtn.contains(e.target)) {
+        avatarDropdown.style.display = 'none';
+      }
+      if (moreDropdown && !moreDropdown.contains(e.target) && !moreBtn.contains(e.target)) {
+        moreDropdown.style.display = 'none';
+      }
+    };
+
+    avatarBtn?.addEventListener('click', (e) => {
+      e.stopPropagation();
+      if (avatarDropdown) {
+        const isOpen = avatarDropdown.style.display === 'block';
+        avatarDropdown.style.display = isOpen ? 'none' : 'block';
+        if (moreDropdown) moreDropdown.style.display = 'none';
+      }
+    });
+
+    moreBtn?.addEventListener('click', (e) => {
+      e.stopPropagation();
+      if (moreDropdown) {
+        const isOpen = moreDropdown.style.display === 'block';
+        moreDropdown.style.display = isOpen ? 'none' : 'block';
+        if (avatarDropdown) avatarDropdown.style.display = 'none';
+      }
+    });
+
+    document.addEventListener('click', closeMenus);
+  </script>
 </body>
 </html>
