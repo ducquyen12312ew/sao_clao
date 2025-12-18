@@ -5,16 +5,16 @@
 }
 
 :root {
-  --bg-primary: #0a0e27;
-  --bg-secondary: #131829;
-  --bg-card: #1a1f3a;
-  --text-primary: #ffffff;
-  --text-secondary: #9ba3c1;
-  --border-color: #2a2f4a;
-  --accent: #1db954;
-  --accent-hover: #1ed760;
-  --accent-dim: rgba(29, 185, 84, 0.1);
-  --player-bg: #131829;
+  --bg-primary: #0a0a0a;
+  --bg-secondary: #111111;
+  --bg-card: #161616;
+  --text-primary: #f5f5f5;
+  --text-secondary: #b3b3b3;
+  --border-color: #1f1f1f;
+  --accent: #ff5500;
+  --accent-hover: #ff6a1a;
+  --accent-dim: rgba(255, 85, 0, 0.12);
+  --player-bg: #111111;
 }
 
 body {
@@ -68,7 +68,7 @@ body {
   left: 0;
   right: 0;
   height: 64px;
-  background: rgba(10, 14, 39, 0.95);
+  background: rgba(10, 10, 10, 0.95);
   backdrop-filter: blur(20px);
   border-bottom: 1px solid var(--border-color);
   padding: 0 32px;
@@ -260,9 +260,9 @@ body {
 }
 
 .playlist-badge.public {
-  color: #1db954;
-  border-color: rgba(29, 185, 84, 0.4);
-  background: rgba(29, 185, 84, 0.1);
+  color: var(--accent);
+  border-color: rgba(255, 85, 0, 0.4);
+  background: rgba(255, 85, 0, 0.1);
 }
 
 /* Actions */
