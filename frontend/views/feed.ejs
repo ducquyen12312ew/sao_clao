@@ -136,6 +136,83 @@
     .layout { display: grid; grid-template-columns: 3fr 1.15fr; gap: 24px; padding: 24px; }
     .section-title { font-size: 24px; font-weight: 900; letter-spacing: -0.3px; margin: 0 0 18px; }
     .feed-list { display: grid; gap: 18px; }
+    .feed-controls {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 12px;
+      align-items: center;
+      margin: 0 0 14px;
+    }
+    .chip-btn {
+      padding: 8px 12px;
+      border-radius: 999px;
+      border: 1px solid var(--border);
+      background: #1c1c1c;
+      color: var(--text);
+      font-weight: 700;
+      cursor: pointer;
+      transition: all 0.2s;
+    }
+    .chip-btn.active {
+      background: rgba(255,85,0,0.12);
+      border-color: rgba(255,85,0,0.5);
+      color: var(--text);
+    }
+    .filter-input {
+      flex: 1 1 240px;
+      min-width: 220px;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      background: #1a1a1a;
+      border: 1px solid var(--border);
+      padding: 10px 12px;
+      border-radius: 12px;
+    }
+    .filter-input input {
+      background: transparent;
+      border: none;
+      outline: none;
+      color: var(--text);
+      width: 100%;
+      font-size: 14px;
+    }
+    .select {
+      padding: 10px 12px;
+      border-radius: 10px;
+      border: 1px solid var(--border);
+      background: #1a1a1a;
+      color: var(--text);
+      font-weight: 700;
+      min-width: 140px;
+    }
+    .switch {
+      display: inline-flex;
+      align-items: center;
+      gap: 10px;
+      cursor: pointer;
+      user-select: none;
+      font-weight: 700;
+      color: var(--text);
+    }
+    .switch-track {
+      width: 42px; height: 24px;
+      border-radius: 999px;
+      background: #2a2a2a;
+      border: 1px solid var(--border);
+      position: relative;
+      transition: all 0.2s;
+    }
+    .switch-handle {
+      position: absolute;
+      top: 2px; left: 2px;
+      width: 18px; height: 18px;
+      border-radius: 50%;
+      background: #f5f5f5;
+      transition: transform 0.2s;
+    }
+    .switch.on .switch-track { background: var(--accent); border-color: var(--accent); }
+    .switch.on .switch-handle { transform: translateX(18px); }
     .feed-card {
       background: var(--card);
       border: 1px solid var(--border);
@@ -367,45 +444,22 @@
     <main class="layout">
       <div>
         <h1 class="section-title">Hear the latest posts from the people you’re following:</h1>
-        <div class="feed-list">
-          <% feedItems.forEach(item => { %>
-            <div class="feed-card">
-              <div class="feed-left">
-                <img src="<%= item.coverUrl %>" alt="<%= item.title %>">
-                <div class="play-btn">
-                  <div class="play-btn-inner"><i class="fa-solid fa-play"></i></div>
-                </div>
-              </div>
-              <div class="feed-body">
-                <div class="poster">
-                  <div class="dot"></div>
-                  <span><%= item.artist || 'Artist' %> posted a track</span>
-                  <span style="color: var(--muted); font-weight: 600;">• recently</span>
-                </div>
-                <div style="display:flex; align-items:center; gap:10px; flex-wrap: wrap;">
-                  <div>
-                    <p class="track-artist" style="margin:0; color:var(--text); font-weight:800;"><%= item.artist || 'Artist' %></p>
-                    <p class="track-title" style="margin:0;"><%= item.title %></p>
-                  </div>
-                  <% if (item.tag) { %>
-                    <span class="pill"># <%= item.tag %></span>
-                  <% } %>
-                </div>
-                <div class="wave"></div>
-                <div class="stat-row">
-                  <div class="stat-chip"><i class="fa-solid fa-heart"></i> <%= item.likes || 0 %></div>
-                  <div class="stat-chip"><i class="fa-solid fa-retweet"></i> <%= item.reposts || 0 %></div>
-                  <div class="stat-chip"><i class="fa-regular fa-comment"></i> <%= item.comments || 0 %></div>
-                  <div class="stat-chip"><i class="fa-solid fa-share"></i></div>
-                  <div class="stat-chip"><i class="fa-regular fa-bookmark"></i></div>
-                  <div style="flex:1"></div>
-                  <div class="stat-chip"><i class="fa-solid fa-play"></i> <%= item.plays || '0' %></div>
-                  <div class="stat-chip"><i class="fa-regular fa-clock"></i> 3:12</div>
-                </div>
-              </div>
-            </div>
-          <% }) %>
+        <div class="feed-controls">
+          <div class="filter-input">
+            <i class="fa-solid fa-magnifying-glass" style="color:var(--muted);"></i>
+            <input id="feedSearch" type="text" placeholder="Search in feed (artist, title)">
+          </div>
+          <label class="switch" id="repostSwitch">
+            <span>Reposts</span>
+            <div class="switch-track"><div class="switch-handle"></div></div>
+          </label>
+          <select class="select" id="feedSort">
+            <option value="latest">Latest</option>
+            <option value="likes">Most liked</option>
+          </select>
+          <div style="display:flex; gap:8px; flex-wrap: wrap;" id="tagFilters"></div>
         </div>
+        <div class="feed-list" id="feedList"></div>
       </div>
 
       <aside class="sidebar">
@@ -461,6 +515,155 @@
       </aside>
     </main>
   </div>
+  <script>
+    const feedData = <%- JSON.stringify(feedItems.map(item => ({
+      title: item.title || 'Untitled track',
+      artist: item.artist || 'Artist',
+      coverUrl: item.coverUrl || 'https://images.unsplash.com/photo-1511671782779-c97d3d27a1d4?w=600',
+      likes: item.likes || 0,
+      reposts: item.reposts || 0,
+      comments: item.comments || 0,
+      plays: item.plays || '0',
+      tag: item.tag || '',
+      createdAt: item.createdAt ? new Date(item.createdAt).toISOString() : new Date().toISOString(),
+      isRepost: !!item.isRepost
+    })), null, 2).replace(/</g,'\\u003c') %>;
+
+    const feedListEl = document.getElementById('feedList');
+    const searchEl = document.getElementById('feedSearch');
+    const sortEl = document.getElementById('feedSort');
+    const repostSwitch = document.getElementById('repostSwitch');
+    const tagFiltersEl = document.getElementById('tagFilters');
+
+    const state = {
+      search: '',
+      sort: 'latest',
+      showReposts: true,
+      tag: ''
+    };
+
+    const formatTimeAgo = (iso) => {
+      const date = new Date(iso);
+      const diff = Date.now() - date.getTime();
+      const mins = Math.floor(diff / 60000);
+      if (mins < 1) return 'just now';
+      if (mins < 60) return `${mins}m ago`;
+      const hours = Math.floor(mins / 60);
+      if (hours < 24) return `${hours}h ago`;
+      const days = Math.floor(hours / 24);
+      if (days < 30) return `${days}d ago`;
+      const months = Math.floor(days / 30);
+      if (months < 12) return `${months}mo ago`;
+      const years = Math.floor(months / 12);
+      return `${years}y ago`;
+    };
+
+    const buildCard = (item) => {
+      const tagPill = item.tag ? `<span class="pill"># ${item.tag}</span>` : '';
+      return `
+        <div class="feed-card" data-artist="${item.artist.toLowerCase()}" data-title="${item.title.toLowerCase()}" data-tag="${item.tag.toLowerCase()}">
+          <div class="feed-left">
+            <img src="${item.coverUrl}" alt="${item.title}">
+            <div class="play-btn">
+              <div class="play-btn-inner"><i class="fa-solid fa-play"></i></div>
+            </div>
+          </div>
+          <div class="feed-body">
+            <div class="poster">
+              <div class="dot"></div>
+              <span>${item.artist} posted a track</span>
+              <span style="color: var(--muted); font-weight: 600;">• ${formatTimeAgo(item.createdAt)}</span>
+              ${item.isRepost ? '<span class="pill" style="background:rgba(255,85,0,0.15); color:var(--text); border:1px solid rgba(255,85,0,0.5);">Repost</span>' : ''}
+            </div>
+            <div style="display:flex; align-items:center; gap:10px; flex-wrap: wrap;">
+              <div>
+                <p class="track-artist" style="margin:0; color:var(--text); font-weight:800;">${item.artist}</p>
+                <p class="track-title" style="margin:0;">${item.title}</p>
+              </div>
+              ${tagPill}
+            </div>
+            <div class="wave"></div>
+            <div class="stat-row">
+              <div class="stat-chip"><i class="fa-solid fa-heart"></i> ${item.likes}</div>
+              <div class="stat-chip"><i class="fa-solid fa-retweet"></i> ${item.reposts}</div>
+              <div class="stat-chip"><i class="fa-regular fa-comment"></i> ${item.comments}</div>
+              <div class="stat-chip" title="Share"><i class="fa-solid fa-share"></i></div>
+              <div class="stat-chip" title="Save"><i class="fa-regular fa-bookmark"></i></div>
+              <div style="flex:1"></div>
+              <div class="stat-chip"><i class="fa-solid fa-play"></i> ${item.plays}</div>
+              <div class="stat-chip"><i class="fa-regular fa-clock"></i> 3:12</div>
+            </div>
+          </div>
+        </div>
+      `;
+    };
+
+    const renderFeed = () => {
+      if (!feedListEl) return;
+      let data = [...feedData];
+      if (!state.showReposts) data = data.filter(item => !item.isRepost);
+      if (state.tag) data = data.filter(item => item.tag.toLowerCase() === state.tag);
+      if (state.search) {
+        const q = state.search.toLowerCase();
+        data = data.filter(item => item.title.toLowerCase().includes(q) || item.artist.toLowerCase().includes(q));
+      }
+      if (state.sort === 'likes') {
+        data.sort((a, b) => (b.likes || 0) - (a.likes || 0));
+      } else {
+        data.sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt));
+      }
+
+      if (!data.length) {
+        feedListEl.innerHTML = `<div class="panel" style="text-align:center;">No posts match your filters.</div>`;
+        return;
+      }
+      feedListEl.innerHTML = data.map(buildCard).join('');
+    };
+
+    const setupTags = () => {
+      if (!tagFiltersEl) return;
+      const tags = [...new Set(feedData.map(f => (f.tag || '').trim()).filter(Boolean))];
+      const createChip = (value, label) => {
+        const btn = document.createElement('button');
+        btn.className = 'chip-btn';
+        btn.textContent = label;
+        btn.dataset.value = value;
+        if (state.tag === value) btn.classList.add('active');
+        btn.addEventListener('click', () => {
+          state.tag = value === state.tag ? '' : value;
+          tagFiltersEl.querySelectorAll('.chip-btn').forEach(el => el.classList.remove('active'));
+          if (state.tag) btn.classList.add('active');
+          renderFeed();
+        });
+        return btn;
+      };
+      tagFiltersEl.innerHTML = '';
+      if (tags.length) {
+        tagFiltersEl.appendChild(createChip('', 'All'));
+        tags.forEach(tag => tagFiltersEl.appendChild(createChip(tag.toLowerCase(), `#${tag}`)));
+      }
+    };
+
+    // Events
+    searchEl?.addEventListener('input', (e) => {
+      state.search = e.target.value || '';
+      renderFeed();
+    });
+    sortEl?.addEventListener('change', (e) => {
+      state.sort = e.target.value;
+      renderFeed();
+    });
+    repostSwitch?.addEventListener('click', () => {
+      state.showReposts = !state.showReposts;
+      repostSwitch.classList.toggle('on', state.showReposts);
+      renderFeed();
+    });
+
+    // Init
+    if (repostSwitch) repostSwitch.classList.add('on');
+    setupTags();
+    renderFeed();
+  </script>
   <script>
     const avatarBtn = document.getElementById('avatarBtn');
     const avatarDropdown = document.getElementById('avatarDropdown');
