@@ -1,0 +1,121 @@
+<mxfile host="65bd71144e">
+    <diagram id="full_usecase" name="Full UseCase">
+        <mxGraphModel dx="2398" dy="1008" grid="1" gridSize="10" guides="1" tooltips="1" connect="1" arrows="1" fold="1" page="1" pageScale="1" pageWidth="827" pageHeight="1169" math="0" shadow="0">
+            <root>
+                <mxCell id="0"/>
+                <mxCell id="1" parent="0"/>
+                <mxCell id="sys_bound" value="Music Cloud System" style="swimlane;whiteSpace=wrap;html=1;startSize=23;" parent="1" vertex="1">
+                    <mxGeometry x="200" y="40" width="450" height="1100" as="geometry"/>
+                </mxCell>
+                <mxCell id="auth1" value="Đăng ký/Đăng nhập (Google/Local)" style="ellipse;whiteSpace=wrap;html=1;" parent="sys_bound" vertex="1">
+                    <mxGeometry x="125" y="60" width="200" height="50" as="geometry"/>
+                </mxCell>
+                <mxCell id="auth2" value="Quên/Reset Mật khẩu" style="ellipse;whiteSpace=wrap;html=1;" parent="sys_bound" vertex="1">
+                    <mxGeometry x="125" y="130" width="200" height="50" as="geometry"/>
+                </mxCell>
+                <mxCell id="u1" value="Upload Nhạc" style="ellipse;whiteSpace=wrap;html=1;" parent="sys_bound" vertex="1">
+                    <mxGeometry x="125" y="200" width="200" height="50" as="geometry"/>
+                </mxCell>
+                <mxCell id="ai1" value="Tạo lời bài hát bằng AI" style="ellipse;whiteSpace=wrap;html=1;" parent="sys_bound" vertex="1">
+                    <mxGeometry x="125" y="270" width="200" height="50" as="geometry"/>
+                </mxCell>
+                <mxCell id="p1" value="Quản lý Playlist (Tạo/Sửa/Xóa)" style="ellipse;whiteSpace=wrap;html=1;" parent="sys_bound" vertex="1">
+                    <mxGeometry x="125" y="340" width="200" height="50" as="geometry"/>
+                </mxCell>
+                <mxCell id="p2" value="Thêm bài vào Playlist/Like" style="ellipse;whiteSpace=wrap;html=1;" parent="sys_bound" vertex="1">
+                    <mxGeometry x="125" y="410" width="200" height="50" as="geometry"/>
+                </mxCell>
+                <mxCell id="p3" value="Xem Lịch sử nghe &amp; Gợi ý" style="ellipse;whiteSpace=wrap;html=1;" parent="sys_bound" vertex="1">
+                    <mxGeometry x="125" y="480" width="200" height="50" as="geometry"/>
+                </mxCell>
+                <mxCell id="i1" value="Bình luận bài hát" style="ellipse;whiteSpace=wrap;html=1;" parent="sys_bound" vertex="1">
+                    <mxGeometry x="125" y="550" width="200" height="50" as="geometry"/>
+                </mxCell>
+                <mxCell id="i2" value="Báo cáo vi phạm (Report)" style="ellipse;whiteSpace=wrap;html=1;" parent="sys_bound" vertex="1">
+                    <mxGeometry x="125" y="620" width="200" height="50" as="geometry"/>
+                </mxCell>
+                <mxCell id="i3" value="Tìm kiếm (Nhạc/User)" style="ellipse;whiteSpace=wrap;html=1;" parent="sys_bound" vertex="1">
+                    <mxGeometry x="125" y="690" width="200" height="50" as="geometry"/>
+                </mxCell>
+                <mxCell id="s1" value="Follow/Unfollow User" style="ellipse;whiteSpace=wrap;html=1;" parent="sys_bound" vertex="1">
+                    <mxGeometry x="125" y="760" width="200" height="50" as="geometry"/>
+                </mxCell>
+                <mxCell id="s2" value="Cập nhật Profile/Avatar" style="ellipse;whiteSpace=wrap;html=1;" parent="sys_bound" vertex="1">
+                    <mxGeometry x="125" y="830" width="200" height="50" as="geometry"/>
+                </mxCell>
+                <mxCell id="a1" value="Duyệt/Từ chối bài hát" style="ellipse;whiteSpace=wrap;html=1;" parent="sys_bound" vertex="1">
+                    <mxGeometry x="125" y="900" width="200" height="50" as="geometry"/>
+                </mxCell>
+                <mxCell id="a2" value="Quản lý Báo cáo &amp; Dashboard" style="ellipse;whiteSpace=wrap;html=1;" parent="sys_bound" vertex="1">
+                    <mxGeometry x="125" y="970" width="200" height="50" as="geometry"/>
+                </mxCell>
+                <mxCell id="a3" value="Xóa Bình luận/Bài hát" style="ellipse;whiteSpace=wrap;html=1;" parent="sys_bound" vertex="1">
+                    <mxGeometry x="125" y="1040" width="200" height="50" as="geometry"/>
+                </mxCell>
+                <mxCell id="actor_User" value="User" style="shape=umlActor;verticalLabelPosition=bottom;verticalAlign=top;html=1;outlineConnect=0;" parent="1" vertex="1">
+                    <mxGeometry x="40" y="550" width="30" height="60" as="geometry"/>
+                </mxCell>
+                <mxCell id="actor_Admin" value="Admin" style="shape=umlActor;verticalLabelPosition=bottom;verticalAlign=top;html=1;outlineConnect=0;" parent="1" vertex="1">
+                    <mxGeometry x="40" y="760" width="30" height="60" as="geometry"/>
+                </mxCell>
+                <mxCell id="gen_1" value="" style="endArrow=block;endSize=16;endFill=0;html=1;rounded=0;" parent="1" source="actor_Admin" edge="1">
+                    <mxGeometry width="160" relative="1" as="geometry">
+                        <mxPoint x="450" y="400" as="sourcePoint"/>
+                        <mxPoint x="55" y="640" as="targetPoint"/>
+                    </mxGeometry>
+                </mxCell>
+                <mxCell id="actor_AI_Service" value="AI_Service" style="shape=umlActor;verticalLabelPosition=bottom;verticalAlign=top;html=1;outlineConnect=0;fillColor=#f5f5f5;fontColor=#333333;strokeColor=#666666;" parent="1" vertex="1">
+                    <mxGeometry x="730" y="305" width="30" height="60" as="geometry"/>
+                </mxCell>
+                <mxCell id="edge_auth1" value="" style="endArrow=none;html=1;rounded=0;entryX=0;entryY=0.5;entryDx=0;entryDy=0;" parent="1" source="actor_User" target="auth1" edge="1">
+                    <mxGeometry width="50" height="50" relative="1" as="geometry"/>
+                </mxCell>
+                <mxCell id="edge_auth2" value="" style="endArrow=none;html=1;rounded=0;entryX=0;entryY=0.5;entryDx=0;entryDy=0;" parent="1" source="actor_User" target="auth2" edge="1">
+                    <mxGeometry width="50" height="50" relative="1" as="geometry"/>
+                </mxCell>
+                <mxCell id="edge_u1" value="" style="endArrow=none;html=1;rounded=0;entryX=0;entryY=0.5;entryDx=0;entryDy=0;" parent="1" source="actor_User" target="u1" edge="1">
+                    <mxGeometry width="50" height="50" relative="1" as="geometry"/>
+                </mxCell>
+                <mxCell id="edge_ai1" value="" style="endArrow=none;html=1;rounded=0;entryX=0;entryY=0.5;entryDx=0;entryDy=0;" parent="1" source="actor_User" target="ai1" edge="1">
+                    <mxGeometry width="50" height="50" relative="1" as="geometry"/>
+                </mxCell>
+                <mxCell id="edge_ai_ai1" value="API" style="endArrow=none;html=1;rounded=0;entryX=1;entryY=0.5;entryDx=0;entryDy=0;dashed=1;" parent="1" source="actor_AI_Service" target="ai1" edge="1">
+                    <mxGeometry width="50" height="50" relative="1" as="geometry"/>
+                </mxCell>
+                <mxCell id="edge_p1" value="" style="endArrow=none;html=1;rounded=0;entryX=0;entryY=0.5;entryDx=0;entryDy=0;" parent="1" source="actor_User" target="p1" edge="1">
+                    <mxGeometry width="50" height="50" relative="1" as="geometry"/>
+                </mxCell>
+                <mxCell id="edge_p2" value="" style="endArrow=none;html=1;rounded=0;entryX=0;entryY=0.5;entryDx=0;entryDy=0;" parent="1" source="actor_User" target="p2" edge="1">
+                    <mxGeometry width="50" height="50" relative="1" as="geometry"/>
+                </mxCell>
+                <mxCell id="edge_p3" value="" style="endArrow=none;html=1;rounded=0;entryX=0;entryY=0.5;entryDx=0;entryDy=0;" parent="1" source="actor_User" target="p3" edge="1">
+                    <mxGeometry width="50" height="50" relative="1" as="geometry"/>
+                </mxCell>
+                <mxCell id="edge_i1" value="" style="endArrow=none;html=1;rounded=0;entryX=0;entryY=0.5;entryDx=0;entryDy=0;" parent="1" source="actor_User" target="i1" edge="1">
+                    <mxGeometry width="50" height="50" relative="1" as="geometry"/>
+                </mxCell>
+                <mxCell id="edge_i2" value="" style="endArrow=none;html=1;rounded=0;entryX=0;entryY=0.5;entryDx=0;entryDy=0;" parent="1" source="actor_User" target="i2" edge="1">
+                    <mxGeometry width="50" height="50" relative="1" as="geometry"/>
+                </mxCell>
+                <mxCell id="edge_i3" value="" style="endArrow=none;html=1;rounded=0;entryX=0;entryY=0.5;entryDx=0;entryDy=0;" parent="1" source="actor_User" target="i3" edge="1">
+                    <mxGeometry width="50" height="50" relative="1" as="geometry"/>
+                </mxCell>
+                <mxCell id="edge_s1" value="" style="endArrow=none;html=1;rounded=0;entryX=0;entryY=0.5;entryDx=0;entryDy=0;" parent="1" source="actor_User" target="s1" edge="1">
+                    <mxGeometry width="50" height="50" relative="1" as="geometry"/>
+                </mxCell>
+                <mxCell id="edge_s2" value="" style="endArrow=none;html=1;rounded=0;entryX=0;entryY=0.5;entryDx=0;entryDy=0;" parent="1" source="actor_User" target="s2" edge="1">
+                    <mxGeometry width="50" height="50" relative="1" as="geometry"/>
+                </mxCell>
+                <mxCell id="edge_a1" value="" style="endArrow=none;html=1;rounded=0;entryX=0;entryY=0.5;entryDx=0;entryDy=0;" parent="1" source="actor_Admin" target="a1" edge="1">
+                    <mxGeometry width="50" height="50" relative="1" as="geometry"/>
+                </mxCell>
+                <mxCell id="edge_a2" value="" style="endArrow=none;html=1;rounded=0;entryX=0;entryY=0.5;entryDx=0;entryDy=0;" parent="1" source="actor_Admin" target="a2" edge="1">
+                    <mxGeometry width="50" height="50" relative="1" as="geometry"/>
+                </mxCell>
+                <mxCell id="edge_a3" value="" style="endArrow=none;html=1;rounded=0;entryX=0;entryY=0.5;entryDx=0;entryDy=0;" parent="1" source="actor_Admin" target="a3" edge="1">
+                    <mxGeometry width="50" height="50" relative="1" as="geometry"/>
+                </mxCell>
+            </root>
+        </mxGraphModel>
+    </diagram>
+</mxfile>

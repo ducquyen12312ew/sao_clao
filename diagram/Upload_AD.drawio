@@ -1,0 +1,745 @@
+<mxfile host="65bd71144e" pages="4">
+    <diagram id="aPZ2Q_RN5_vO1MAWmTYW" name="Page-2">
+        <mxGraphModel dx="1199" dy="706" grid="1" gridSize="10" guides="1" tooltips="1" connect="1" arrows="1" fold="1" page="1" pageScale="1" pageWidth="827" pageHeight="1169" math="0" shadow="0">
+            <root>
+                <mxCell id="0"/>
+                <mxCell id="1" parent="0"/>
+                <mxCell id="title" value="ACTIVITY DIAGRAM: QUY TRÌNH XÁC THỰC NGƯỜI DÙNG (AUTHENTICATION)" style="text;html=1;strokeColor=none;fillColor=none;align=center;verticalAlign=middle;whiteSpace=wrap;rounded=0;fontSize=16;fontStyle=1" parent="1" vertex="1">
+                    <mxGeometry x="40" y="10" width="680" height="30" as="geometry"/>
+                </mxCell>
+                <mxCell id="Lane_User" value="User (Người dùng)" style="swimlane;html=1;startSize=40;horizontal=1;childLayout=none;collapsible=0;freeze=0;resizeParent=1;resizeParentMax=0;resizeLast=0;marginBottom=0;whiteSpace=wrap;fillColor=#dae8fc;strokeColor=#6c8ebf;fontStyle=1;fontSize=14;" parent="1" vertex="1">
+                    <mxGeometry x="40" y="50" width="300" height="720" as="geometry"/>
+                </mxCell>
+                <mxCell id="start_node" value="" style="ellipse;html=1;shape=startState;fillColor=#000000;strokeColor=#ff0000;" parent="Lane_User" vertex="1">
+                    <mxGeometry x="135" y="60" width="30" height="30" as="geometry"/>
+                </mxCell>
+                <mxCell id="u_access" value="Truy cập trang Login" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#ffffff;strokeColor=#000000;" parent="Lane_User" vertex="1">
+                    <mxGeometry x="80" y="120" width="140" height="40" as="geometry"/>
+                </mxCell>
+                <mxCell id="u_choice" value="Chọn phương thức?" style="rhombus;whiteSpace=wrap;html=1;fillColor=#fff2cc;strokeColor=#d6b656;" parent="Lane_User" vertex="1">
+                    <mxGeometry x="85" y="190" width="130" height="60" as="geometry"/>
+                </mxCell>
+                <mxCell id="u_input_local" value="Nhập Email &amp; Password" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#ffffff;strokeColor=#000000;" parent="Lane_User" vertex="1">
+                    <mxGeometry x="25" y="320" width="140" height="40" as="geometry"/>
+                </mxCell>
+                <mxCell id="u_click_google" value="Click &quot;Login with Google&quot;" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#ffffff;strokeColor=#000000;" parent="Lane_User" vertex="1">
+                    <mxGeometry x="165" y="260" width="140" height="40" as="geometry"/>
+                </mxCell>
+                <mxCell id="end_node" value="" style="ellipse;html=1;shape=endState;fillColor=#000000;strokeColor=#ff0000;" parent="Lane_User" vertex="1">
+                    <mxGeometry x="120" y="650" width="30" height="30" as="geometry"/>
+                </mxCell>
+                <mxCell id="Lane_System" value="System (Hệ thống)" style="swimlane;html=1;startSize=40;horizontal=1;childLayout=none;collapsible=0;freeze=0;resizeParent=1;resizeParentMax=0;resizeLast=0;marginBottom=0;whiteSpace=wrap;fillColor=#ffe6cc;strokeColor=#d79b00;fontStyle=1;fontSize=14;" parent="1" vertex="1">
+                    <mxGeometry x="340" y="50" width="380" height="720" as="geometry"/>
+                </mxCell>
+                <mxCell id="s_find_user" value="Tìm User trong Database" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#ffffff;strokeColor=#000000;" parent="Lane_System" vertex="1">
+                    <mxGeometry x="30" y="320" width="150" height="40" as="geometry"/>
+                </mxCell>
+                <mxCell id="s_bcrypt" value="Kiểm tra Password&#xa;(Bcrypt Compare)" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#ffffff;strokeColor=#000000;" parent="Lane_System" vertex="1">
+                    <mxGeometry x="30" y="400" width="150" height="40" as="geometry"/>
+                </mxCell>
+                <mxCell id="s_redirect_google" value="Redirect tới Google Auth" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#ffffff;strokeColor=#000000;" parent="Lane_System" vertex="1">
+                    <mxGeometry x="200" y="360" width="150" height="40" as="geometry"/>
+                </mxCell>
+                <mxCell id="s_callback" value="Nhận Google Callback" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#ffffff;strokeColor=#000000;" parent="Lane_System" vertex="1">
+                    <mxGeometry x="200" y="430" width="150" height="40" as="geometry"/>
+                </mxCell>
+                <mxCell id="s_upsert" value="Upsert User (Tạo mới&#xa;hoặc Cập nhật)" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#ffffff;strokeColor=#000000;" parent="Lane_System" vertex="1">
+                    <mxGeometry x="200" y="500" width="150" height="40" as="geometry"/>
+                </mxCell>
+                <mxCell id="s_check_valid" value="Thông tin hợp lệ?" style="rhombus;whiteSpace=wrap;html=1;fillColor=#fff2cc;strokeColor=#d6b656;" parent="Lane_System" vertex="1">
+                    <mxGeometry x="125" y="560" width="130" height="60" as="geometry"/>
+                </mxCell>
+                <mxCell id="s_error" value="Báo lỗi (Flash msg)&#xa;&amp; Redirect Login" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#f8cecc;strokeColor=#b85450;" parent="Lane_System" vertex="1">
+                    <mxGeometry x="230" y="640" width="130" height="50" as="geometry"/>
+                </mxCell>
+                <mxCell id="s_session" value="Tạo Session Login" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#d5e8d4;strokeColor=#82b366;" parent="Lane_System" vertex="1">
+                    <mxGeometry x="20" y="640" width="130" height="50" as="geometry"/>
+                </mxCell>
+                <mxCell id="e1" style="edgeStyle=orthogonalEdgeStyle;html=1;" parent="1" source="start_node" target="u_access" edge="1">
+                    <mxGeometry relative="1" as="geometry"/>
+                </mxCell>
+                <mxCell id="e2" style="edgeStyle=orthogonalEdgeStyle;html=1;" parent="1" source="u_access" target="u_choice" edge="1">
+                    <mxGeometry relative="1" as="geometry"/>
+                </mxCell>
+                <mxCell id="e3" value="Local" style="edgeStyle=orthogonalEdgeStyle;html=1;entryX=0.5;entryY=0;" parent="1" source="u_choice" target="u_input_local" edge="1">
+                    <mxGeometry x="-0.7" relative="1" as="geometry">
+                        <mxPoint as="offset"/>
+                        <Array as="points">
+                            <mxPoint x="130" y="270"/>
+                        </Array>
+                    </mxGeometry>
+                </mxCell>
+                <mxCell id="e4" value="Google" style="edgeStyle=orthogonalEdgeStyle;html=1;entryX=0.5;entryY=0;" parent="1" source="u_choice" target="u_click_google" edge="1">
+                    <mxGeometry x="-0.8" relative="1" as="geometry">
+                        <mxPoint as="offset"/>
+                        <Array as="points">
+                            <mxPoint x="170" y="270"/>
+                            <mxPoint x="260" y="270"/>
+                        </Array>
+                    </mxGeometry>
+                </mxCell>
+                <mxCell id="e5" style="edgeStyle=orthogonalEdgeStyle;html=1;" parent="1" source="u_input_local" target="s_find_user" edge="1">
+                    <mxGeometry relative="1" as="geometry"/>
+                </mxCell>
+                <mxCell id="e6" style="edgeStyle=orthogonalEdgeStyle;html=1;" parent="1" source="s_find_user" target="s_bcrypt" edge="1">
+                    <mxGeometry relative="1" as="geometry"/>
+                </mxCell>
+                <mxCell id="e7" style="edgeStyle=orthogonalEdgeStyle;html=1;entryX=0;entryY=0.5;" parent="1" source="s_bcrypt" target="s_check_valid" edge="1">
+                    <mxGeometry relative="1" as="geometry">
+                        <Array as="points">
+                            <mxPoint x="445" y="590"/>
+                        </Array>
+                    </mxGeometry>
+                </mxCell>
+                <mxCell id="e8" style="edgeStyle=orthogonalEdgeStyle;html=1;" parent="1" source="u_click_google" target="s_redirect_google" edge="1">
+                    <mxGeometry relative="1" as="geometry"/>
+                </mxCell>
+                <mxCell id="e9" style="edgeStyle=orthogonalEdgeStyle;html=1;" parent="1" source="s_redirect_google" target="s_callback" edge="1">
+                    <mxGeometry relative="1" as="geometry"/>
+                </mxCell>
+                <mxCell id="e10" style="edgeStyle=orthogonalEdgeStyle;html=1;" parent="1" source="s_callback" target="s_upsert" edge="1">
+                    <mxGeometry relative="1" as="geometry"/>
+                </mxCell>
+                <mxCell id="e11" style="edgeStyle=orthogonalEdgeStyle;html=1;entryX=1;entryY=0.5;" parent="1" source="s_upsert" target="s_check_valid" edge="1">
+                    <mxGeometry relative="1" as="geometry">
+                        <Array as="points">
+                            <mxPoint x="615" y="590"/>
+                        </Array>
+                    </mxGeometry>
+                </mxCell>
+                <mxCell id="e12" value="Sai / Lỗi" style="edgeStyle=orthogonalEdgeStyle;html=1;fontColor=#FF0000;" parent="1" source="s_check_valid" target="s_error" edge="1">
+                    <mxGeometry relative="1" as="geometry"/>
+                </mxCell>
+                <mxCell id="e13" value="Hợp lệ" style="edgeStyle=orthogonalEdgeStyle;html=1;fontColor=#009900;" parent="1" source="s_check_valid" target="s_session" edge="1">
+                    <mxGeometry relative="1" as="geometry"/>
+                </mxCell>
+                <mxCell id="e14" style="edgeStyle=orthogonalEdgeStyle;html=1;entryX=1;entryY=0.5;" parent="1" source="s_error" target="u_access" edge="1">
+                    <mxGeometry relative="1" as="geometry">
+                        <Array as="points">
+                            <mxPoint x="710" y="720"/>
+                            <mxPoint x="710" y="190"/>
+                        </Array>
+                    </mxGeometry>
+                </mxCell>
+                <mxCell id="e15" style="edgeStyle=orthogonalEdgeStyle;html=1;" parent="1" source="s_session" target="end_node" edge="1">
+                    <mxGeometry relative="1" as="geometry"/>
+                </mxCell>
+            </root>
+        </mxGraphModel>
+    </diagram>
+    <diagram id="f7Kyyyu7k1pYHCdJzz-j" name="Page-3">
+        <mxGraphModel dx="1453" dy="704" grid="1" gridSize="10" guides="1" tooltips="1" connect="1" arrows="1" fold="1" page="1" pageScale="1" pageWidth="827" pageHeight="1169" math="0" shadow="0">
+            <root>
+                <mxCell id="0"/>
+                <mxCell id="1" parent="0"/>
+                <mxCell id="title" parent="1" style="text;html=1;strokeColor=none;fillColor=none;align=center;verticalAlign=middle;whiteSpace=wrap;rounded=0;fontSize=16;fontStyle=1" value="ACTIVITY DIAGRAM: QUY TRÌNH TẢI LÊN BÀI HÁT (UPLOAD TRACK)" vertex="1">
+                    <mxGeometry height="30" width="700" x="40" y="10" as="geometry"/>
+                </mxCell>
+                <mxCell id="Lane_User" parent="1" style="swimlane;html=1;startSize=40;horizontal=1;childLayout=none;collapsible=0;freeze=0;resizeParent=1;resizeParentMax=0;resizeLast=0;marginBottom=0;whiteSpace=wrap;fillColor=#dae8fc;strokeColor=#6c8ebf;fontStyle=1;fontSize=14;" value="User (Người dùng)" vertex="1">
+                    <mxGeometry height="1110" width="340" x="40" y="50" as="geometry"/>
+                </mxCell>
+                <mxCell id="start_node" parent="Lane_User" style="ellipse;html=1;shape=startState;fillColor=#000000;strokeColor=#ff0000;" value="" vertex="1">
+                    <mxGeometry height="30" width="30" x="135" y="60" as="geometry"/>
+                </mxCell>
+                <mxCell id="u_req_upload" parent="Lane_User" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#ffffff;strokeColor=#000000;" value="Truy cập trang Upload" vertex="1">
+                    <mxGeometry height="40" width="140" x="80" y="120" as="geometry"/>
+                </mxCell>
+                <mxCell id="u_fill_form" parent="Lane_User" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#ffffff;strokeColor=#000000;" value="Điền Form: Title, Artist...&#xa;&amp; Chọn File Audio/Cover" vertex="1">
+                    <mxGeometry height="50" width="180" x="60" y="320" as="geometry"/>
+                </mxCell>
+                <mxCell id="u_submit" parent="Lane_User" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#ffffff;strokeColor=#000000;" value="Nhấn nút Upload" vertex="1">
+                    <mxGeometry height="40" width="140" x="80" y="390" as="geometry"/>
+                </mxCell>
+                <mxCell id="end_node" parent="Lane_User" style="ellipse;html=1;shape=endState;fillColor=#000000;strokeColor=#ff0000;" value="" vertex="1">
+                    <mxGeometry height="30" width="30" x="70" y="1030" as="geometry"/>
+                </mxCell>
+                <mxCell id="Lane_System" parent="1" style="swimlane;html=1;startSize=40;horizontal=1;childLayout=none;collapsible=0;freeze=0;resizeParent=1;resizeParentMax=0;resizeLast=0;marginBottom=0;whiteSpace=wrap;fillColor=#ffe6cc;strokeColor=#d79b00;fontStyle=1;fontSize=14;" value="System (Hệ thống)" vertex="1">
+                    <mxGeometry height="1110" width="400" x="380" y="50" as="geometry"/>
+                </mxCell>
+                <mxCell id="s_check_auth" parent="Lane_System" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#ffffff;strokeColor=#000000;" value="Kiểm tra Session (Auth)" vertex="1">
+                    <mxGeometry height="40" width="150" x="160" y="120" as="geometry"/>
+                </mxCell>
+                <mxCell id="s_is_logged" parent="Lane_System" style="rhombus;whiteSpace=wrap;html=1;fillColor=#fff2cc;strokeColor=#d6b656;" value="Đã đăng nhập?" vertex="1">
+                    <mxGeometry height="60" width="130" x="90" y="190" as="geometry"/>
+                </mxCell>
+                <mxCell id="s_check_config" parent="Lane_System" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#ffffff;strokeColor=#000000;" value="Kiểm tra Config Cloudinary" vertex="1">
+                    <mxGeometry height="40" width="170" x="210" y="240" as="geometry"/>
+                </mxCell>
+                <mxCell id="s_render_form" parent="Lane_System" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#d5e8d4;strokeColor=#82b366;" value="Hiển thị Form Upload" vertex="1">
+                    <mxGeometry height="40" width="150" x="220" y="325" as="geometry"/>
+                </mxCell>
+                <mxCell id="s_multer" parent="Lane_System" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#ffffff;strokeColor=#000000;" value="Multer: Kiểm tra loại File&#xa;(File Filter)" vertex="1">
+                    <mxGeometry height="40" width="160" x="110" y="390" as="geometry"/>
+                </mxCell>
+                <mxCell id="s_valid_file" parent="Lane_System" style="rhombus;whiteSpace=wrap;html=1;fillColor=#fff2cc;strokeColor=#d6b656;" value="File hợp lệ?" vertex="1">
+                    <mxGeometry height="60" width="120" x="240" y="525" as="geometry"/>
+                </mxCell>
+                <mxCell id="s_cloudinary" parent="Lane_System" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#ffffff;strokeColor=#000000;" value="Upload lên Cloudinary&#xa;(Storage Engine)" vertex="1">
+                    <mxGeometry height="40" width="160" x="220" y="730" as="geometry"/>
+                </mxCell>
+                <mxCell id="s_upload_ok" parent="Lane_System" style="rhombus;whiteSpace=wrap;html=1;fillColor=#fff2cc;strokeColor=#d6b656;" value="Upload OK?" vertex="1">
+                    <mxGeometry height="60" width="120" x="60" y="790" as="geometry"/>
+                </mxCell>
+                <mxCell id="s_mongo" parent="Lane_System" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#ffffff;strokeColor=#000000;" value="Lưu Metadata vào MongoDB&#xa;(TrackCollection)" vertex="1">
+                    <mxGeometry height="40" width="180" x="100" y="920" as="geometry"/>
+                </mxCell>
+                <mxCell id="s_success" parent="Lane_System" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#d5e8d4;strokeColor=#82b366;" value="Thông báo thành công&#xa;&amp; Redirect Home" vertex="1">
+                    <mxGeometry height="50" width="160" x="200" y="980" as="geometry"/>
+                </mxCell>
+                <mxCell id="s_error" parent="Lane_System" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#f8cecc;strokeColor=#b85450;" value="Báo lỗi (Flash Msg)&#xa;&amp; Redirect" vertex="1">
+                    <mxGeometry height="40" width="140" x="130" y="630" as="geometry"/>
+                </mxCell>
+                <mxCell id="e4" edge="1" parent="Lane_System" source="s_is_logged" style="edgeStyle=orthogonalEdgeStyle;html=1;entryX=0;entryY=0;fontColor=#FF0000;entryDx=0;entryDy=0;" target="s_error" value="No">
+                    <mxGeometry relative="1" as="geometry">
+                        <Array as="points">
+                            <mxPoint x="155" y="170"/>
+                            <mxPoint x="70" y="170"/>
+                            <mxPoint x="70" y="630"/>
+                        </Array>
+                    </mxGeometry>
+                </mxCell>
+                <mxCell id="e11" edge="1" parent="Lane_System" source="s_valid_file" style="edgeStyle=orthogonalEdgeStyle;html=1;entryX=0.75;entryY=0;fontColor=#FF0000;entryDx=0;entryDy=0;" target="s_error" value="No (Sai định dạng)">
+                    <mxGeometry relative="1" as="geometry">
+                        <Array as="points">
+                            <mxPoint x="235" y="550"/>
+                        </Array>
+                    </mxGeometry>
+                </mxCell>
+                <mxCell id="e14" edge="1" parent="Lane_System" source="s_upload_ok" style="edgeStyle=orthogonalEdgeStyle;html=1;entryX=0.5;entryY=1;fontColor=#FF0000;" target="s_error" value="No (Lỗi Network/API)">
+                    <mxGeometry relative="1" as="geometry">
+                        <Array as="points">
+                            <mxPoint x="60" y="700"/>
+                            <mxPoint x="200" y="700"/>
+                        </Array>
+                    </mxGeometry>
+                </mxCell>
+                <mxCell id="e1" edge="1" parent="1" source="start_node" style="edgeStyle=orthogonalEdgeStyle;html=1;" target="u_req_upload">
+                    <mxGeometry relative="1" as="geometry"/>
+                </mxCell>
+                <mxCell id="e2" edge="1" parent="1" source="u_req_upload" style="edgeStyle=orthogonalEdgeStyle;html=1;" target="s_check_auth">
+                    <mxGeometry relative="1" as="geometry"/>
+                </mxCell>
+                <mxCell id="e3" edge="1" parent="1" source="s_check_auth" style="edgeStyle=orthogonalEdgeStyle;html=1;" target="s_is_logged">
+                    <mxGeometry relative="1" as="geometry"/>
+                </mxCell>
+                <mxCell id="e5" edge="1" parent="1" source="s_is_logged" style="edgeStyle=orthogonalEdgeStyle;html=1;fontColor=#009900;" target="s_check_config" value="Yes">
+                    <mxGeometry relative="1" as="geometry">
+                        <Array as="points">
+                            <mxPoint x="535" y="330"/>
+                        </Array>
+                    </mxGeometry>
+                </mxCell>
+                <mxCell id="e6" edge="1" parent="1" source="s_check_config" style="edgeStyle=orthogonalEdgeStyle;html=1;entryX=0.5;entryY=0;" target="s_render_form">
+                    <mxGeometry relative="1" as="geometry"/>
+                </mxCell>
+                <mxCell id="e7" edge="1" parent="1" source="s_render_form" style="edgeStyle=orthogonalEdgeStyle;html=1;" target="u_fill_form">
+                    <mxGeometry relative="1" as="geometry"/>
+                </mxCell>
+                <mxCell id="e8" edge="1" parent="1" source="u_fill_form" style="edgeStyle=orthogonalEdgeStyle;html=1;" target="u_submit">
+                    <mxGeometry relative="1" as="geometry"/>
+                </mxCell>
+                <mxCell id="e9" edge="1" parent="1" source="u_submit" style="edgeStyle=orthogonalEdgeStyle;html=1;" target="s_multer">
+                    <mxGeometry relative="1" as="geometry"/>
+                </mxCell>
+                <mxCell id="e10" edge="1" parent="1" source="s_multer" style="edgeStyle=orthogonalEdgeStyle;html=1;" target="s_valid_file">
+                    <mxGeometry relative="1" as="geometry"/>
+                </mxCell>
+                <mxCell id="e12" edge="1" parent="1" source="s_valid_file" style="edgeStyle=orthogonalEdgeStyle;html=1;fontColor=#009900;" target="s_cloudinary" value="Yes">
+                    <mxGeometry relative="1" as="geometry"/>
+                </mxCell>
+                <mxCell id="e13" edge="1" parent="1" source="s_cloudinary" style="edgeStyle=orthogonalEdgeStyle;html=1;" target="s_upload_ok">
+                    <mxGeometry relative="1" as="geometry"/>
+                </mxCell>
+                <mxCell id="e15" edge="1" parent="1" source="s_upload_ok" style="edgeStyle=orthogonalEdgeStyle;html=1;fontColor=#009900;" target="s_mongo" value="Yes">
+                    <mxGeometry relative="1" as="geometry"/>
+                </mxCell>
+                <mxCell id="e16" edge="1" parent="1" source="s_mongo" style="edgeStyle=orthogonalEdgeStyle;html=1;entryX=0;entryY=0.5;" target="s_success">
+                    <mxGeometry relative="1" as="geometry">
+                        <Array as="points">
+                            <mxPoint x="530" y="1055"/>
+                        </Array>
+                    </mxGeometry>
+                </mxCell>
+                <mxCell id="e17" edge="1" parent="1" source="s_success" style="edgeStyle=orthogonalEdgeStyle;html=1;entryX=1;entryY=0.5;" target="end_node">
+                    <mxGeometry relative="1" as="geometry">
+                        <Array as="points">
+                            <mxPoint x="170" y="1070"/>
+                        </Array>
+                    </mxGeometry>
+                </mxCell>
+                <mxCell id="e18" edge="1" parent="1" source="s_error" style="edgeStyle=orthogonalEdgeStyle;html=1;dashed=1;" target="u_req_upload" value="Redirect về Form/Login">
+                    <mxGeometry relative="1" as="geometry">
+                        <Array as="points">
+                            <mxPoint x="580" y="550"/>
+                            <mxPoint x="410" y="550"/>
+                            <mxPoint x="410" y="140"/>
+                            <mxPoint x="190" y="140"/>
+                        </Array>
+                    </mxGeometry>
+                </mxCell>
+            </root>
+        </mxGraphModel>
+    </diagram>
+    <diagram id="Q9sDqCt7Nuqf4Uhs2EV9" name="Page-4">
+        <mxGraphModel grid="1" page="1" gridSize="10" guides="1" tooltips="1" connect="1" arrows="1" fold="1" pageScale="1" pageWidth="827" pageHeight="1169" math="0" shadow="0">
+            <root>
+                <mxCell id="0"/>
+                <mxCell id="1" parent="0"/>
+                <mxCell id="title" value="ACTIVITY DIAGRAM: QUY TRÌNH KIỂM DUYỆT CỦA ADMIN (ADMIN MODERATION)" style="text;html=1;strokeColor=none;fillColor=none;align=center;verticalAlign=middle;whiteSpace=wrap;rounded=0;fontSize=16;fontStyle=1" vertex="1" parent="1">
+                    <mxGeometry x="40" y="10" width="750" height="30" as="geometry"/>
+                </mxCell>
+                <mxCell id="Lane_Admin" value="Admin (Quản trị viên)" style="swimlane;html=1;startSize=40;horizontal=1;childLayout=none;collapsible=0;freeze=0;resizeParent=1;resizeParentMax=0;resizeLast=0;marginBottom=0;whiteSpace=wrap;fillColor=#dae8fc;strokeColor=#6c8ebf;fontStyle=1;fontSize=14;" vertex="1" parent="1">
+                    <mxGeometry x="40" y="50" width="350" height="1080" as="geometry"/>
+                </mxCell>
+                <mxCell id="start_node" value="" style="ellipse;html=1;shape=startState;fillColor=#000000;strokeColor=#ff0000;" vertex="1" parent="Lane_Admin">
+                    <mxGeometry x="160" y="60" width="30" height="30" as="geometry"/>
+                </mxCell>
+                <mxCell id="a_access" value="Truy cập Admin Dashboard" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#ffffff;strokeColor=#000000;" vertex="1" parent="Lane_Admin">
+                    <mxGeometry x="90" y="120" width="170" height="40" as="geometry"/>
+                </mxCell>
+                <mxCell id="a_view_list" value="Xem danh sách&#xa;(Tracks Pending / Reports)" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#ffffff;strokeColor=#000000;" vertex="1" parent="Lane_Admin">
+                    <mxGeometry x="90" y="300" width="170" height="40" as="geometry"/>
+                </mxCell>
+                <mxCell id="a_select_action" value="Chọn hành động?" style="rhombus;whiteSpace=wrap;html=1;fillColor=#fff2cc;strokeColor=#d6b656;" vertex="1" parent="Lane_Admin">
+                    <mxGeometry x="110" y="380" width="130" height="80" as="geometry"/>
+                </mxCell>
+                <mxCell id="a_act_approve" value="Nhấn Approve" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#d5e8d4;strokeColor=#82b366;" vertex="1" parent="Lane_Admin">
+                    <mxGeometry x="30" y="620" width="100" height="40" as="geometry"/>
+                </mxCell>
+                <mxCell id="a_act_reject" value="Nhấn Reject" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#f8cecc;strokeColor=#b85450;" vertex="1" parent="Lane_Admin">
+                    <mxGeometry x="120" y="560" width="100" height="40" as="geometry"/>
+                </mxCell>
+                <mxCell id="a_act_delete" value="Nhấn Delete" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#f8cecc;strokeColor=#b85450;" vertex="1" parent="Lane_Admin">
+                    <mxGeometry x="250" y="514.5" width="100" height="40" as="geometry"/>
+                </mxCell>
+                <mxCell id="a_act_dismiss" value="Nhấn Dismiss&#xa;(Report)" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#e1d5e7;strokeColor=#9673a6;" vertex="1" parent="Lane_Admin">
+                    <mxGeometry x="-10" y="830" width="100" height="40" as="geometry"/>
+                </mxCell>
+                <mxCell id="a_act_resolve" value="Nhấn Resolve&#xa;(Report)" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#e1d5e7;strokeColor=#9673a6;" vertex="1" parent="Lane_Admin">
+                    <mxGeometry x="180" y="880" width="100" height="40" as="geometry"/>
+                </mxCell>
+                <mxCell id="a_receive_ui" value="Nhận phản hồi UI&#xa;(Ẩn item khỏi list)" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#ffffff;strokeColor=#000000;" vertex="1" parent="Lane_Admin">
+                    <mxGeometry x="104" y="960" width="150" height="40" as="geometry"/>
+                </mxCell>
+                <mxCell id="9qn5tCkdzNYIc-9-kk6P-4" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;exitX=0.5;exitY=1;exitDx=0;exitDy=0;" edge="1" parent="Lane_Admin" source="a_act_approve" target="a_act_approve">
+                    <mxGeometry relative="1" as="geometry"/>
+                </mxCell>
+                <mxCell id="Lane_System" value="System (Hệ thống)" style="swimlane;html=1;startSize=40;horizontal=1;childLayout=none;collapsible=0;freeze=0;resizeParent=1;resizeParentMax=0;resizeLast=0;marginBottom=0;whiteSpace=wrap;fillColor=#ffe6cc;strokeColor=#d79b00;fontStyle=1;fontSize=14;" vertex="1" parent="1">
+                    <mxGeometry x="390" y="50" width="400" height="1080" as="geometry"/>
+                </mxCell>
+                <mxCell id="s_check_role" value="Kiểm tra Role Admin" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#ffffff;strokeColor=#000000;" vertex="1" parent="Lane_System">
+                    <mxGeometry x="125" y="120" width="150" height="40" as="geometry"/>
+                </mxCell>
+                <mxCell id="s_is_admin" value="Role == &#39;admin&#39;?" style="rhombus;whiteSpace=wrap;html=1;fillColor=#fff2cc;strokeColor=#d6b656;" vertex="1" parent="Lane_System">
+                    <mxGeometry x="135" y="190" width="130" height="60" as="geometry"/>
+                </mxCell>
+                <mxCell id="s_redirect" value="Redirect Home / Login" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#f8cecc;strokeColor=#b85450;" vertex="1" parent="Lane_System">
+                    <mxGeometry x="250" y="300" width="140" height="40" as="geometry"/>
+                </mxCell>
+                <mxCell id="s_load_data" value="Load Stats &amp; List&#xa;(Pending / Reports)" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#d5e8d4;strokeColor=#82b366;" vertex="1" parent="Lane_System">
+                    <mxGeometry x="50" y="300" width="150" height="40" as="geometry"/>
+                </mxCell>
+                <mxCell id="s_proc_approve" value="DB: Track.status=&#39;approved&#39;&#xa;&amp; Reports -&gt; &#39;dismissed&#39;" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#ffffff;strokeColor=#000000;" vertex="1" parent="Lane_System">
+                    <mxGeometry x="15" y="600" width="155" height="40" as="geometry"/>
+                </mxCell>
+                <mxCell id="s_proc_reject" value="DB: Track.status=&#39;rejected&#39;" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#ffffff;strokeColor=#000000;" vertex="1" parent="Lane_System">
+                    <mxGeometry y="720" width="110" height="40" as="geometry"/>
+                </mxCell>
+                <mxCell id="s_proc_delete" value="DB: Track.deletedAt=Now&#xa;&amp; Reports -&gt; &#39;resolved&#39;" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#ffffff;strokeColor=#000000;" vertex="1" parent="Lane_System">
+                    <mxGeometry x="240" y="590" width="140" height="40" as="geometry"/>
+                </mxCell>
+                <mxCell id="s_proc_rep_dismiss" value="DB: Report.status=&#39;dismissed&#39;" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#ffffff;strokeColor=#000000;" vertex="1" parent="Lane_System">
+                    <mxGeometry x="15" y="830" width="110" height="40" as="geometry"/>
+                </mxCell>
+                <mxCell id="end_node" value="" style="ellipse;html=1;shape=endState;fillColor=#000000;strokeColor=#ff0000;" vertex="1" parent="Lane_System">
+                    <mxGeometry x="-186" y="1020" width="30" height="30" as="geometry"/>
+                </mxCell>
+                <mxCell id="s_return_success" value="Trả về JSON {success: true}" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#d5e8d4;strokeColor=#82b366;" vertex="1" parent="Lane_System">
+                    <mxGeometry x="110" y="960" width="180" height="40" as="geometry"/>
+                </mxCell>
+                <mxCell id="s_proc_rep_resolve" value="DB: Report.status=&#39;resolved&#39;" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#ffffff;strokeColor=#000000;" vertex="1" parent="Lane_System">
+                    <mxGeometry x="10" y="880" width="110" height="40" as="geometry"/>
+                </mxCell>
+                <mxCell id="e_merge5" style="edgeStyle=orthogonalEdgeStyle;html=1;entryX=0.5;entryY=0;" edge="1" parent="Lane_System" source="s_proc_rep_resolve" target="s_return_success">
+                    <mxGeometry relative="1" as="geometry">
+                        <Array as="points">
+                            <mxPoint x="200" y="930"/>
+                            <mxPoint x="200" y="960"/>
+                        </Array>
+                    </mxGeometry>
+                </mxCell>
+                <mxCell id="e1" style="edgeStyle=orthogonalEdgeStyle;html=1;" edge="1" parent="1" source="start_node" target="a_access">
+                    <mxGeometry relative="1" as="geometry"/>
+                </mxCell>
+                <mxCell id="e2" style="edgeStyle=orthogonalEdgeStyle;html=1;" edge="1" parent="1" source="a_access" target="s_check_role">
+                    <mxGeometry relative="1" as="geometry"/>
+                </mxCell>
+                <mxCell id="e3" style="edgeStyle=orthogonalEdgeStyle;html=1;" edge="1" parent="1" source="s_check_role" target="s_is_admin">
+                    <mxGeometry relative="1" as="geometry"/>
+                </mxCell>
+                <mxCell id="e4" value="No" style="edgeStyle=orthogonalEdgeStyle;html=1;fontColor=#FF0000;" edge="1" parent="1" source="s_is_admin" target="s_redirect">
+                    <mxGeometry relative="1" as="geometry"/>
+                </mxCell>
+                <mxCell id="e5" value="Yes" style="edgeStyle=orthogonalEdgeStyle;html=1;fontColor=#009900;entryX=0.5;entryY=0;entryDx=0;entryDy=0;" edge="1" parent="1" source="s_is_admin" target="s_load_data">
+                    <mxGeometry x="-0.8" relative="1" as="geometry">
+                        <mxPoint as="offset"/>
+                        <Array as="points">
+                            <mxPoint x="540" y="320"/>
+                            <mxPoint x="520" y="320"/>
+                            <mxPoint x="520" y="350"/>
+                        </Array>
+                    </mxGeometry>
+                </mxCell>
+                <mxCell id="e6" style="edgeStyle=orthogonalEdgeStyle;html=1;" edge="1" parent="1" source="s_load_data" target="a_view_list">
+                    <mxGeometry relative="1" as="geometry"/>
+                </mxCell>
+                <mxCell id="e7" style="edgeStyle=orthogonalEdgeStyle;html=1;" edge="1" parent="1" source="a_view_list" target="a_select_action">
+                    <mxGeometry relative="1" as="geometry"/>
+                </mxCell>
+                <mxCell id="e_app" value="Approve Track" style="edgeStyle=orthogonalEdgeStyle;html=1;entryX=0.5;entryY=0;" edge="1" parent="1" source="a_select_action" target="a_act_approve">
+                    <mxGeometry x="-0.8" relative="1" as="geometry">
+                        <mxPoint as="offset"/>
+                        <Array as="points">
+                            <mxPoint x="110" y="490"/>
+                            <mxPoint x="110" y="670"/>
+                        </Array>
+                    </mxGeometry>
+                </mxCell>
+                <mxCell id="e_rej" value="Reject Track" style="edgeStyle=orthogonalEdgeStyle;html=1;entryX=0.5;entryY=0;" edge="1" parent="1" source="a_select_action" target="a_act_reject">
+                    <mxGeometry relative="1" as="geometry"/>
+                </mxCell>
+                <mxCell id="e_del" value="Delete Track" style="edgeStyle=orthogonalEdgeStyle;html=1;entryX=0.5;entryY=0;" edge="1" parent="1" source="a_select_action" target="a_act_delete">
+                    <mxGeometry x="-0.5" relative="1" as="geometry">
+                        <mxPoint as="offset"/>
+                        <Array as="points">
+                            <mxPoint x="340" y="470"/>
+                        </Array>
+                    </mxGeometry>
+                </mxCell>
+                <mxCell id="e_dis" value="Dismiss Report" style="edgeStyle=orthogonalEdgeStyle;html=1;entryX=0.5;entryY=0;" edge="1" parent="1" source="a_select_action" target="a_act_dismiss">
+                    <mxGeometry x="-0.9" relative="1" as="geometry">
+                        <mxPoint as="offset"/>
+                        <Array as="points">
+                            <mxPoint x="60" y="470"/>
+                            <mxPoint x="60" y="880"/>
+                        </Array>
+                    </mxGeometry>
+                </mxCell>
+                <mxCell id="e_res" value="Resolve Report" style="edgeStyle=orthogonalEdgeStyle;html=1;entryX=0.5;entryY=0;" edge="1" parent="1" source="a_select_action" target="a_act_resolve">
+                    <mxGeometry x="-0.8" relative="1" as="geometry">
+                        <mxPoint as="offset"/>
+                        <Array as="points">
+                            <mxPoint x="270" y="510"/>
+                            <mxPoint x="270" y="510"/>
+                        </Array>
+                    </mxGeometry>
+                </mxCell>
+                <mxCell id="e_sys_app" style="edgeStyle=orthogonalEdgeStyle;html=1;" edge="1" parent="1" source="a_act_approve" target="s_proc_approve">
+                    <mxGeometry relative="1" as="geometry">
+                        <Array as="points">
+                            <mxPoint x="230" y="670"/>
+                            <mxPoint x="230" y="670"/>
+                        </Array>
+                    </mxGeometry>
+                </mxCell>
+                <mxCell id="e_sys_rej" style="edgeStyle=orthogonalEdgeStyle;html=1;" edge="1" parent="1" source="a_act_reject" target="s_proc_reject">
+                    <mxGeometry relative="1" as="geometry"/>
+                </mxCell>
+                <mxCell id="e_sys_del" style="edgeStyle=orthogonalEdgeStyle;html=1;entryX=0.5;entryY=0;" edge="1" parent="1" source="a_act_delete" target="s_proc_delete">
+                    <mxGeometry relative="1" as="geometry">
+                        <Array as="points">
+                            <mxPoint x="685" y="585"/>
+                        </Array>
+                    </mxGeometry>
+                </mxCell>
+                <mxCell id="e_sys_dis" style="edgeStyle=orthogonalEdgeStyle;html=1;" edge="1" parent="1" source="a_act_dismiss" target="s_proc_rep_dismiss">
+                    <mxGeometry relative="1" as="geometry"/>
+                </mxCell>
+                <mxCell id="e_merge1" style="edgeStyle=orthogonalEdgeStyle;html=1;entryX=0.5;entryY=0;" edge="1" parent="1" source="s_proc_approve" target="s_return_success">
+                    <mxGeometry relative="1" as="geometry">
+                        <Array as="points">
+                            <mxPoint x="500" y="740"/>
+                            <mxPoint x="590" y="740"/>
+                        </Array>
+                    </mxGeometry>
+                </mxCell>
+                <mxCell id="e_merge2" style="edgeStyle=orthogonalEdgeStyle;html=1;entryX=0.5;entryY=0;" edge="1" parent="1" source="s_proc_reject" target="s_return_success">
+                    <mxGeometry relative="1" as="geometry">
+                        <Array as="points">
+                            <mxPoint x="590" y="790"/>
+                        </Array>
+                    </mxGeometry>
+                </mxCell>
+                <mxCell id="e_merge3" style="edgeStyle=orthogonalEdgeStyle;html=1;entryX=0.5;entryY=0;" edge="1" parent="1" source="s_proc_delete" target="s_return_success">
+                    <mxGeometry relative="1" as="geometry">
+                        <Array as="points">
+                            <mxPoint x="590" y="660"/>
+                        </Array>
+                    </mxGeometry>
+                </mxCell>
+                <mxCell id="e_merge4" style="edgeStyle=orthogonalEdgeStyle;html=1;entryX=0.5;entryY=0;" edge="1" parent="1" source="s_proc_rep_dismiss" target="s_return_success">
+                    <mxGeometry relative="1" as="geometry">
+                        <Array as="points">
+                            <mxPoint x="590" y="900"/>
+                        </Array>
+                    </mxGeometry>
+                </mxCell>
+                <mxCell id="e_sys_res" style="edgeStyle=orthogonalEdgeStyle;html=1;" edge="1" parent="1" source="a_act_resolve" target="s_proc_rep_resolve">
+                    <mxGeometry relative="1" as="geometry"/>
+                </mxCell>
+                <mxCell id="e_final2" style="edgeStyle=orthogonalEdgeStyle;html=1;" edge="1" parent="1" source="a_receive_ui" target="end_node">
+                    <mxGeometry relative="1" as="geometry"/>
+                </mxCell>
+                <mxCell id="e_final1" style="edgeStyle=orthogonalEdgeStyle;html=1;" edge="1" parent="1" source="s_return_success" target="a_receive_ui">
+                    <mxGeometry relative="1" as="geometry"/>
+                </mxCell>
+            </root>
+        </mxGraphModel>
+    </diagram>
+    <diagram id="E02MrNbb4PQcFnRkVtmT" name="Page-5">
+        <mxGraphModel dx="1199" dy="706" grid="1" gridSize="10" guides="1" tooltips="1" connect="1" arrows="1" fold="1" page="1" pageScale="1" pageWidth="827" pageHeight="1169" math="0" shadow="0">
+            <root>
+                <mxCell id="0"/>
+                <mxCell id="1" parent="0"/>
+                <mxCell id="title" value="ACTIVITY DIAGRAM: QUẢN LÝ PLAYLIST (THÊM, SỬA, XÓA, THÊM BÀI HÁT)" style="text;html=1;strokeColor=none;fillColor=none;align=center;verticalAlign=middle;whiteSpace=wrap;rounded=0;fontSize=16;fontStyle=1" vertex="1" parent="1">
+                    <mxGeometry x="40" y="10" width="750" height="30" as="geometry"/>
+                </mxCell>
+                <mxCell id="Lane_User" value="User (Người dùng)" style="swimlane;html=1;startSize=40;horizontal=1;childLayout=none;collapsible=0;freeze=0;resizeParent=1;resizeParentMax=0;resizeLast=0;marginBottom=0;whiteSpace=wrap;fillColor=#dae8fc;strokeColor=#6c8ebf;fontStyle=1;fontSize=14;" vertex="1" parent="1">
+                    <mxGeometry x="40" y="50" width="300" height="1110" as="geometry"/>
+                </mxCell>
+                <mxCell id="start_node" value="" style="ellipse;html=1;shape=startState;fillColor=#000000;strokeColor=#ff0000;" vertex="1" parent="Lane_User">
+                    <mxGeometry x="135" y="60" width="30" height="30" as="geometry"/>
+                </mxCell>
+                <mxCell id="u_access" value="Truy cập trang Playlist/Track" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#ffffff;strokeColor=#000000;" vertex="1" parent="Lane_User">
+                    <mxGeometry x="65" y="120" width="170" height="40" as="geometry"/>
+                </mxCell>
+                <mxCell id="u_choice" value="Chọn hành động?" style="rhombus;whiteSpace=wrap;html=1;fillColor=#fff2cc;strokeColor=#d6b656;" vertex="1" parent="Lane_User">
+                    <mxGeometry x="85" y="190" width="130" height="80" as="geometry"/>
+                </mxCell>
+                <mxCell id="u_act_create" value="Nhập tên, mô tả&#xa;&amp; Nhấn Tạo mới" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#ffffff;strokeColor=#000000;" vertex="1" parent="Lane_User">
+                    <mxGeometry y="280" width="130" height="50" as="geometry"/>
+                </mxCell>
+                <mxCell id="u_act_add_track" value="Chọn bài hát&#xa;&amp; Nhấn &quot;Thêm vào Playlist&quot;" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#ffffff;strokeColor=#000000;" vertex="1" parent="Lane_User">
+                    <mxGeometry x="165" y="330" width="140" height="50" as="geometry"/>
+                </mxCell>
+                <mxCell id="u_act_update" value="Sửa tên/mô tả&#xa;&amp; Nhấn Lưu" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#ffffff;strokeColor=#000000;" vertex="1" parent="Lane_User">
+                    <mxGeometry x="10" y="650" width="130" height="50" as="geometry"/>
+                </mxCell>
+                <mxCell id="u_act_delete" value="Nhấn Xóa Playlist" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#ffffff;strokeColor=#000000;" vertex="1" parent="Lane_User">
+                    <mxGeometry x="165" y="655" width="130" height="50" as="geometry"/>
+                </mxCell>
+                <mxCell id="u_receive_res" value="Nhận kết quả (JSON)&#xa;&amp; Cập nhật UI" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#ffffff;strokeColor=#000000;" vertex="1" parent="Lane_User">
+                    <mxGeometry x="75" y="1010" width="150" height="40" as="geometry"/>
+                </mxCell>
+                <mxCell id="end_node" value="" style="ellipse;html=1;shape=endState;fillColor=#000000;strokeColor=#ff0000;" vertex="1" parent="Lane_User">
+                    <mxGeometry x="135" y="1080" width="30" height="30" as="geometry"/>
+                </mxCell>
+                <mxCell id="e_end" style="edgeStyle=orthogonalEdgeStyle;html=1;" edge="1" parent="Lane_User" source="u_receive_res" target="end_node">
+                    <mxGeometry relative="1" as="geometry"/>
+                </mxCell>
+                <mxCell id="Lane_System" value="System (Hệ thống)" style="swimlane;html=1;startSize=40;horizontal=1;childLayout=none;collapsible=0;freeze=0;resizeParent=1;resizeParentMax=0;resizeLast=0;marginBottom=0;whiteSpace=wrap;fillColor=#ffe6cc;strokeColor=#d79b00;fontStyle=1;fontSize=14;" vertex="1" parent="1">
+                    <mxGeometry x="340" y="50" width="470" height="1110" as="geometry"/>
+                </mxCell>
+                <mxCell id="s_chk_name" value="Tên hợp lệ?&#xa;(!empty)" style="rhombus;whiteSpace=wrap;html=1;fillColor=#fff2cc;strokeColor=#d6b656;" vertex="1" parent="Lane_System">
+                    <mxGeometry x="40" y="315" width="110" height="60" as="geometry"/>
+                </mxCell>
+                <mxCell id="s_db_create" value="DB: Create Playlist&#xa;(userId, name, tracks:[])" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#d5e8d4;strokeColor=#82b366;" vertex="1" parent="Lane_System">
+                    <mxGeometry x="20" y="420" width="150" height="40" as="geometry"/>
+                </mxCell>
+                <mxCell id="s_find_own" value="Tìm Playlist theo&#xa;(_id &amp; userId)" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#ffffff;strokeColor=#000000;" vertex="1" parent="Lane_System">
+                    <mxGeometry x="160" y="370" width="100" height="40" as="geometry"/>
+                </mxCell>
+                <mxCell id="s_found_chk" value="Tìm thấy?" style="rhombus;whiteSpace=wrap;html=1;fillColor=#fff2cc;strokeColor=#d6b656;" vertex="1" parent="Lane_System">
+                    <mxGeometry x="300" y="360" width="100" height="50" as="geometry"/>
+                </mxCell>
+                <mxCell id="s_chk_dup" value="Bài hát đã tồn tại?&#xa;(tracks.includes)" style="rhombus;whiteSpace=wrap;html=1;fillColor=#fff2cc;strokeColor=#d6b656;" vertex="1" parent="Lane_System">
+                    <mxGeometry x="250" y="470" width="120" height="60" as="geometry"/>
+                </mxCell>
+                <mxCell id="s_db_push" value="DB: Push trackId&#xa;&amp; Update updatedAt" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#d5e8d4;strokeColor=#82b366;" vertex="1" parent="Lane_System">
+                    <mxGeometry x="310" y="580" width="140" height="40" as="geometry"/>
+                </mxCell>
+                <mxCell id="s_find_ud" value="Tìm Playlist theo&#xa;(_id &amp; userId)" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#ffffff;strokeColor=#000000;" vertex="1" parent="Lane_System">
+                    <mxGeometry x="40" y="655" width="140" height="40" as="geometry"/>
+                </mxCell>
+                <mxCell id="s_found_ud" value="Tìm thấy?" style="rhombus;whiteSpace=wrap;html=1;fillColor=#fff2cc;strokeColor=#d6b656;" vertex="1" parent="Lane_System">
+                    <mxGeometry x="220" y="645" width="100" height="60" as="geometry"/>
+                </mxCell>
+                <mxCell id="s_db_update" value="DB: Update Fields&#xa;(name, desc, isPublic)" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#d5e8d4;strokeColor=#82b366;" vertex="1" parent="Lane_System">
+                    <mxGeometry x="200" y="740" width="140" height="40" as="geometry"/>
+                </mxCell>
+                <mxCell id="s_db_delete" value="DB: Delete One" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#d5e8d4;strokeColor=#82b366;" vertex="1" parent="Lane_System">
+                    <mxGeometry x="370" y="930" width="80" height="40" as="geometry"/>
+                </mxCell>
+                <mxCell id="s_success" value="Trả về Thành công&#xa;{success: true}" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#d5e8d4;strokeColor=#82b366;" vertex="1" parent="Lane_System">
+                    <mxGeometry x="160" y="980" width="160" height="40" as="geometry"/>
+                </mxCell>
+                <mxCell id="0_F5mRuebF-x1JehuAY5-15" value="Trả về Lỗi&#xa;{success: false}" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#f8cecc;strokeColor=#b85450;" vertex="1" parent="Lane_System">
+                    <mxGeometry x="20" y="900" width="120" height="40" as="geometry"/>
+                </mxCell>
+                <mxCell id="e_ud_fail" value="No" style="edgeStyle=orthogonalEdgeStyle;html=1;entryX=0.5;entryY=0;fontColor=#FF0000;entryDx=0;entryDy=0;" edge="1" parent="Lane_System" source="s_found_ud" target="0_F5mRuebF-x1JehuAY5-15">
+                    <mxGeometry relative="1" as="geometry">
+                        <Array as="points">
+                            <mxPoint x="270" y="710"/>
+                            <mxPoint x="80" y="710"/>
+                        </Array>
+                    </mxGeometry>
+                </mxCell>
+                <mxCell id="s_error" value="Trả về Lỗi&#xa;{success: false}" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#f8cecc;strokeColor=#b85450;" vertex="1" parent="Lane_System">
+                    <mxGeometry x="250" y="150" width="120" height="40" as="geometry"/>
+                </mxCell>
+                <mxCell id="e_c3" value="No (Empty)" style="edgeStyle=orthogonalEdgeStyle;html=1;entryX=0;entryY=0.5;fontColor=#FF0000;" edge="1" parent="Lane_System" source="s_chk_name" target="s_error">
+                    <mxGeometry relative="1" as="geometry">
+                        <Array as="points">
+                            <mxPoint x="95" y="295"/>
+                            <mxPoint x="95" y="210"/>
+                        </Array>
+                    </mxGeometry>
+                </mxCell>
+                <mxCell id="e_a4" value="No (Not found/Not owner)" style="edgeStyle=orthogonalEdgeStyle;html=1;entryX=0.5;entryY=1;fontColor=#FF0000;" edge="1" parent="Lane_System" source="s_found_chk" target="s_error">
+                    <mxGeometry relative="1" as="geometry">
+                        <Array as="points">
+                            <mxPoint x="320" y="210"/>
+                            <mxPoint x="310" y="210"/>
+                        </Array>
+                    </mxGeometry>
+                </mxCell>
+                <mxCell id="e_a6" value="Yes (Duplicate)" style="edgeStyle=orthogonalEdgeStyle;html=1;entryX=1;entryY=0.5;fontColor=#FF0000;" edge="1" parent="Lane_System" source="s_chk_dup" target="s_error">
+                    <mxGeometry relative="1" as="geometry">
+                        <Array as="points">
+                            <mxPoint x="430" y="500"/>
+                            <mxPoint x="430" y="180"/>
+                            <mxPoint x="370" y="180"/>
+                        </Array>
+                    </mxGeometry>
+                </mxCell>
+                <mxCell id="e1" style="edgeStyle=orthogonalEdgeStyle;html=1;" edge="1" parent="1" source="start_node" target="u_access">
+                    <mxGeometry relative="1" as="geometry"/>
+                </mxCell>
+                <mxCell id="e2" style="edgeStyle=orthogonalEdgeStyle;html=1;" edge="1" parent="1" source="u_access" target="u_choice">
+                    <mxGeometry relative="1" as="geometry"/>
+                </mxCell>
+                <mxCell id="e_c1" value="Tạo mới" style="edgeStyle=orthogonalEdgeStyle;html=1;entryX=0.5;entryY=0;" edge="1" parent="1" source="u_choice" target="u_act_create">
+                    <mxGeometry x="-0.8" relative="1" as="geometry">
+                        <mxPoint as="offset"/>
+                        <Array as="points">
+                            <mxPoint x="75" y="230"/>
+                        </Array>
+                    </mxGeometry>
+                </mxCell>
+                <mxCell id="e_c2" style="edgeStyle=orthogonalEdgeStyle;html=1;entryX=0.5;entryY=0;" edge="1" parent="1" source="u_act_create" target="s_chk_name">
+                    <mxGeometry relative="1" as="geometry"/>
+                </mxCell>
+                <mxCell id="e_c4" value="Yes" style="edgeStyle=orthogonalEdgeStyle;html=1;fontColor=#009900;" edge="1" parent="1" source="s_chk_name" target="s_db_create">
+                    <mxGeometry relative="1" as="geometry"/>
+                </mxCell>
+                <mxCell id="e_c5" style="edgeStyle=orthogonalEdgeStyle;html=1;entryX=0;entryY=0.5;exitX=0.896;exitY=1.028;exitDx=0;exitDy=0;exitPerimeter=0;" edge="1" parent="1" source="s_db_create" target="s_success">
+                    <mxGeometry relative="1" as="geometry">
+                        <Array as="points">
+                            <mxPoint x="494" y="520"/>
+                            <mxPoint x="495" y="520"/>
+                            <mxPoint x="495" y="840"/>
+                            <mxPoint x="500" y="840"/>
+                        </Array>
+                    </mxGeometry>
+                </mxCell>
+                <mxCell id="e_a1" value="Thêm Track" style="edgeStyle=orthogonalEdgeStyle;html=1;entryX=0.5;entryY=0;" edge="1" parent="1" source="u_choice" target="u_act_add_track">
+                    <mxGeometry relative="1" as="geometry">
+                        <mxPoint as="offset"/>
+                        <Array as="points">
+                            <mxPoint x="220" y="230"/>
+                        </Array>
+                    </mxGeometry>
+                </mxCell>
+                <mxCell id="e_a2" style="edgeStyle=orthogonalEdgeStyle;html=1;entryX=0.5;entryY=0;" edge="1" parent="1" source="u_act_add_track" target="s_find_own">
+                    <mxGeometry relative="1" as="geometry">
+                        <Array as="points">
+                            <mxPoint x="540" y="380"/>
+                        </Array>
+                    </mxGeometry>
+                </mxCell>
+                <mxCell id="e_a3" style="edgeStyle=orthogonalEdgeStyle;html=1;" edge="1" parent="1" source="s_find_own" target="s_found_chk">
+                    <mxGeometry relative="1" as="geometry"/>
+                </mxCell>
+                <mxCell id="e_a5" value="Yes" style="edgeStyle=orthogonalEdgeStyle;html=1;fontColor=#009900;" edge="1" parent="1" source="s_found_chk" target="s_chk_dup">
+                    <mxGeometry relative="1" as="geometry"/>
+                </mxCell>
+                <mxCell id="e_a7" value="No" style="edgeStyle=orthogonalEdgeStyle;html=1;fontColor=#009900;" edge="1" parent="1" source="s_chk_dup" target="s_db_push">
+                    <mxGeometry relative="1" as="geometry"/>
+                </mxCell>
+                <mxCell id="e_a8" style="edgeStyle=orthogonalEdgeStyle;html=1;entryX=0.935;entryY=0.04;entryDx=0;entryDy=0;entryPerimeter=0;" edge="1" parent="1" source="s_db_push" target="s_success">
+                    <mxGeometry relative="1" as="geometry">
+                        <Array as="points"/>
+                    </mxGeometry>
+                </mxCell>
+                <mxCell id="e_u1" value="Update" style="edgeStyle=orthogonalEdgeStyle;html=1;entryX=0.5;entryY=0;" edge="1" parent="1" source="u_choice" target="u_act_update">
+                    <mxGeometry x="-0.9" relative="1" as="geometry">
+                        <mxPoint as="offset"/>
+                        <Array as="points">
+                            <mxPoint x="150" y="270"/>
+                            <mxPoint x="20" y="270"/>
+                            <mxPoint x="20" y="600"/>
+                            <mxPoint x="75" y="600"/>
+                        </Array>
+                    </mxGeometry>
+                </mxCell>
+                <mxCell id="e_d1" value="Delete" style="edgeStyle=orthogonalEdgeStyle;html=1;entryX=0.5;entryY=0;" edge="1" parent="1" source="u_choice" target="u_act_delete">
+                    <mxGeometry relative="1" as="geometry">
+                        <Array as="points">
+                            <mxPoint x="150" y="270"/>
+                            <mxPoint x="320" y="270"/>
+                            <mxPoint x="320" y="600"/>
+                            <mxPoint x="225" y="600"/>
+                        </Array>
+                    </mxGeometry>
+                </mxCell>
+                <mxCell id="e_ud_find" style="edgeStyle=orthogonalEdgeStyle;html=1;entryX=0;entryY=0.5;" edge="1" parent="1" source="u_act_update" target="s_find_ud">
+                    <mxGeometry relative="1" as="geometry">
+                        <Array as="points">
+                            <mxPoint x="115" y="790"/>
+                            <mxPoint x="360" y="790"/>
+                            <mxPoint x="360" y="725"/>
+                        </Array>
+                    </mxGeometry>
+                </mxCell>
+                <mxCell id="e_del_find" style="edgeStyle=orthogonalEdgeStyle;html=1;entryX=0;entryY=0.5;" edge="1" parent="1" source="u_act_delete" target="s_find_ud">
+                    <mxGeometry relative="1" as="geometry">
+                        <Array as="points">
+                            <mxPoint x="225" y="720"/>
+                            <mxPoint x="360" y="720"/>
+                            <mxPoint x="360" y="675"/>
+                        </Array>
+                    </mxGeometry>
+                </mxCell>
+                <mxCell id="e_ud_chk" style="edgeStyle=orthogonalEdgeStyle;html=1;" edge="1" parent="1" source="s_find_ud" target="s_found_ud">
+                    <mxGeometry relative="1" as="geometry"/>
+                </mxCell>
+                <mxCell id="e_to_upd" value="Yes (Action=Update)" style="edgeStyle=orthogonalEdgeStyle;html=1;entryX=0.5;entryY=0;" edge="1" parent="1" source="s_found_ud" target="s_db_update">
+                    <mxGeometry relative="1" as="geometry"/>
+                </mxCell>
+                <mxCell id="e_to_del" value="Yes (Action=Delete)" style="edgeStyle=orthogonalEdgeStyle;html=1;entryX=0.5;entryY=0;" edge="1" parent="1" source="s_found_ud" target="s_db_delete">
+                    <mxGeometry relative="1" as="geometry"/>
+                </mxCell>
+                <mxCell id="e_upd_succ" style="edgeStyle=orthogonalEdgeStyle;html=1;entryX=0.5;entryY=0;" edge="1" parent="1" source="s_db_update" target="s_success">
+                    <mxGeometry relative="1" as="geometry"/>
+                </mxCell>
+                <mxCell id="e_del_succ" style="edgeStyle=orthogonalEdgeStyle;html=1;entryX=0.5;entryY=0;" edge="1" parent="1" source="s_db_delete" target="s_success">
+                    <mxGeometry relative="1" as="geometry"/>
+                </mxCell>
+                <mxCell id="e_res_ui" style="edgeStyle=orthogonalEdgeStyle;html=1;entryX=1;entryY=0.5;exitX=0.5;exitY=1;exitDx=0;exitDy=0;" edge="1" parent="1" source="s_success" target="u_receive_res">
+                    <mxGeometry relative="1" as="geometry">
+                        <mxPoint x="500" y="1040" as="sourcePoint"/>
+                    </mxGeometry>
+                </mxCell>
+                <mxCell id="0_F5mRuebF-x1JehuAY5-30" style="edgeStyle=orthogonalEdgeStyle;html=1;dashed=1;entryX=0.75;entryY=0;entryDx=0;entryDy=0;exitX=0;exitY=0.5;exitDx=0;exitDy=0;" edge="1" parent="1" source="0_F5mRuebF-x1JehuAY5-15" target="u_receive_res">
+                    <mxGeometry relative="1" as="geometry">
+                        <Array as="points">
+                            <mxPoint x="227" y="970"/>
+                        </Array>
+                        <mxPoint x="420" y="990" as="sourcePoint"/>
+                        <mxPoint x="150" y="1240" as="targetPoint"/>
+                    </mxGeometry>
+                </mxCell>
+            </root>
+        </mxGraphModel>
+    </diagram>
+</mxfile>
