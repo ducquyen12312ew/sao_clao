@@ -19,12 +19,16 @@ export default function Likes(){
   return <div>
     <h1>Liked Tracks</h1>
     <ul>
+<<<<<<< Updated upstream
       {tracks.map(t => <li key={t._id}>
         <Link to={`/track/${t._id}`}>{t.title} — {t.artist}</Link>
         <button style={{marginLeft:8}} onClick={async ()=>{
           try { await api.post(`/tracks/${t._id}/unlike`); setTracks(tracks.filter(x=>x._id!==t._id)) } catch(e){console.error(e)}
         }}>Remove</button>
       </li>)}
+=======
+      {tracks.map(t => <li key={t._id}><Link to={`/track/${t._id}`}>{t.title} — {t.artist}</Link></li>)}
+>>>>>>> Stashed changes
     </ul>
   </div>
 }

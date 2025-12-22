@@ -1,3 +1,4 @@
+<<<<<<< Updated upstream
 import React, { useState } from 'react'
 import api from '../api'
 import axios from 'axios'
@@ -61,6 +62,15 @@ export default function Upload(){
       </form>
       {progress > 0 && <div>Uploading: {progress}%</div>}
       {msg && <div>{msg}</div>}
+=======
+import React from 'react'
+
+export default function Upload(){
+  return (
+    <div>
+      <h1>Upload</h1>
+      <p>Placeholder upload page. Implement file input and POST to `/upload` backend API.</p>
+>>>>>>> Stashed changes
     </div>
   )
 }

@@ -6,6 +6,7 @@ export default function TrackDetail(){
   const { id } = useParams()
   const [track, setTrack] = useState(null)
   const [loading, setLoading] = useState(true)
+<<<<<<< Updated upstream
   const [liked, setLiked] = useState(false)
 
   useEffect(() => {
@@ -20,6 +21,8 @@ export default function TrackDetail(){
       .catch(() => {})
     return () => { mounted = false }
   }, [id])
+=======
+>>>>>>> Stashed changes
 
   useEffect(() => {
     let mounted = true
@@ -44,6 +47,7 @@ export default function TrackDetail(){
         <audio controls src={track.audioUrl} />
       </div>
       <div>
+<<<<<<< Updated upstream
         <button onClick={async () => {
           try {
             if (!liked) await api.post(`/tracks/${id}/like`)
@@ -54,6 +58,8 @@ export default function TrackDetail(){
         <span style={{marginLeft:8}}>Likes: {track.likes || 0}</span>
       </div>
       <div>
+=======
+>>>>>>> Stashed changes
         <h3>Lyrics</h3>
         <pre style={{whiteSpace:'pre-wrap'}}>{track.lyricsText || 'No lyrics'}</pre>
       </div>

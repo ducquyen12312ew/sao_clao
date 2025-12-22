@@ -4,7 +4,10 @@ const {
   PlaylistCollection,
   UserCollection
 } = require('../config/db');
+<<<<<<< Updated upstream
 const { TrackLikeCollection } = require('../config/db');
+=======
+>>>>>>> Stashed changes
 
 const router = express.Router();
 
@@ -83,15 +86,23 @@ router.get('/me', (req, res) => {
 router.get('/likes', requireAuth, async (req, res) => {
   try {
     const userId = req.session.user.id;
+<<<<<<< Updated upstream
     const likes = await TrackLikeCollection.find({ userId }).populate('trackId').lean();
     const tracks = likes.map(l => l.trackId).filter(Boolean);
     res.json({ success: true, tracks });
+=======
+    // using TrackLikeCollection would be ideal; fallback: tracks with likes by user not stored
+    // For now, return empty or recent tracks (implement later)
+    const liked = [];
+    res.json({ success: true, tracks: liked });
+>>>>>>> Stashed changes
   } catch (err) {
     console.error('API /likes error:', err);
     res.status(500).json({ success: false, message: 'Server error' });
   }
 });
 
+<<<<<<< Updated upstream
 // POST /api/tracks/:id/like
 router.post('/tracks/:id/like', requireAuth, async (req, res) => {
   try {
@@ -122,6 +133,8 @@ router.post('/tracks/:id/unlike', requireAuth, async (req, res) => {
   }
 });
 
+=======
+>>>>>>> Stashed changes
 // GET /api/settings - simple settings payload
 router.get('/settings', requireAuth, (req, res) => {
   const defaults = { allowUploads: true };
