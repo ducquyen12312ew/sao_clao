@@ -660,15 +660,7 @@
   <script src="/public/js/player.js"></script>
  <script>
 // ====== Track data sang client ======
-const trackData = {
-  id: '<%= track._id %>',
-  title: '<%= track.title.replace(/'/g, "\\'") %>',
-  artist: '<%= (track.artist || "Unknown Artist").replace(/'/g, "\\'") %>',
-  cover: '<%= track.coverUrl || "" %>',
-  audioUrl: '<%= track.audioUrl %>',
-  lyricsLRC: <%- JSON.stringify(track.lyricsLRC || "") %>,
-  lyricsText: <%- JSON.stringify(track.lyricsText || "") %>
-};
+const trackData = JSON.parse('<%- JSON.stringify({ id: track._id || "", title: track.title || "", artist: track.artist || "", cover: track.coverUrl || "", audioUrl: track.audioUrl || "", lyricsLRC: track.lyricsLRC || "", lyricsText: track.lyricsText || "" }) %>');
 
 // ========== LYRICS KARAOKE LOGIC ==========
 let lyricCues = [];

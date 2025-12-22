@@ -123,7 +123,12 @@
                    data-artist="<%= (track.artist || '').toLowerCase() %>">
                 <a href="/track/<%= track._id %>" class="card-image">
                   <img src="<%= track.coverUrl || 'https://images.unsplash.com/photo-1470225620780-dba8ba36b745?w=400' %>" alt="<%= track.title %>">
-                  <button class="play-btn" onclick="event.preventDefault(); event.stopPropagation(); playTrack('<%= track._id %>', '<%= track.title.replace(/'/g, "\\'") %>', '<%= (track.artist || 'Unknown').replace(/'/g, "\\'") %>', '<%= track.coverUrl || '' %>', '<%= track.audioUrl %>')">
+                  <button class="play-btn" onclick="event.preventDefault(); event.stopPropagation(); playFromButton(this)"
+                          data-track-id="<%= track._id %>"
+                          data-track-title="<%= track.title.replace(/"/g, '&quot;') %>"
+                          data-track-artist="<%= (track.artist || 'Unknown').replace(/"/g, '&quot;') %>"
+                          data-track-cover="<%= track.coverUrl || '' %>"
+                          data-track-audio="<%= track.audioUrl %>">
                     <i class="fa-solid fa-play"></i>
                   </button>
                 </a>
@@ -160,7 +165,12 @@
                  data-artist="<%= (track.artist || '').toLowerCase() %>">
               <a href="/track/<%= track._id %>" class="card-image">
                 <img src="<%= track.coverUrl || 'https://images.unsplash.com/photo-1470225620780-dba8ba36b745?w=400' %>" alt="<%= track.title %>">
-                <button class="play-btn" onclick="event.preventDefault(); event.stopPropagation(); playTrack('<%= track._id %>', '<%= track.title.replace(/'/g, "\\'") %>', '<%= (track.artist || 'Unknown').replace(/'/g, "\\'") %>', '<%= track.coverUrl || '' %>', '<%= track.audioUrl %>')">
+                <button class="play-btn" onclick="event.preventDefault(); event.stopPropagation(); playFromButton(this)"
+                        data-track-id="<%= track._id %>"
+                        data-track-title="<%= track.title.replace(/"/g, '&quot;') %>"
+                        data-track-artist="<%= (track.artist || 'Unknown').replace(/"/g, '&quot;') %>"
+                        data-track-cover="<%= track.coverUrl || '' %>"
+                        data-track-audio="<%= track.audioUrl %>">
                   <i class="fa-solid fa-play"></i>
                 </button>
               </a>
@@ -310,7 +320,7 @@
   
   <script>
 // Global playlists data
-let userPlaylists = <%- JSON.stringify(playlists || []) %>;
+let userPlaylists = JSON.parse('<%- JSON.stringify(playlists || []) %>');
 console.log('Initial playlists from server:', userPlaylists.length);
 
 // Global functions

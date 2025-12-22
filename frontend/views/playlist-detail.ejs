@@ -33,6 +33,11 @@
     <div class="bar"></div>
   </div>
 
+  <script>
+    // Expose playlist public state to JS as a boolean literal
+    const __PLAYLIST_IS_PUBLIC__ = JSON.parse('<%= JSON.stringify(!!playlist.isPublic) %>');
+  </script>
+
   <header class="header">
     <div style="display: flex; align-items: center;">
       <div class="logo">
@@ -100,7 +105,7 @@
     </div>
   </div>
   
-  <div class="playlist-actions">
+  <div class="playlist-actions" data-is-public="<%= !!playlist.isPublic %>">
     <% if (playlist.tracks.length > 0) { %>
       <button class="btn-play-all" onclick="playAll()">
         <i class="fa-solid fa-play"></i>
@@ -160,9 +165,14 @@
             </div>
             <div class="track-duration">--:--</div>
             <div class="track-actions">
-              <button class="btn-track-action" 
-                      onclick="window.playTrack('<%= track._id %>', '<%= track.title.replace(/'/g, "\\'") %>', '<%= (track.artist || 'Unknown').replace(/'/g, "\\'") %>', '<%= track.coverUrl || '' %>', '<%= track.audioUrl %>')" 
-                      title="Phát">
+        <button class="btn-track-action"
+          data-track-id="<%= track._id %>"
+          data-track-title="<%= track.title || '' %>"
+          data-track-artist="<%= track.artist || 'Unknown' %>"
+          data-track-cover="<%= track.coverUrl || '' %>"
+          data-track-audio="<%= track.audioUrl || '' %>"
+          onclick="playFromButton(this)"
+          title="Phát">
                 <i class="fa-solid fa-play"></i>
               </button>
               <% if (isOwner) { %>
@@ -271,24 +281,14 @@
       setTimeout(() => clearInterval(checkPlayer), 5000);
     });
     
-    // Load duration for all tracks
+    // Load duration for all tracks (read audioUrl from DOM dataset)
     function loadTrackDurations() {
       const trackItems = document.querySelectorAll('.track-item');
-      
-      trackItems.forEach((item, index) => {
+
+      trackItems.forEach((item) => {
         const durationElement = item.querySelector('.track-duration');
-        const trackData = [
-          <% playlist.tracks.forEach((track, index) => { %>
-            {
-              audioUrl: '<%= track.audioUrl %>',
-              index: <%= index %>
-            }<%= index < playlist.tracks.length - 1 ? ',' : '' %>
-          <% }) %>
-        ][index];
-        
-        if (trackData && trackData.audioUrl) {
-          loadDuration(trackData.audioUrl, durationElement);
-        }
+        const audioUrl = item.dataset.trackAudio || item.getAttribute('data-track-audio');
+        if (audioUrl) loadDuration(audioUrl, durationElement);
       });
     }
     
@@ -350,17 +350,15 @@
         return;
       }
       
-      const tracks = [
-        <% playlist.tracks.forEach((track, index) => { %>
-          {
-            id: '<%= track._id %>',
-            title: '<%= track.title.replace(/'/g, "\\'") %>',
-            artist: '<%= (track.artist || 'Unknown').replace(/'/g, "\\'") %>',
-            cover: '<%= track.coverUrl || '' %>',
-            audioUrl: '<%= track.audioUrl %>'
-          }<%= index < playlist.tracks.length - 1 ? ',' : '' %>
-        <% }) %>
-      ];
+      // Build tracks list from DOM data attributes to avoid embedding EJS in JS
+      const trackEls = document.querySelectorAll('.track-item');
+      const tracks = Array.from(trackEls).map(el => ({
+        id: el.dataset.trackId,
+        title: el.dataset.trackTitle || '',
+        artist: el.dataset.trackArtist || '',
+        cover: el.dataset.trackCover || '',
+        audioUrl: el.dataset.trackAudio || ''
+      }));
       
       if (tracks.length > 0) {
         window.player.queue = tracks;
@@ -381,17 +379,15 @@
         return;
       }
       
-      const tracks = [
-        <% playlist.tracks.forEach((track, index) => { %>
-          {
-            id: '<%= track._id %>',
-            title: '<%= track.title.replace(/'/g, "\\'") %>',
-            artist: '<%= (track.artist || 'Unknown').replace(/'/g, "\\'") %>',
-            cover: '<%= track.coverUrl || '' %>',
-            audioUrl: '<%= track.audioUrl %>'
-          }<%= index < playlist.tracks.length - 1 ? ',' : '' %>
-        <% }) %>
-      ];
+      // Build tracks list from DOM data attributes to avoid embedding EJS in JS
+      const trackEls2 = document.querySelectorAll('.track-item');
+      const tracks = Array.from(trackEls2).map(el => ({
+        id: el.dataset.trackId,
+        title: el.dataset.trackTitle || '',
+        artist: el.dataset.trackArtist || '',
+        cover: el.dataset.trackCover || '',
+        audioUrl: el.dataset.trackAudio || ''
+      }));
       
       if (tracks.length > 0) {
         // Shuffle array
@@ -427,6 +423,16 @@
       // Update UI
       setTimeout(updatePlayingState, 300);
     };
+
+    // Helper to play using button data-attributes
+    function playFromButton(btn) {
+      const id = btn.getAttribute('data-track-id');
+      const title = btn.getAttribute('data-track-title') || '';
+      const artist = btn.getAttribute('data-track-artist') || '';
+      const cover = btn.getAttribute('data-track-cover') || '';
+      const audioUrl = btn.getAttribute('data-track-audio') || '';
+      window.playTrack(id, title, artist, cover, audioUrl);
+    }
     
     // Remove Track from Playlist
     async function removeTrack(trackId) {
@@ -481,7 +487,9 @@
 
     async function toggleVisibility(btn) {
       try {
-        const nextState = !<%= playlist.isPublic ? 'true' : 'false' %>;
+  // Read current public state from DOM attribute and invert
+  const isPublic = document.querySelector('.playlist-actions')?.dataset?.isPublic === 'true';
+  const nextState = !isPublic;
         const res = await fetch('/playlists/<%= playlist._id %>/visibility', {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },

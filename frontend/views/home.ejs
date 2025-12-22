@@ -511,13 +511,13 @@
       </div>
       <div class="cards">
         <% 
-        // Chỉ hiển thị 5 bài ngẫu nhiên
-        const displayTracks = (tracks || []).sort(() => 0.5 - Math.random()).slice(0, 5);
-        displayTracks.forEach(t => { 
+  // Chỉ hiển thị 5 bài ngẫu nhiên
+  const displayTracks = (tracks || []).sort(() => 0.5 - Math.random()).slice(0, 5);
+  displayTracks.forEach(t => { const cover = t.coverUrl || 'https://images.unsplash.com/photo-1470225620780-dba8ba36b745?w=400'; 
         %>
           <a href="/login" class="card">
             <div class="thumb-wrapper">
-              <div class="thumb" style="background-image:url('<%= t.coverUrl || "https://images.unsplash.com/photo-1470225620780-dba8ba36b745?w=400" %>');"></div>
+              <div class="thumb" style="background-image:url('<%= cover %>');"></div>
               <div class="play-overlay">
                 <div class="play-icon"></div>
               </div>
