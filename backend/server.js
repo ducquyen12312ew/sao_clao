@@ -8,7 +8,6 @@ const crypto = require('crypto');
 const passport = require('passport');
 const GoogleStrategy = require('passport-google-oauth20').Strategy;
 const nodemailer = require('nodemailer');
-const OPENAI_API_KEY = process.env.OPENAI_API_KEY || '';
 
 dotenv.config();
 
@@ -837,80 +836,6 @@ app.get('/api/tracks/genre/:genre', requireAuth, async (req, res) => {
 }
 });
 
-async function callLyricsAI({ prompt, genre, mood, vibe, vocal, length, language, lengthChoice }) {
-  const targetLinesMap = {
-    short: { label: '5-6 lines', min: 5, max: 6 },
-    medium: { label: '8-10 lines', min: 8, max: 10 },
-    long: { label: '12-20 lines', min: 12, max: 20 }
-  };
-  const len = targetLinesMap[lengthChoice] || targetLinesMap.medium;
-
-  if (!OPENAI_API_KEY) {
-    const lines = [];
-    const total = len.max;
-    for (let i = 1; i <= total; i++) {
-      if (i === 1) lines.push(`Verse 1: ${prompt}`);
-      else if (i === Math.ceil(total / 2)) lines.push(`Chorus: ${genre || 'melody'} rises with ${mood || 'emotion'}`);
-      else lines.push(`Line ${i}: ${prompt} (${vibe || 'vibe'})`);
-    }
-    return {
-      title: `Song from prompt: ${prompt.slice(0, 40)}`,
-      lyrics: lines.join('\n')
-    };
-  }
-
-  const system = [
-    'You are a songwriter.',
-    'Return pure JSON: {"title": "...", "lyrics": "..."}',
-    `Required line count: ${len.label} (min ${len.min}, max ${len.max}).`,
-    'Structure suggestion: Verse 1, Verse 2, Chorus, Bridge (if long enough).',
-    'Do not end lines with "..."; write complete sentences, one per line.',
-    language ? `Write in language: ${language}` : 'Prefer English if not specified.'
-  ].filter(Boolean).join(' ');
-
-  const user = [
-    `Prompt: ${prompt}`,
-    genre ? `Genre: ${genre}` : '',
-    mood ? `Mood: ${mood}` : '',
-    vibe ? `Vibe: ${vibe}` : '',
-    vocal ? `Vocal tone: ${vocal}` : '',
-    length ? `Estimated length: ${length}` : '',
-    lengthChoice ? `Desired length: ${lengthChoice}` : '',
-    language ? `Language: ${language}` : ''
-  ].filter(Boolean).join('\n');
-
-  const res = await fetch('https://api.openai.com/v1/chat/completions', {
-    method: 'POST',
-    headers: {
-      'Content-Type': 'application/json',
-      Authorization: `Bearer ${OPENAI_API_KEY}`
-    },
-    body: JSON.stringify({
-      model: process.env.OPENAI_MODEL || 'gpt-4o-mini',
-      temperature: 0.7,
-      messages: [
-        { role: 'system', content: system },
-        { role: 'user', content: user }
-      ],
-      max_tokens: 800
-    })
-  });
-
-  if (!res.ok) {
-    const text = await res.text();
-    throw new Error(`OpenAI error ${res.status}: ${text}`);
-  }
-
-  const data = await res.json();
-  const content = data.choices?.[0]?.message?.content || '';
-  try {
-    const parsed = JSON.parse(content);
-    return { title: parsed.title || 'New song', lyrics: parsed.lyrics || content };
-  } catch (err) {
-    return { title: 'New song', lyrics: content };
-  }
-}
-
 app.get('/api/tracks/mood/:mood', requireAuth, async (req, res) => {
   try {
     const { mood } = req.params;
@@ -926,31 +851,6 @@ app.get('/api/tracks/mood/:mood', requireAuth, async (req, res) => {
     res.json({ success: true, tracks, mood });
   } catch (err) {
     res.status(500).json({ success: false, tracks: [], error: err.message });
-  }
-});
-
-app.post('/api/ai/generate-lyrics', requireAuth, async (req, res) => {
-  try {
-    const { prompt, genre, mood, vibe, vocal, length, language, lengthChoice } = req.body || {};
-    if (!prompt || !prompt.trim()) {
-      return res.status(400).json({ success: false, message: 'Please provide a prompt.' });
-    }
-
-    const result = await callLyricsAI({
-      prompt: prompt.trim(),
-      genre: (genre || '').trim(),
-      mood: (mood || '').trim(),
-      vibe: (vibe || '').trim(),
-      vocal: (vocal || '').trim(),
-      length: (length || '').trim(),
-      language: (language || '').trim(),
-      lengthChoice: (lengthChoice || '').trim()
-    });
-
-    res.json({ success: true, ...result });
-  } catch (err) {
-    console.error('AI generate error:', err);
-    res.status(500).json({ success: false, message: 'Could not generate lyrics', error: err.message });
   }
 });
 

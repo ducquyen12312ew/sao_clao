@@ -48,124 +48,6 @@
     </div>
   </div>
 
-  <!-- AI Lyrics Modal -->
-  <div class="modal" id="aiLyricsModal">
-    <div class="modal-content">
-      <button class="modal-close" onclick="closeAIModal()">
-        <i class="fa-solid fa-xmark"></i>
-      </button>
-      <h3 class="modal-title">AI song ideas</h3>
-      <div class="ai-layout">
-        <div class="ai-column">
-          <p style="color: var(--text-secondary); margin-bottom: 16px;">Enter an idea, choose a style, and let AI write lyrics.</p>
-          <% const genres = ['Pop', 'Ballad', 'Acoustic', 'Indie', 'Lo-fi', 'Rock', 'Hip-hop', 'R&B', 'EDM', 'Jazz', 'Blues', 'Country', 'Classical', 'Folk', 'Metal', 'Trance', 'House', 'Chill', 'Lofi', 'K-pop', 'J-pop', 'V-pop']; %>
-          <% const moods = ['Bright', 'Sad', 'Calm', 'Excited', 'Gentle', 'Bold', 'Romantic', 'Nostalgic', 'Intense', 'Dreamy']; %>
-          <% const vibes = ['Chill', 'Upbeat', 'Cinematic', 'Dance', 'Raw', 'Synthwave', 'Acoustic', 'Future bass']; %>
-          <% const vocals = ['Male high', 'Male mid', 'Male low', 'Female high', 'Female mid', 'Female low', 'Rap']; %>
-          <% const languages = [{ label: 'Vietnamese', value: 'vi' }, { label: 'English', value: 'en' }, { label: 'Japanese', value: 'ja' }, { label: 'Korean', value: 'ko' }]; %>
-          <div class="form-group">
-            <label class="form-label">Idea / prompt</label>
-            <input type="text" class="form-input" id="aiPrompt" placeholder="Ex: A rainy afternoon missing an old love">
-          </div>
-          <div class="form-group">
-            <label class="form-label">Genre</label>
-            <div class="input-with-dropdown">
-              <input type="text" class="form-input" id="aiGenre" placeholder="Select or type more">
-              <button type="button" class="dropdown-toggle" data-target="aiGenreOptions"><i class="fa-solid fa-caret-down"></i></button>
-            </div>
-            <div class="dropdown-menu" id="aiGenreOptions">
-              <% genres.forEach(g => { %>
-                <div class="dropdown-option" data-input="aiGenre" data-value="<%= g.toLowerCase() %>"><%= g %></div>
-              <% }) %>
-            </div>
-          </div>
-          <div class="form-group">
-            <label class="form-label">Mood</label>
-            <div class="input-with-dropdown">
-              <input type="text" class="form-input" id="aiMood" placeholder="bright, mellow...">
-              <button type="button" class="dropdown-toggle" data-target="aiMoodOptions"><i class="fa-solid fa-caret-down"></i></button>
-            </div>
-            <div class="dropdown-menu" id="aiMoodOptions">
-              <% moods.forEach(m => { %>
-                <div class="dropdown-option" data-input="aiMood" data-value="<%= m %>"><%= m %></div>
-              <% }) %>
-            </div>
-          </div>
-          <div class="form-group">
-            <label class="form-label">Melody / vibe</label>
-            <div class="input-with-dropdown">
-              <input type="text" class="form-input" id="aiVibe" placeholder="chill, upbeat, cinematic...">
-              <button type="button" class="dropdown-toggle" data-target="aiVibeOptions"><i class="fa-solid fa-caret-down"></i></button>
-            </div>
-            <div class="dropdown-menu" id="aiVibeOptions">
-              <% vibes.forEach(v => { %>
-                <div class="dropdown-option" data-input="aiVibe" data-value="<%= v %>"><%= v %></div>
-              <% }) %>
-            </div>
-          </div>
-          <div class="form-group">
-            <label class="form-label">Vocal tone</label>
-            <div class="input-with-dropdown">
-              <input type="text" class="form-input" id="aiVocal" placeholder="high male, low female...">
-              <button type="button" class="dropdown-toggle" data-target="aiVocalOptions"><i class="fa-solid fa-caret-down"></i></button>
-            </div>
-            <div class="dropdown-menu" id="aiVocalOptions">
-              <% vocals.forEach(v => { %>
-                <div class="dropdown-option" data-input="aiVocal" data-value="<%= v %>"><%= v %></div>
-              <% }) %>
-            </div>
-          </div>
-          <div class="form-group">
-            <label class="form-label">Desired length</label>
-            <select class="form-input" id="aiLengthChoice">
-              <option value="short">Short (5-6 lines)</option>
-              <option value="medium" selected>Medium (8-10 lines)</option>
-              <option value="long">Long (12-20 lines)</option>
-            </select>
-          </div>
-          <div class="form-group">
-            <label class="form-label">Language</label>
-            <div class="input-with-dropdown">
-              <input type="text" class="form-input" id="aiLanguage" placeholder="Choose language (vi, en, ja, ko)">
-              <button type="button" class="dropdown-toggle" data-target="aiLanguageOptions"><i class="fa-solid fa-caret-down"></i></button>
-            </div>
-            <div class="dropdown-menu" id="aiLanguageOptions">
-              <% languages.forEach(l => { %>
-                <div class="dropdown-option" data-input="aiLanguage" data-value="<%= l.value %>"><%= l.label %></div>
-              <% }) %>
-            </div>
-          </div>
-          <div class="modal-footer" style="padding: 0;">
-            <div id="aiStatus" class="ai-status" style="display:none;">Generating...</div>
-            <div style="flex:1"></div>
-            <button class="btn btn-secondary" onclick="closeAIModal()">Close</button>
-            <button class="btn btn-primary" onclick="generateLyrics()">Generate lyrics</button>
-          </div>
-        </div>
-        <div class="ai-column ai-preview-panel">
-          <div class="ai-preview-header">
-            <div>
-              <div class="ai-preview-label">Preview</div>
-              <div class="ai-preview-title" id="aiPreviewTitle">No results yet</div>
-            </div>
-            <div class="ai-preview-actions">
-              <button class="btn btn-secondary" onclick="playPreview()" id="aiPlayBtn">
-                <i class="fa-solid fa-play"></i> Play
-              </button>
-              <button class="btn btn-secondary" onclick="stopPreview()" id="aiStopBtn">
-                <i class="fa-solid fa-stop"></i> Stop
-              </button>
-            </div>
-          </div>
-          <div class="ai-preview" id="aiPreviewLines">
-            <p style="color: var(--text-secondary); text-align:center; margin:0;">Generate lyrics to preview them here</p>
-          </div>
-        </div>
-      </div>
-    </div>
-  </div>
-
-
   <!-- Header -->
   <header class="header">
     <div style="display: flex; align-items: center;">
@@ -205,10 +87,6 @@
       <button class="upload-btn" onclick="window.location.href='/upload'">
         <i class="fa-solid fa-cloud-arrow-up"></i>
         <span class="btn-text">Upload</span>
-      </button>
-      <button class="ai-btn" onclick="openAIModal()">
-        <i class="fa-solid fa-wand-magic-sparkles"></i>
-        <span class="btn-text">AI</span>
       </button>
 
       <a href="/users/<%= user.username %>" style="text-decoration: none;">
@@ -501,57 +379,6 @@ window.openCreatePlaylistModal = function() {
   
   const descInput = document.getElementById('playlistDescription');
   if (descInput) descInput.value = '';
-};
-
-window.openAIModal = function() {
-  document.getElementById('aiLyricsModal')?.classList.add('active');
-};
-
-window.closeAIModal = function() {
-  document.getElementById('aiLyricsModal')?.classList.remove('active');
-  stopPreview();
-};
-
-window.generateLyrics = async function() {
-  const statusEl = document.getElementById('aiStatus');
-  const prompt = document.getElementById('aiPrompt')?.value.trim();
-  const genre = document.getElementById('aiGenre')?.value.trim();
-  const mood = document.getElementById('aiMood')?.value.trim();
-  const vibe = document.getElementById('aiVibe')?.value.trim();
-  const vocal = document.getElementById('aiVocal')?.value.trim();
-  const lengthChoice = document.getElementById('aiLengthChoice')?.value.trim();
-  const language = document.getElementById('aiLanguage')?.value.trim();
-
-  if (!prompt) {
-    alert('Please enter a prompt.');
-    return;
-  }
-
-  if (statusEl) {
-    statusEl.textContent = 'Generating...';
-    statusEl.style.display = 'inline-block';
-  }
-
-  try {
-    const res = await fetch('/api/ai/generate-lyrics', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ prompt, genre, mood, vibe, vocal, lengthChoice, language, length: lengthChoice })
-    });
-
-    const data = await res.json();
-    if (data.success) {
-      showNotification('Lyrics generated; preview on the right.');
-      renderPreview(data.lyrics || '', data.title || '');
-    } else {
-      alert(data.message || 'Could not generate lyrics');
-    }
-  } catch (err) {
-    console.error(err);
-    alert('AI connection error');
-  } finally {
-    if (statusEl) statusEl.style.display = 'none';
-  }
 };
 
 window.closeCreatePlaylistModal = function() {
