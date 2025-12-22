@@ -55,46 +55,6 @@
         </div>
       </div>
 
-      <div class="ai-box">
-        <div>
-          <h3 class="ai-title">AI gợi ý bài hát</h3>
-          <p class="ai-desc">Nhập một ý tưởng, chọn phong cách rồi để AI viết lời.</p>
-        </div>
-        <div class="form-group">
-          <label>Ý tưởng / prompt</label>
-          <input type="text" id="aiPrompt" placeholder="VD: Một buổi chiều mưa nhớ người yêu cũ">
-        </div>
-        <div class="form-row">
-          <div class="form-group half">
-            <label>Thể loại</label>
-            <input type="text" id="aiGenre" placeholder="ballad, pop, rap...">
-          </div>
-          <div class="form-group half">
-            <label>Mood</label>
-            <input type="text" id="aiMood" placeholder="vui tươi, trầm lắng...">
-          </div>
-        </div>
-        <div class="form-row">
-          <div class="form-group half">
-            <label>Giai điệu / vibe</label>
-            <input type="text" id="aiVibe" placeholder="chill, sôi động, cinematic...">
-          </div>
-          <div class="form-group half">
-            <label>Tone giọng</label>
-            <input type="text" id="aiVocal" placeholder="nam cao, nữ trầm...">
-          </div>
-        </div>
-        <div class="form-group">
-          <label>Độ dài mong muốn</label>
-          <input type="text" id="aiLength" placeholder="Ngắn, vừa, dài">
-        </div>
-        <div class="ai-actions">
-          <button type="button" class="btn btn-secondary" id="aiFillDemo">Dán demo</button>
-          <button type="button" class="btn btn-primary" id="aiGenerate">Tạo lời bằng AI</button>
-          <div id="aiStatus" class="ai-status" style="display:none;">Đang tạo...</div>
-        </div>
-      </div>
-      
       <div class="form-group">
         <label>Tên bài hát <span class="required">*</span></label>
         <input type="text" name="title" required placeholder="Nhập tên bài hát">
@@ -212,66 +172,6 @@
       }
     });
 
-    // AI helper
-    const aiBtn = document.getElementById('aiGenerate');
-    const aiStatus = document.getElementById('aiStatus');
-    const aiPrompt = document.getElementById('aiPrompt');
-    const aiGenre = document.getElementById('aiGenre');
-    const aiMood = document.getElementById('aiMood');
-    const aiVibe = document.getElementById('aiVibe');
-    const aiVocal = document.getElementById('aiVocal');
-    const aiLength = document.getElementById('aiLength');
-    const aiFillDemo = document.getElementById('aiFillDemo');
-
-    aiFillDemo?.addEventListener('click', () => {
-      aiPrompt.value = 'Một người trẻ nhớ về tuổi thơ bên dòng sông';
-      aiGenre.value = 'ballad';
-      aiMood.value = 'hoài niệm, ấm áp';
-      aiVibe.value = 'mộc mạc, guitar nhẹ';
-      aiVocal.value = 'nam trung';
-      aiLength.value = 'vừa';
-    });
-
-    aiBtn?.addEventListener('click', async () => {
-      if (!aiPrompt.value.trim()) {
-        alert('Vui lòng nhập gợi ý.');
-        aiPrompt.focus();
-        return;
-      }
-      aiStatus.style.display = 'inline-block';
-      aiStatus.textContent = 'Đang tạo...';
-      aiBtn.disabled = true;
-
-      try {
-        const res = await fetch('/api/ai/generate-lyrics', {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({
-            prompt: aiPrompt.value,
-            genre: aiGenre.value,
-            mood: aiMood.value,
-            vibe: aiVibe.value,
-            vocal: aiVocal.value,
-            length: aiLength.value
-          })
-        });
-
-        const data = await res.json();
-        if (data.success) {
-          document.querySelector('input[name="title"]').value = data.title || '';
-          document.querySelector('textarea[name="lyricsText"]').value = data.lyrics || '';
-          aiStatus.textContent = 'Đã chèn vào form ✓';
-        } else {
-          aiStatus.textContent = data.message || 'Không tạo được lời.';
-        }
-      } catch (err) {
-        console.error(err);
-        aiStatus.textContent = 'Lỗi kết nối AI.';
-      } finally {
-        aiBtn.disabled = false;
-        setTimeout(() => aiStatus.style.display = 'none', 2500);
-      }
-    });
   </script>
 </body>
 </html>

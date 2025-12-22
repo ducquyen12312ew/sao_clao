@@ -48,124 +48,6 @@
     </div>
   </div>
 
-  <!-- AI Lyrics Modal -->
-  <div class="modal" id="aiLyricsModal">
-    <div class="modal-content">
-      <button class="modal-close" onclick="closeAIModal()">
-        <i class="fa-solid fa-xmark"></i>
-      </button>
-      <h3 class="modal-title">AI gợi ý bài hát</h3>
-      <div class="ai-layout">
-        <div class="ai-column">
-          <p style="color: var(--text-secondary); margin-bottom: 16px;">Nhập ý tưởng, chọn phong cách để AI viết lời cho bạn.</p>
-          <% const genres = ['Pop', 'Ballad', 'Acoustic', 'Indie', 'Lo-fi', 'Rock', 'Hip-hop', 'R&B', 'EDM', 'Jazz', 'Blues', 'Country', 'Classical', 'Folk', 'Metal', 'Trance', 'House', 'Chill', 'Lofi', 'K-pop', 'J-pop', 'V-pop']; %>
-          <% const moods = ['Vui tươi', 'Buồn', 'Trầm lắng', 'Hào hứng', 'Nhẹ nhàng', 'Mạnh mẽ', 'Lãng mạn', 'Hoài niệm', 'Dữ dội', 'Bay bổng']; %>
-          <% const vibes = ['Chill', 'Sôi động', 'Cinematic', 'Dance', 'Mộc mạc', 'Synthwave', 'Acoustic', 'Future bass']; %>
-          <% const vocals = ['Nam cao', 'Nam trung', 'Nam trầm', 'Nữ cao', 'Nữ trung', 'Nữ trầm', 'Rap']; %>
-          <% const languages = [{ label: 'Tiếng Việt', value: 'vi' }, { label: 'Tiếng Anh', value: 'en' }, { label: 'Tiếng Nhật', value: 'ja' }, { label: 'Tiếng Hàn', value: 'ko' }]; %>
-          <div class="form-group">
-            <label class="form-label">Ý tưởng / prompt</label>
-            <input type="text" class="form-input" id="aiPrompt" placeholder="VD: Một buổi chiều mưa nhớ người yêu cũ">
-          </div>
-          <div class="form-group">
-            <label class="form-label">Thể loại</label>
-            <div class="input-with-dropdown">
-              <input type="text" class="form-input" id="aiGenre" placeholder="Chọn hoặc nhập thêm">
-              <button type="button" class="dropdown-toggle" data-target="aiGenreOptions"><i class="fa-solid fa-caret-down"></i></button>
-            </div>
-            <div class="dropdown-menu" id="aiGenreOptions">
-              <% genres.forEach(g => { %>
-                <div class="dropdown-option" data-input="aiGenre" data-value="<%= g.toLowerCase() %>"><%= g %></div>
-              <% }) %>
-            </div>
-          </div>
-          <div class="form-group">
-            <label class="form-label">Mood</label>
-            <div class="input-with-dropdown">
-              <input type="text" class="form-input" id="aiMood" placeholder="vui tươi, trầm lắng...">
-              <button type="button" class="dropdown-toggle" data-target="aiMoodOptions"><i class="fa-solid fa-caret-down"></i></button>
-            </div>
-            <div class="dropdown-menu" id="aiMoodOptions">
-              <% moods.forEach(m => { %>
-                <div class="dropdown-option" data-input="aiMood" data-value="<%= m %>"><%= m %></div>
-              <% }) %>
-            </div>
-          </div>
-          <div class="form-group">
-            <label class="form-label">Giai điệu / vibe</label>
-            <div class="input-with-dropdown">
-              <input type="text" class="form-input" id="aiVibe" placeholder="chill, sôi động, cinematic...">
-              <button type="button" class="dropdown-toggle" data-target="aiVibeOptions"><i class="fa-solid fa-caret-down"></i></button>
-            </div>
-            <div class="dropdown-menu" id="aiVibeOptions">
-              <% vibes.forEach(v => { %>
-                <div class="dropdown-option" data-input="aiVibe" data-value="<%= v %>"><%= v %></div>
-              <% }) %>
-            </div>
-          </div>
-          <div class="form-group">
-            <label class="form-label">Tone giọng</label>
-            <div class="input-with-dropdown">
-              <input type="text" class="form-input" id="aiVocal" placeholder="nam cao, nữ trầm...">
-              <button type="button" class="dropdown-toggle" data-target="aiVocalOptions"><i class="fa-solid fa-caret-down"></i></button>
-            </div>
-            <div class="dropdown-menu" id="aiVocalOptions">
-              <% vocals.forEach(v => { %>
-                <div class="dropdown-option" data-input="aiVocal" data-value="<%= v %>"><%= v %></div>
-              <% }) %>
-            </div>
-          </div>
-          <div class="form-group">
-            <label class="form-label">Độ dài mong muốn</label>
-            <select class="form-input" id="aiLengthChoice">
-              <option value="short">Ngắn (5-6 câu)</option>
-              <option value="medium" selected>Vừa (8-10 câu)</option>
-              <option value="long">Dài (12-20 câu)</option>
-            </select>
-          </div>
-          <div class="form-group">
-            <label class="form-label">Ngôn ngữ</label>
-            <div class="input-with-dropdown">
-              <input type="text" class="form-input" id="aiLanguage" placeholder="Chọn ngôn ngữ (vi, en, ja, ko)">
-              <button type="button" class="dropdown-toggle" data-target="aiLanguageOptions"><i class="fa-solid fa-caret-down"></i></button>
-            </div>
-            <div class="dropdown-menu" id="aiLanguageOptions">
-              <% languages.forEach(l => { %>
-                <div class="dropdown-option" data-input="aiLanguage" data-value="<%= l.value %>"><%= l.label %></div>
-              <% }) %>
-            </div>
-          </div>
-          <div class="modal-footer" style="padding: 0;">
-            <div id="aiStatus" class="ai-status" style="display:none;">Đang tạo...</div>
-            <div style="flex:1"></div>
-            <button class="btn btn-secondary" onclick="closeAIModal()">Đóng</button>
-            <button class="btn btn-primary" onclick="generateLyrics()">Tạo lời</button>
-          </div>
-        </div>
-        <div class="ai-column ai-preview-panel">
-          <div class="ai-preview-header">
-            <div>
-              <div class="ai-preview-label">Bản xem trước</div>
-              <div class="ai-preview-title" id="aiPreviewTitle">Chưa có kết quả</div>
-            </div>
-            <div class="ai-preview-actions">
-              <button class="btn btn-secondary" onclick="playPreview()" id="aiPlayBtn">
-                <i class="fa-solid fa-play"></i> Phát
-              </button>
-              <button class="btn btn-secondary" onclick="stopPreview()" id="aiStopBtn">
-                <i class="fa-solid fa-stop"></i> Dừng
-              </button>
-            </div>
-          </div>
-          <div class="ai-preview" id="aiPreviewLines">
-            <p style="color: var(--text-secondary); text-align:center; margin:0;">Tạo lời để xem trước tại đây</p>
-          </div>
-        </div>
-      </div>
-    </div>
-  </div>
-
-
   <!-- Header -->
   <header class="header">
     <div style="display: flex; align-items: center;">
@@ -205,10 +87,6 @@
       <button class="upload-btn" onclick="window.location.href='/upload'">
         <i class="fa-solid fa-cloud-arrow-up"></i>
         <span class="btn-text">Upload</span>
-      </button>
-      <button class="ai-btn" onclick="openAIModal()">
-        <i class="fa-solid fa-wand-magic-sparkles"></i>
-        <span class="btn-text">AI</span>
       </button>
 
       <a href="/users/<%= user.username %>" style="text-decoration: none;">
@@ -501,57 +379,6 @@ window.openCreatePlaylistModal = function() {
   
   const descInput = document.getElementById('playlistDescription');
   if (descInput) descInput.value = '';
-};
-
-window.openAIModal = function() {
-  document.getElementById('aiLyricsModal')?.classList.add('active');
-};
-
-window.closeAIModal = function() {
-  document.getElementById('aiLyricsModal')?.classList.remove('active');
-  stopPreview();
-};
-
-window.generateLyrics = async function() {
-  const statusEl = document.getElementById('aiStatus');
-  const prompt = document.getElementById('aiPrompt')?.value.trim();
-  const genre = document.getElementById('aiGenre')?.value.trim();
-  const mood = document.getElementById('aiMood')?.value.trim();
-  const vibe = document.getElementById('aiVibe')?.value.trim();
-  const vocal = document.getElementById('aiVocal')?.value.trim();
-  const lengthChoice = document.getElementById('aiLengthChoice')?.value.trim();
-  const language = document.getElementById('aiLanguage')?.value.trim();
-
-  if (!prompt) {
-    alert('Vui lòng nhập gợi ý.');
-    return;
-  }
-
-  if (statusEl) {
-    statusEl.textContent = 'Đang tạo...';
-    statusEl.style.display = 'inline-block';
-  }
-
-  try {
-    const res = await fetch('/api/ai/generate-lyrics', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ prompt, genre, mood, vibe, vocal, lengthChoice, language, length: lengthChoice })
-    });
-
-    const data = await res.json();
-    if (data.success) {
-      showNotification('Đã tạo lời, xem trước bên phải.');
-      renderPreview(data.lyrics || '', data.title || '');
-    } else {
-      alert(data.message || 'Không thể tạo lời');
-    }
-  } catch (err) {
-    console.error(err);
-    alert('Lỗi kết nối AI');
-  } finally {
-    if (statusEl) statusEl.style.display = 'none';
-  }
 };
 
 window.closeCreatePlaylistModal = function() {
@@ -951,72 +778,10 @@ if (!document.getElementById('notif-animations')) {
   document.head.appendChild(style);
 }
 
-let aiPreviewInterval = null;
-let aiPreviewLines = [];
-let aiPreviewIndex = 0;
-
-function renderPreview(lyrics, title) {
-  const container = document.getElementById('aiPreviewLines');
-  const titleEl = document.getElementById('aiPreviewTitle');
-  if (titleEl) titleEl.textContent = title || 'Bản xem trước';
-  if (!container) return;
-  
-  aiPreviewLines = (lyrics || '')
-    .split(/\r?\n/)
-    .map(l => l.trim())
-    .filter(Boolean);
-  aiPreviewIndex = 0;
-  stopPreview();
-
-  if (!aiPreviewLines.length) {
-    container.innerHTML = '<p style="color: var(--text-secondary); text-align:center; margin:0;">Chưa có lời</p>';
-    return;
-  }
-
-  container.innerHTML = aiPreviewLines.map((line, i) => 
-    `<div class="ai-line" data-idx="${i}">${line}</div>`
-  ).join('');
-}
-
-function highlightLine(idx) {
-  document.querySelectorAll('.ai-line').forEach(el => {
-    el.classList.remove('active', 'passed');
-  });
-  aiPreviewLines.forEach((_, i) => {
-    const el = document.querySelector(`.ai-line[data-idx="${i}"]`);
-    if (!el) return;
-    if (i < idx) el.classList.add('passed');
-    if (i === idx) el.classList.add('active');
-  });
-}
-
-window.playPreview = function() {
-  if (!aiPreviewLines.length) return;
-  stopPreview();
-  aiPreviewIndex = 0;
-  highlightLine(aiPreviewIndex);
-  aiPreviewInterval = setInterval(() => {
-    aiPreviewIndex += 1;
-    if (aiPreviewIndex >= aiPreviewLines.length) {
-      stopPreview();
-      return;
-    }
-    highlightLine(aiPreviewIndex);
-  }, 1400);
-};
-
-window.stopPreview = function() {
-  if (aiPreviewInterval) {
-    clearInterval(aiPreviewInterval);
-    aiPreviewInterval = null;
-  }
-};
-
 function initEventListeners() {
   document.addEventListener('keydown', (e) => {
     if (e.key === 'Escape') {
       closeCreatePlaylistModal();
-      closeAIModal();
     }
   });
   
@@ -1046,49 +811,6 @@ function initEventListeners() {
     showContextMenu(e, id, title, artist, cover, audioUrl);
   });
 }
-
-// Quick genre chips
-document.addEventListener('click', (e) => {
-  const chip = e.target.closest('.chip');
-  if (!chip) return;
-  const val = chip.dataset.value;
-  const input = document.getElementById('aiGenre');
-  if (input) input.value = val;
-});
-
-// Dropdown toggles
-document.addEventListener('click', (e) => {
-  const toggle = e.target.closest('.dropdown-toggle');
-  const option = e.target.closest('.dropdown-option');
-
-  if (toggle) {
-    const targetId = toggle.dataset.target;
-    document.querySelectorAll('.dropdown-menu').forEach(menu => {
-      if (menu.id === targetId) {
-        menu.classList.toggle('open');
-      } else {
-        menu.classList.remove('open');
-      }
-    });
-    e.stopPropagation();
-    return;
-  }
-
-  if (option) {
-    const targetInput = option.dataset.input;
-    const value = option.dataset.value;
-    if (targetInput && value) {
-      const input = document.getElementById(targetInput);
-      if (input) input.value = value;
-    }
-    document.querySelectorAll('.dropdown-menu').forEach(menu => menu.classList.remove('open'));
-    e.stopPropagation();
-    return;
-  }
-
-  // Click outside closes dropdown
-  document.querySelectorAll('.dropdown-menu').forEach(menu => menu.classList.remove('open'));
-});
 
 // Initialize on page load
 window.addEventListener('DOMContentLoaded', () => {

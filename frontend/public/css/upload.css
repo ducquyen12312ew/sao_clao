@@ -242,38 +242,6 @@
       color: rgba(155, 163, 193, 0.4);
     }
 
-    .ai-box {
-      margin: 32px 0;
-      padding: 20px;
-      border: 1px dashed var(--border-color);
-      border-radius: 12px;
-      background: rgba(29, 185, 84, 0.04);
-    }
-
-    .ai-title {
-      font-size: 18px;
-      font-weight: 800;
-      margin-bottom: 6px;
-    }
-
-    .ai-desc {
-      color: var(--text-secondary);
-      font-size: 14px;
-      margin-bottom: 16px;
-    }
-
-    .ai-actions {
-      display: flex;
-      align-items: center;
-      gap: 12px;
-      flex-wrap: wrap;
-    }
-
-    .ai-status {
-      color: var(--text-secondary);
-      font-size: 13px;
-    }
-
     .form-row {
       display: flex;
       gap: 16px;
