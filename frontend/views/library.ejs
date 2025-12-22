@@ -8,6 +8,7 @@
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+  <link rel="stylesheet" href="/css/topbar.css">
   <style>
     :root {
       --bg: #0a0a0a;
@@ -213,6 +214,7 @@
     const following = Array.isArray(followingUsers) ? followingUsers : [];
     const historyList = Array.isArray(historyTracks) ? historyTracks : [];
   %>
+  <%- include('partials/topbar', { currentUser, activePage: 'library' }) %>
   <header class="topbar">
     <a class="logo" href="/home">
       <img src="/public/img/saoclao.png" alt="SAOCLAO">
@@ -256,20 +258,20 @@
         </div>
       </div>
       <a href="/upload" class="btn">Upload</a>
-      <a href="/pro" class="btn ghost">Try Artist Pro</a>
+      <a href="/artistpro" class="btn ghost">Try Artist Pro</a>
       <div class="avatar-menu">
         <button class="avatar-btn" id="avatarBtn">
           <div class="user-avatar"><%= (currentUser && currentUser.username ? currentUser.username.charAt(0).toUpperCase() : 'S') %></div>
           <i class="fa-solid fa-chevron-down"></i>
         </button>
         <div class="avatar-dropdown" id="avatarDropdown">
-          <a href="/profile"><i class="fa-regular fa-user"></i> Profile</a>
+          <a href="<%= currentUser ? '/users/' + currentUser.username : '/login' %>"><i class="fa-regular fa-user"></i> Profile</a>
           <a href="/likes"><i class="fa-regular fa-heart"></i> Likes</a>
           <a href="/playlists"><i class="fa-solid fa-compact-disc"></i> Playlists</a>
           <a href="/library#stations"><i class="fa-solid fa-tower-broadcast"></i> Stations</a>
           <a href="/library#following"><i class="fa-regular fa-user"></i> Following</a>
           <a href="/feed"><i class="fa-solid fa-user-plus"></i> Who to follow</a>
-          <a href="/pro"><i class="fa-solid fa-star"></i> Try Artist Pro</a>
+          <a href="/artistpro"><i class="fa-solid fa-star"></i> Try Artist Pro</a>
           <a href="/home"><i class="fa-solid fa-chart-column"></i> Insights</a>
           <a href="/upload"><i class="fa-solid fa-sliders"></i> Tracks</a>
           <a href="/upload"><i class="fa-solid fa-arrows-rotate"></i> Distribute</a>

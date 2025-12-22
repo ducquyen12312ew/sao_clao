@@ -7,18 +7,20 @@
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+  <link rel="stylesheet" href="/css/topbar.css">
   <link rel="stylesheet" href="/public/css/profile.css">
 </head>
 <body>
+  <%- include('partials/topbar', { currentUser: user, activePage: 'library' }) %>
   <header class="header">
     <div style="display: flex; align-items: center;">
       <div class="logo">
-        <a href="/profile">
+        <a href="/users/<%= user.username %>">
           <img src="/public/img/saoclao.png" alt="SAOCLAO">
         </a>
       </div>
       <nav class="nav-menu">
-        <a href="/profile" class="nav-link">
+        <a href="/users/<%= user.username %>" class="nav-link">
           <i class="fa-solid fa-house"></i>
           <span>Home</span>
         </a>
@@ -90,7 +92,7 @@
           <div class="empty-state">
             <h3>No liked songs yet</h3>
             <p>Discover and like songs you enjoy.</p>
-            <a href="/profile" class="btn btn-primary" style="margin-top:16px;">Explore now</a>
+            <a href="/users/<%= user.username %>" class="btn btn-primary" style="margin-top:16px;">Explore now</a>
           </div>
         <% } %>
       </section>

@@ -1,1117 +1,246 @@
-<!DOCTYPE html>
+<!doctype html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title><%= title %></title>
-  <link rel="preconnect" href="https://fonts.googleapis.com">
-  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&display=swap" rel="stylesheet">
-  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
-  <link rel="stylesheet" href="/public/css/profile.css">
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>Stream profile music | SoundCloud</title>
+  <link rel="stylesheet" href="/css/topbar.css" />
+  <link rel="stylesheet" href="/css/profile.css" />
+  <script defer src="/js/profile.js"></script>
 </head>
 <body>
-  <!-- Context Menu -->
-  <div class="context-menu" id="contextMenu">
-    <div class="context-menu-item" onclick="addToQueue(window.contextTrack)">
-      <i class="fa-solid fa-list"></i>
-      <span>Add to queue</span>
-    </div>
-    <div class="context-menu-divider"></div>
-    <div class="context-menu-item">
-      <i class="fa-solid fa-heart"></i>
-      <span>Add to playlist</span>
-      <i class="fa-solid fa-chevron-right" style="margin-left: auto; font-size: 12px;"></i>
-      <div class="context-submenu" id="playlistSubmenu">
-        <div class="submenu-item create-new" onclick="openCreatePlaylistModal()">
-          <i class="fa-solid fa-plus"></i> Create new playlist
+<%
+  const sessionUser = currentUser || user || {};
+  const likesFromServer = typeof likes !== "undefined" ? likes : [];
+  const likesData = Array.isArray(likesFromServer) && likesFromServer.length
+    ? likesFromServer
+    : [
+      { title: "Rokudenashi - Tada koe hitotsu (Taste...)", by: "Taste", plays: "583K", likes: "8,667", comments: "222" },
+      { title: "GETCHA LOVE - Mable & VDT ft.Snow...", by: "Malb", plays: "858K", likes: "4,764", comments: "71" },
+      { title: "Obito Ft. Hnhngan Live YOUR SMILE - ...", by: "Hnhngan", plays: "18.7M", likes: "97.3K", comments: "2,586" }
+    ];
+
+  const profile = {
+    displayName: (profileUser && profileUser.name) || (profileUser && profileUser.username) || "Tiep Kun",
+    fullName: (profileUser && profileUser.username) || "Nguyen Tiep",
+    location: (profileUser && profileUser.bio) || "Manchester City, United Kingdom",
+    followers: (profileUser && profileUser.followersCount) || 0,
+    following: (profileUser && profileUser.followingCount) || 0,
+    tracks: (typeof tracks !== "undefined" && tracks ? tracks.length : (profileUser && profileUser.tracksCount) || 0),
+    likesCount: likesData.length || 3,
+    language: "English (US)",
+    username: (profileUser && profileUser.username) || sessionUser.username || "guest",
+    avatarUrl: (profileUser && profileUser.avatarUrl) || sessionUser.avatarUrl || ""
+  };
+
+  const tabs = ["All", "Popular tracks", "Tracks", "Albums", "Playlists", "Reposts"];
+
+  const mapTrack = (t) => ({
+    title: t.title || "Untitled",
+    artist: t.artist || profile.displayName || "Unknown",
+    plays: t.playCount ? t.playCount.toLocaleString() : "",
+    likes: t.likes ? t.likes.toLocaleString() : "",
+    reposts: t.reposts ? t.reposts.toLocaleString() : "",
+    comments: t.comments ? t.comments.toLocaleString() : "",
+    time: t.createdAt ? new Date(t.createdAt).toLocaleDateString() : "",
+    tag: (t.genres && t.genres.length) ? `# ${t.genres[0]}` : "",
+    coverUrl: t.coverUrl || "https://images.unsplash.com/photo-1511379938547-c1f69419868d?w=300&auto=format&fit=crop"
+  });
+
+  const recentTracks = (tracks && tracks.length
+    ? tracks.map(mapTrack)
+    : [
+      { title: "GETCHA LOVE - Mable & VDT ft.SnowzyBoy", artist: "Malb", plays: "858K", likes: "4,764", reposts: "71", comments: "36", time: "3 years ago", tag: "# R&B & Soul", coverUrl: "https://images.unsplash.com/photo-1494232410401-ad00d5433cfa?w=300&auto=format&fit=crop" },
+      { title: "Viet nam mees", artist: "Tiep Kun", plays: "", likes: "", reposts: "", comments: "", time: "3 years ago", tag: "", coverUrl: "https://images.unsplash.com/photo-1511671782779-c97d3d27a1d4?w=300&auto=format&fit=crop" },
+      { title: "None", artist: "Tiep Kun", plays: "", likes: "", reposts: "", comments: "", time: "3 years ago", tag: "", coverUrl: "https://images.unsplash.com/photo-1519677100203-a0e668c92439?w=300&auto=format&fit=crop" }
+    ]);
+
+  const popularList = [
+    { idx: 1, who: "Hnhngan", title: "Obito Ft. Hnhngan Live YOUR SMILE - Emma X Seachains X O...", plays: "18.7M" },
+    { idx: 1, who: "Soraiz From Southside", title: "Answer Me - Sad Heartbreaking Piano Violin Ra...", plays: "15.2K" },
+    { idx: 2, who: "Jurrivh", title: "Hurt - Sad Heartbreaking Crying Depressing Piano", plays: "31.7K" },
+    { idx: 3, who: "Dr.M", title: "Only You - Soft Emotional Guitar Rap Beat [Prod- EDOBY]", plays: "53.4K" },
+    { idx: 4, who: "Vexento", title: "Lotus", plays: "77.1K" },
+    { idx: 5, who: "Vexento", title: "Vexento - Lonely Dance", plays: "740K" }
+  ];
+
+  const footerLinks = ["Legal","Privacy","Cookie Policy","Cookie Manager","Imprint","Artist Resources","Newsroom","Charts","Transparency Reports"];
+%>
+
+<!-- TOP NAV (match site header) -->
+<%- include('partials/topbar', { currentUser: sessionUser, activePage: 'profile' }) %>
+
+<!-- PAGE -->
+<main class="page">
+  <div class="wrap">
+    <!-- PROFILE BANNER -->
+    <section class="profile-banner">
+      <button class="btn upload-btn" type="button">Upload header image</button>
+      <div class="banner-body">
+        <div class="avatar-large">
+          <% if (profile.avatarUrl) { %>
+            <img src="<%= profile.avatarUrl %>" alt="<%= profile.displayName %>">
+          <% } else { %>
+            <%= (profile.username || profile.displayName || 'H').charAt(0).toUpperCase() %>
+          <% } %>
+        </div>
+        <div class="banner-meta">
+          <span class="badge badge--name"><%= profile.displayName %></span>
+          <span class="badge"><%= profile.fullName %></span>
+          <span class="badge"><%= profile.location %></span>
         </div>
       </div>
-    </div>
-  </div>
+    </section>
 
-  <!-- Create Playlist Modal -->
-  <div class="modal" id="createPlaylistModal">
-    <div class="modal-content">
-      <h3 class="modal-title">Create new playlist</h3>
-      <div class="form-group">
-        <label class="form-label">Playlist name</label>
-        <input type="text" class="form-input" id="playlistName" placeholder="Enter playlist name">
+    <!-- TABS + ACTIONS -->
+    <section class="tabs-row" aria-label="Profile navigation">
+      <div class="tabs">
+        <% tabs.forEach((t, i) => { %>
+          <button class="tab <%= i === 0 ? "tab--active" : "" %>" type="button"><%= t %></button>
+        <% }) %>
       </div>
-      <div class="form-group">
-        <label class="form-label">Description</label>
-        <textarea class="form-input form-textarea" id="playlistDescription" placeholder="Describe the playlist (optional)"></textarea>
+      <div class="tab-actions">
+        <button class="btn btn--ghost" type="button">Share</button>
+        <button class="btn btn--ghost" type="button">Edit</button>
       </div>
-      <div class="modal-footer">
-        <button class="btn btn-secondary" onclick="closeCreatePlaylistModal()">Cancel</button>
-        <button class="btn btn-primary" onclick="createPlaylist()">Create</button>
-      </div>
-    </div>
-  </div>
+    </section>
 
-  <!-- AI Lyrics Modal -->
-  <div class="modal" id="aiLyricsModal">
-    <div class="modal-content">
-      <button class="modal-close" onclick="closeAIModal()">
-        <i class="fa-solid fa-xmark"></i>
-      </button>
-      <h3 class="modal-title">AI song ideas</h3>
-      <div class="ai-layout">
-        <div class="ai-column">
-          <p style="color: var(--text-secondary); margin-bottom: 16px;">Enter an idea, choose a style, and let AI write lyrics.</p>
-          <% const genres = ['Pop', 'Ballad', 'Acoustic', 'Indie', 'Lo-fi', 'Rock', 'Hip-hop', 'R&B', 'EDM', 'Jazz', 'Blues', 'Country', 'Classical', 'Folk', 'Metal', 'Trance', 'House', 'Chill', 'Lofi', 'K-pop', 'J-pop', 'V-pop']; %>
-          <% const moods = ['Bright', 'Sad', 'Calm', 'Excited', 'Gentle', 'Bold', 'Romantic', 'Nostalgic', 'Intense', 'Dreamy']; %>
-          <% const vibes = ['Chill', 'Upbeat', 'Cinematic', 'Dance', 'Raw', 'Synthwave', 'Acoustic', 'Future bass']; %>
-          <% const vocals = ['Male high', 'Male mid', 'Male low', 'Female high', 'Female mid', 'Female low', 'Rap']; %>
-          <% const languages = [{ label: 'Vietnamese', value: 'vi' }, { label: 'English', value: 'en' }, { label: 'Japanese', value: 'ja' }, { label: 'Korean', value: 'ko' }]; %>
-          <div class="form-group">
-            <label class="form-label">Idea / prompt</label>
-            <input type="text" class="form-input" id="aiPrompt" placeholder="Ex: A rainy afternoon missing an old love">
-          </div>
-          <div class="form-group">
-            <label class="form-label">Genre</label>
-            <div class="input-with-dropdown">
-              <input type="text" class="form-input" id="aiGenre" placeholder="Select or type more">
-              <button type="button" class="dropdown-toggle" data-target="aiGenreOptions"><i class="fa-solid fa-caret-down"></i></button>
-            </div>
-            <div class="dropdown-menu" id="aiGenreOptions">
-              <% genres.forEach(g => { %>
-                <div class="dropdown-option" data-input="aiGenre" data-value="<%= g.toLowerCase() %>"><%= g %></div>
-              <% }) %>
-            </div>
-          </div>
-          <div class="form-group">
-            <label class="form-label">Mood</label>
-            <div class="input-with-dropdown">
-              <input type="text" class="form-input" id="aiMood" placeholder="bright, mellow...">
-              <button type="button" class="dropdown-toggle" data-target="aiMoodOptions"><i class="fa-solid fa-caret-down"></i></button>
-            </div>
-            <div class="dropdown-menu" id="aiMoodOptions">
-              <% moods.forEach(m => { %>
-                <div class="dropdown-option" data-input="aiMood" data-value="<%= m %>"><%= m %></div>
-              <% }) %>
-            </div>
-          </div>
-          <div class="form-group">
-            <label class="form-label">Melody / vibe</label>
-            <div class="input-with-dropdown">
-              <input type="text" class="form-input" id="aiVibe" placeholder="chill, upbeat, cinematic...">
-              <button type="button" class="dropdown-toggle" data-target="aiVibeOptions"><i class="fa-solid fa-caret-down"></i></button>
-            </div>
-            <div class="dropdown-menu" id="aiVibeOptions">
-              <% vibes.forEach(v => { %>
-                <div class="dropdown-option" data-input="aiVibe" data-value="<%= v %>"><%= v %></div>
-              <% }) %>
-            </div>
-          </div>
-          <div class="form-group">
-            <label class="form-label">Vocal tone</label>
-            <div class="input-with-dropdown">
-              <input type="text" class="form-input" id="aiVocal" placeholder="high male, low female...">
-              <button type="button" class="dropdown-toggle" data-target="aiVocalOptions"><i class="fa-solid fa-caret-down"></i></button>
-            </div>
-            <div class="dropdown-menu" id="aiVocalOptions">
-              <% vocals.forEach(v => { %>
-                <div class="dropdown-option" data-input="aiVocal" data-value="<%= v %>"><%= v %></div>
-              <% }) %>
-            </div>
-          </div>
-          <div class="form-group">
-            <label class="form-label">Desired length</label>
-            <select class="form-input" id="aiLengthChoice">
-              <option value="short">Short (5-6 lines)</option>
-              <option value="medium" selected>Medium (8-10 lines)</option>
-              <option value="long">Long (12-20 lines)</option>
-            </select>
-          </div>
-          <div class="form-group">
-            <label class="form-label">Language</label>
-            <div class="input-with-dropdown">
-              <input type="text" class="form-input" id="aiLanguage" placeholder="Choose language (vi, en, ja, ko)">
-              <button type="button" class="dropdown-toggle" data-target="aiLanguageOptions"><i class="fa-solid fa-caret-down"></i></button>
-            </div>
-            <div class="dropdown-menu" id="aiLanguageOptions">
-              <% languages.forEach(l => { %>
-                <div class="dropdown-option" data-input="aiLanguage" data-value="<%= l.value %>"><%= l.label %></div>
-              <% }) %>
-            </div>
-          </div>
-          <div class="modal-footer" style="padding: 0;">
-            <div id="aiStatus" class="ai-status" style="display:none;">Generating...</div>
-            <div style="flex:1"></div>
-            <button class="btn btn-secondary" onclick="closeAIModal()">Close</button>
-            <button class="btn btn-primary" onclick="generateLyrics()">Generate lyrics</button>
-          </div>
+    <!-- CONTENT GRID -->
+    <section class="grid">
+      <!-- MAIN -->
+      <div class="main">
+        <div class="sectionTitleRow">
+          <h2 class="h2">Recent</h2>
         </div>
-        <div class="ai-column ai-preview-panel">
-          <div class="ai-preview-header">
-            <div>
-              <div class="ai-preview-label">Preview</div>
-              <div class="ai-preview-title" id="aiPreviewTitle">No results yet</div>
-            </div>
-            <div class="ai-preview-actions">
-              <button class="btn btn-secondary" onclick="playPreview()" id="aiPlayBtn">
-                <i class="fa-solid fa-play"></i> Play
-              </button>
-              <button class="btn btn-secondary" onclick="stopPreview()" id="aiStopBtn">
-                <i class="fa-solid fa-stop"></i> Stop
+
+        <% recentTracks.forEach((tr, idx) => { %>
+          <article class="trackCard" data-track="<%= idx %>">
+            <div class="cover">
+              <img src="https://images.unsplash.com/photo-1511379938547-c1f69419868d?w=300&auto=format&fit=crop" alt="<%= tr.title %> cover">
+              <button class="playBtn" type="button" aria-label="Play">
+                <span class="playIcon" aria-hidden="true"></span>
               </button>
             </div>
-          </div>
-          <div class="ai-preview" id="aiPreviewLines">
-            <p style="color: var(--text-secondary); text-align:center; margin:0;">Generate lyrics to preview them here</p>
-          </div>
-        </div>
-      </div>
-    </div>
-  </div>
 
-
-  <!-- Header -->
-  <header class="header">
-    <div style="display: flex; align-items: center;">
-      <div class="logo">
-        <a href="/profile">
-          <img src="/public/img/saoclao.png" alt="SAOCLAO">
-        </a>
-      </div>
-      <nav class="nav-menu">
-        <a href="/profile" class="nav-link active">
-          <i class="fa-solid fa-house"></i>
-          <span>Home</span>
-        </a>
-        <a href="/playlists" class="nav-link">
-          <i class="fa-solid fa-music"></i>
-          <span>Playlist</span>
-        </a>
-        <a href="/likes" class="nav-link">
-          <i class="fa-solid fa-heart"></i>
-          <span>Liked</span>
-        </a>
-      </nav>
-    </div>
-    
-    <div class="search-container">
-      <div class="search-icon">
-        <i class="fa-solid fa-magnifying-glass"></i>
-      </div>
-      <input type="text" class="search-input" id="searchInput" placeholder="Search songs, artists...">
-      <button class="search-clear" id="searchClear">
-        <i class="fa-solid fa-xmark"></i>
-      </button>
-      <div id="searchDropdown" class="search-dropdown"></div>
-    </div>
-    
-    <div class="header-actions">
-      <button class="upload-btn" onclick="window.location.href='/upload'">
-        <i class="fa-solid fa-cloud-arrow-up"></i>
-        <span class="btn-text">Upload</span>
-      </button>
-      <button class="ai-btn" onclick="openAIModal()">
-        <i class="fa-solid fa-wand-magic-sparkles"></i>
-        <span class="btn-text">AI</span>
-      </button>
-
-      <a href="/users/<%= user.username %>" style="text-decoration: none;">
-        <div class="user-avatar">
-          <img src="<%= user.avatarUrl || '/public/img/default-avatar.svg' %>" alt="<%= user.username %>">
-        </div>
-      </a>
-
-      <form method="post" action="/logout" style="display:inline; margin-left: 8px;">
-        <button type="submit" class="btn-logout">Log out</button>
-      </form>
-    </div>
-  </header>
-  
-  <!-- Main Layout -->
-  <div class="main-layout">
-    <div class="content-area">
-      <!-- Recommendations Section -->
-      <section class="section" id="recommendations-section">
-        <div class="section-header">
-          <h2 class="section-title">You might like</h2>
-        </div>
-        
-        <% if (moreOfWhatYouLike && moreOfWhatYouLike.length > 0) { %>
-          <div class="cards-grid">
-            <% moreOfWhatYouLike.slice(0, 6).forEach((track) => { %>
-              <div class="card track-card" 
-                   data-track-id="<%= track._id %>" 
-                   data-track-title="<%= track.title %>"
-                   data-track-artist="<%= track.artist || 'Unknown' %>"
-                   data-track-cover="<%= track.coverUrl || '' %>"
-                   data-track-audio="<%= track.audioUrl %>"
-                   data-title="<%= track.title.toLowerCase() %>" 
-                   data-artist="<%= (track.artist || '').toLowerCase() %>">
-                <a href="/track/<%= track._id %>" class="card-image">
-                  <img src="<%= track.coverUrl || 'https://images.unsplash.com/photo-1470225620780-dba8ba36b745?w=400' %>" alt="<%= track.title %>">
-                  <button class="play-btn" onclick="event.preventDefault(); event.stopPropagation(); playTrack('<%= track._id %>', '<%= track.title.replace(/'/g, "\\'") %>', '<%= (track.artist || 'Unknown').replace(/'/g, "\\'") %>', '<%= track.coverUrl || '' %>', '<%= track.audioUrl %>')">
-                    <i class="fa-solid fa-play"></i>
-                  </button>
-                </a>
-                <div class="card-info">
-                  <div class="card-title"><%= track.title %></div>
-                  <div class="card-artist"><%= track.artist || 'Unknown artist' %></div>
+            <div class="trackBody">
+              <div class="trackTop">
+                <div>
+                  <div class="trackTitle__main"><%= tr.title %></div>
+                  <div class="trackTitle__sub">
+                    <span class="muted"><%= tr.artist %></span>
+                    <% if (tr.time) { %><span class="dot">.</span><span class="muted"><%= tr.time %></span><% } %>
+                    <% if (tr.tag) { %><span class="dot">.</span><span class="tag"><%= tr.tag %></span><% } %>
+                  </div>
                 </div>
+                <button class="btn btn--ghost btn--icon" type="button" aria-label="More">
+                  <span class="more-dots" aria-hidden="true"></span>
+                </button>
+              </div>
+
+              <div class="waveRow">
+                <div class="wave" aria-hidden="true"></div>
+              </div>
+
+              <div class="trackStats">
+                <% if (tr.plays) { %>
+                  <span class="stat"><span class="ico ico--play"></span><%= tr.plays %></span>
+                <% } %>
+                <% if (tr.likes) { %>
+                  <span class="stat stat--like"><span class="ico ico--heart"></span><%= tr.likes %></span>
+                <% } %>
+                <% if (tr.reposts) { %>
+                  <span class="stat"><span class="ico ico--repost"></span><%= tr.reposts %></span>
+                <% } %>
+                <% if (tr.comments) { %>
+                  <span class="stat"><span class="ico ico--comment"></span><%= tr.comments %></span>
+                <% } %>
+                <span class="stat"><span class="ico ico--share"></span>Share</span>
+                <span class="stat"><span class="ico ico--more"></span>More</span>
+              </div>
+            </div>
+          </article>
+        <% }) %>
+
+        <div class="listBlock">
+          <div class="listHeader">Popular tracks</div>
+
+          <div class="miniList">
+            <% popularList.forEach((it) => { %>
+              <div class="miniRow">
+                <div class="miniIdx"><%= it.idx %></div>
+                <div class="miniMain">
+                  <div class="miniTitle"><span class="miniWho"><%= it.who %></span> . <span class="miniSong"><%= it.title %></span></div>
+                </div>
+                <div class="miniPlays"><%= it.plays %></div>
               </div>
             <% }) %>
           </div>
-        <% } else { %>
-          <div class="empty-state">
-            <h3>No suggestions yet</h3>
-            <p>Listen to more music to get personalized recommendations</p>
-          </div>
-        <% } %>
-      </section>
-
-      <!-- Recently Played Section -->
-      <% if (recentlyPlayed && recentlyPlayed.length > 0) { %>
-      <section class="section" id="recently-played-section">
-        <div class="section-header">
-          <h2 class="section-title">Recently played</h2>
         </div>
-        <div class="cards-grid">
-          <% recentlyPlayed.forEach((track) => { %>
-            <div class="card track-card" 
-                 data-track-id="<%= track._id %>" 
-                 data-track-title="<%= track.title %>"
-                 data-track-artist="<%= track.artist || 'Unknown' %>"
-                 data-track-cover="<%= track.coverUrl || '' %>"
-                 data-track-audio="<%= track.audioUrl %>"
-                 data-title="<%= track.title.toLowerCase() %>" 
-                 data-artist="<%= (track.artist || '').toLowerCase() %>">
-              <a href="/track/<%= track._id %>" class="card-image">
-                <img src="<%= track.coverUrl || 'https://images.unsplash.com/photo-1470225620780-dba8ba36b745?w=400' %>" alt="<%= track.title %>">
-                <button class="play-btn" onclick="event.preventDefault(); event.stopPropagation(); playTrack('<%= track._id %>', '<%= track.title.replace(/'/g, "\\'") %>', '<%= (track.artist || 'Unknown').replace(/'/g, "\\'") %>', '<%= track.coverUrl || '' %>', '<%= track.audioUrl %>')">
-                  <i class="fa-solid fa-play"></i>
-                </button>
-              </a>
-              <div class="card-info">
-                <div class="card-title"><%= track.title %></div>
-                <div class="card-artist"><%= track.artist || 'Unknown artist' %></div>
+      </div>
+
+      <!-- SIDEBAR -->
+      <aside class="side" aria-label="Sidebar">
+        <div class="statsBox">
+          <div class="statsCol">
+            <div class="statsNum"><%= profile.followers %></div>
+            <div class="statsLab">Followers</div>
+          </div>
+          <div class="statsCol">
+            <div class="statsNum"><%= profile.following %></div>
+            <div class="statsLab">Following</div>
+          </div>
+          <div class="statsCol">
+            <div class="statsNum"><%= profile.tracks %></div>
+            <div class="statsLab">Tracks</div>
+          </div>
+        </div>
+
+        <div class="likesBox">
+          <div class="likesTitle"><%= profile.likesCount %> LIKES</div>
+          <% likesData.forEach((l) => { %>
+            <div class="likeRow">
+              <div class="likeThumb"></div>
+              <div class="likeText">
+                <div class="likeName"><%= l.title %></div>
+                <div class="likeBy"><%= l.by %></div>
+                <div class="likeMeta">
+                  <span class="likeStat"><span class="ico ico--play"></span><%= l.plays %></span>
+                  <span class="likeStat"><span class="ico ico--heart"></span><%= l.likes %></span>
+                  <span class="likeStat"><span class="ico ico--comment"></span><%= l.comments %></span>
+                </div>
               </div>
             </div>
           <% }) %>
         </div>
-      </section>
-      <% } %>
-
-      <!-- Playlists Section -->
-      <section class="section" id="playlists-section">
-        <div class="section-header">
-          <h2 class="section-title">My playlists</h2>
-          <a href="/playlists" class="view-all">View all</a>
-        </div>
-        
-        <% if (playlists && playlists.length > 0) { %>
-          <div class="cards-grid">
-            <% playlists.forEach((playlist) => { 
-              const trackCount = playlist.tracks.length;
-              const covers = playlist.tracks.slice(0, 4).map(t => t.coverUrl).filter(Boolean);
-            %>
-              <a href="/playlists/<%= playlist._id %>" class="playlist-card">
-                <div class="playlist-cover">
-                  <% if (covers.length === 0) { %>
-                    <div class="playlist-cover-empty">
-                      <i class="fa-solid fa-music"></i>
-                    </div>
-                  <% } else if (covers.length === 1) { %>
-                    <div class="playlist-cover-item" style="background-image: url('<%= covers[0] %>'); width: 100%; height: 100%;"></div>
-                  <% } else { %>
-                    <div class="playlist-cover-grid">
-                      <% for (let i = 0; i < 4; i++) { %>
-                        <% if (covers[i]) { %>
-                          <div class="playlist-cover-item" style="background-image: url('<%= covers[i] %>');"></div>
-                        <% } else { %>
-                          <div class="playlist-cover-item"></div>
-                        <% } %>
-                      <% } %>
-                    </div>
-                  <% } %>
-                </div>
-                <div class="playlist-info">
-                  <div class="playlist-name"><%= playlist.name %></div>
-                  <div class="playlist-count"><%= trackCount %> tracks</div>
-                </div>
-              </a>
-            <% }) %>
-          </div>
-        <% } else { %>
-          <div class="empty-state">
-            <h3>No playlists yet</h3>
-            <p>Create your first playlist</p>
-          </div>
-        <% } %>
-      </section>
-    </div>
-    
-    <!-- Resize Handle -->
-    <div class="resize-handle" id="resizeHandle"></div>
-    
-    <!-- Right Sidebar -->
-    <aside class="right-sidebar" id="rightSidebar">
-      <h3 class="sidebar-title">Now playing</h3>
-      <div class="now-playing-card">
-        <div class="now-playing-image" id="sidebarImage"></div>
-        <div class="now-playing-info">
-          <div class="now-playing-title" id="sidebarTitle">-</div>
-          <div class="now-playing-artist" id="sidebarArtist">-</div>
-        </div>
-      </div>
-    </aside>
+      </aside>
+    </section>
   </div>
-  
-  <!-- Sidebar Toggle Button -->
-  <button class="sidebar-toggle" id="sidebarToggle" onclick="toggleSidebar()">
-    <i class="fa-solid fa-chevron-left"></i>
-  </button>
-  
-  <!-- Queue Panel -->
-  <div class="queue-panel" id="queuePanel">
-    <div class="queue-header">
-      <h3 class="queue-title">Queue</h3>
-      <button class="queue-clear" onclick="player.clearQueue()">Clear all</button>
+</main>
+
+<!-- BOTTOM PLAYER (static) -->
+<div class="player" role="contentinfo">
+  <div class="wrap player__in">
+    <button class="playerBtn" type="button" aria-label="Play/Pause"></button>
+    <div class="playerInfo">
+      <div class="playerNow">Now playing</div>
+      <div class="playerTitle" id="playerTitle">-</div>
     </div>
-    <div class="queue-list" id="queueList"></div>
+    <div class="playerBar" aria-hidden="true">
+      <div class="playerProg"></div>
+    </div>
+    <div class="playerTime muted">0:00</div>
   </div>
-  
-  <!-- Music Player -->
-  <div class="music-player" id="musicPlayer">
-    <div class="player-wrapper">
-      <div class="player-left">
-        <div class="player-thumb" id="playerThumb"></div>
-        <div class="player-info">
-          <div class="player-title" id="playerTitle">Song title</div>
-          <div class="player-artist" id="playerArtist">Artist</div>
-        </div>
-      </div>
-      
-      <div class="player-center">
-        <div class="player-buttons">
-          <button class="control-btn" id="shuffleBtn" title="Shuffle">
-            <i class="fa-solid fa-shuffle"></i>
-          </button>
-          <button class="control-btn" id="prevBtn" title="Previous">
-            <i class="fa-solid fa-backward-step"></i>
-          </button>
-          <button class="control-btn play" id="playPauseBtn">
-            <i class="fa-solid fa-play"></i>
-          </button>
-          <button class="control-btn" id="nextBtn" title="Next">
-            <i class="fa-solid fa-forward-step"></i>
-          </button>
-          <button class="control-btn" id="repeatBtn" title="Repeat">
-            <i class="fa-solid fa-repeat"></i>
-          </button>
-        </div>
-        <div class="player-progress-wrapper">
-          <span class="time" id="currentTime">0:00</span>
-          <div class="progress-bar" id="progressBar">
-            <div class="progress-fill" id="progressFill"></div>
-          </div>
-          <span class="time" id="duration">0:00</span>
-        </div>
-      </div>
-      
-      <div class="player-right">
-        <div class="volume-control">
-          <i class="fa-solid fa-volume-high volume-icon" id="volumeIcon"></i>
-          <input type="range" class="volume-slider" id="volumeSlider" min="0" max="100" value="70">
-        </div>
-        <button class="queue-toggle" id="queueBtn" title="Queue">
-          <i class="fa-solid fa-list"></i>
-          <span class="queue-count" id="queueCount">0</span>
-        </button>
-      </div>
-    </div>
+</div>
+
+<footer class="foot">
+  <div class="wrap foot__in">
+    <nav class="footLinks" aria-label="Footer">
+      <% footerLinks.forEach((t, i) => { %>
+        <a href="#"><%= t %></a><% if (i !== footerLinks.length - 1) { %><span class="sep">.</span><% } %>
+      <% }) %>
+    </nav>
   </div>
-  
-  <audio id="audioPlayer"></audio>
-  
-  <script src="/public/js/player.js"></script>
-  
-  <script>
-// Global playlists data
-let userPlaylists = <%- JSON.stringify(playlists || []) %>;
-console.log('Initial playlists from server:', userPlaylists.length);
+</footer>
 
-// Global functions
-window.toggleSidebar = function() {
-  const sidebar = document.getElementById('rightSidebar');
-  const toggle = document.getElementById('sidebarToggle');
-  const icon = toggle?.querySelector('i');
-  
-  if (!sidebar) return;
-  
-  sidebar.classList.toggle('active');
-  
-  if (icon) {
-    if (sidebar.classList.contains('active')) {
-      icon.className = 'fa-solid fa-chevron-right';
-    } else {
-      icon.className = 'fa-solid fa-chevron-left';
-    }
-  }
-};
-
-window.playTrack = function(id, title, artist, cover, audioUrl) {
-  if (window.player) {
-    window.player.playTrack({ id, title, artist, cover, audioUrl });
-  }
-};
-
-window.playTrackFromSearch = function(id, title, artist, cover, audioUrl) {
-  if (window.player) {
-    window.player.playTrack({ id, title, artist, cover, audioUrl });
-  }
-};
-
-window.addToQueue = function(track) {
-  if (!track) {
-    showNotification('Error: No track selected');
-    return;
-  }
-  
-  if (!window.player) {
-    showNotification('Error: Player is not ready');
-    return;
-  }
-  
-  const success = window.player.addToQueue(track);
-  
-  if (success) {
-    showNotification('Added to queue');
-  } else {
-    showNotification('Track is already in the queue');
-  }
-  
-  closeContextMenu();
-};
-
-window.openCreatePlaylistModal = function() {
-  closeContextMenu();
-  const modal = document.getElementById('createPlaylistModal');
-  const input = document.getElementById('playlistName');
-  
-  if (modal) modal.classList.add('active');
-  if (input) {
-    input.focus();
-    input.value = '';
-  }
-  
-  const descInput = document.getElementById('playlistDescription');
-  if (descInput) descInput.value = '';
-};
-
-window.openAIModal = function() {
-  document.getElementById('aiLyricsModal')?.classList.add('active');
-};
-
-window.closeAIModal = function() {
-  document.getElementById('aiLyricsModal')?.classList.remove('active');
-  stopPreview();
-};
-
-window.generateLyrics = async function() {
-  const statusEl = document.getElementById('aiStatus');
-  const prompt = document.getElementById('aiPrompt')?.value.trim();
-  const genre = document.getElementById('aiGenre')?.value.trim();
-  const mood = document.getElementById('aiMood')?.value.trim();
-  const vibe = document.getElementById('aiVibe')?.value.trim();
-  const vocal = document.getElementById('aiVocal')?.value.trim();
-  const lengthChoice = document.getElementById('aiLengthChoice')?.value.trim();
-  const language = document.getElementById('aiLanguage')?.value.trim();
-
-  if (!prompt) {
-    alert('Please enter a prompt.');
-    return;
-  }
-
-  if (statusEl) {
-    statusEl.textContent = 'Generating...';
-    statusEl.style.display = 'inline-block';
-  }
-
-  try {
-    const res = await fetch('/api/ai/generate-lyrics', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ prompt, genre, mood, vibe, vocal, lengthChoice, language, length: lengthChoice })
-    });
-
-    const data = await res.json();
-    if (data.success) {
-      showNotification('Lyrics generated; preview on the right.');
-      renderPreview(data.lyrics || '', data.title || '');
-    } else {
-      alert(data.message || 'Could not generate lyrics');
-    }
-  } catch (err) {
-    console.error(err);
-    alert('AI connection error');
-  } finally {
-    if (statusEl) statusEl.style.display = 'none';
-  }
-};
-
-window.closeCreatePlaylistModal = function() {
-  const modal = document.getElementById('createPlaylistModal');
-  const nameInput = document.getElementById('playlistName');
-  const descInput = document.getElementById('playlistDescription');
-  
-  if (modal) modal.classList.remove('active');
-  if (nameInput) nameInput.value = '';
-  if (descInput) descInput.value = '';
-};
-
-window.createPlaylist = async function() {
-  const nameInput = document.getElementById('playlistName');
-  const descInput = document.getElementById('playlistDescription');
-  
-  const name = nameInput?.value.trim();
-  const description = descInput?.value.trim();
-  
-  if (!name) {
-    showNotification('Please enter a playlist name');
-    return;
-  }
-  
-  try {
-    const res = await fetch('/playlists/create', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ name, description: description || '' })
-    });
-    
-    const data = await res.json();
-    
-    if (data.success) {
-      showNotification('Playlist created successfully');
-      closeCreatePlaylistModal();
-      
-      await loadPlaylists();
-      
-      if (window.contextTrack) {
-        await addToPlaylist(data.playlist._id);
-      }
-      
-      setTimeout(() => location.reload(), 1000);
-    } else {
-      showNotification(data.message || 'Failed to create playlist');
-    }
-  } catch (err) {
-    showNotification('An error occurred');
-  }
-};
-
-function initResizeSidebar() {
-  const resizeHandle = document.getElementById('resizeHandle');
-  const rightSidebar = document.getElementById('rightSidebar');
-  
-  if (!resizeHandle || !rightSidebar) return;
-  
-  let isResizing = false;
-
-  resizeHandle.addEventListener('mousedown', (e) => {
-    isResizing = true;
-    document.body.style.cursor = 'col-resize';
-    document.body.style.userSelect = 'none';
-    rightSidebar.style.transition = 'none';
-  });
-
-  document.addEventListener('mousemove', (e) => {
-    if (!isResizing) return;
-    const newWidth = Math.min(Math.max(window.innerWidth - e.clientX, 320), 600);
-    rightSidebar.style.width = newWidth + 'px';
-  });
-
-  document.addEventListener('mouseup', () => {
-    if (isResizing) {
-      isResizing = false;
-      document.body.style.cursor = '';
-      document.body.style.userSelect = '';
-      rightSidebar.style.transition = '';
-    }
-  });
-}
-
-function initSearch() {
-  const searchInput = document.getElementById('searchInput');
-  const searchClear = document.getElementById('searchClear');
-  let searchDropdown = document.getElementById('searchDropdown');
-  
-  if (!searchInput || !searchClear) return;
-  
-  if (!searchDropdown) {
-    searchDropdown = document.createElement('div');
-    searchDropdown.id = 'searchDropdown';
-    searchDropdown.className = 'search-dropdown';
-    
-    const searchContainer = document.querySelector('.search-container');
-    if (searchContainer) {
-      searchContainer.appendChild(searchDropdown);
-    } else {
-      return;
-    }
-  }
-  
-  let searchTimeout;
-  
-  searchInput.addEventListener('input', async (e) => {
-    const query = e.target.value.trim();
-    
-    searchClear.classList.toggle('active', query.length > 0);
-    
-    clearTimeout(searchTimeout);
-    
-    if (query.length < 2) {
-      searchDropdown.classList.remove('active');
-      return;
-    }
-    
-    searchDropdown.innerHTML = '<div class="search-dropdown-loading"><i class="fa-solid fa-spinner fa-spin"></i> Searching...</div>';
-    searchDropdown.classList.add('active');
-    
-    searchTimeout = setTimeout(async () => {
-      try {
-        const url = `/api/search?q=${encodeURIComponent(query)}`;
-        const res = await fetch(url);
-        const data = await res.json();
-        
-        if (data.success) {
-          displaySearchResults(data.users || [], data.tracks || [], query);
-        } else {
-          searchDropdown.innerHTML = '<div class="search-dropdown-empty">No results found</div>';
-        }
-      } catch (err) {
-        searchDropdown.innerHTML = '<div class="search-dropdown-empty">Search error</div>';
-      }
-    }, 300);
-  });
-  
-  searchClear.addEventListener('click', () => {
-    searchInput.value = '';
-    searchClear.classList.remove('active');
-    searchDropdown.classList.remove('active');
-    searchInput.focus();
-  });
-  
-  document.addEventListener('click', (e) => {
-    if (!e.target.closest('.search-container')) {
-      searchDropdown.classList.remove('active');
-    }
-  });
-  
-  searchInput.addEventListener('focus', () => {
-    if (searchInput.value.trim().length >= 2 && searchDropdown.children.length > 0) {
-      searchDropdown.classList.add('active');
-    }
-  });
-  
-  searchInput.addEventListener('keydown', (e) => {
-    if (e.key === 'Escape') {
-      searchInput.value = '';
-      searchClear.classList.remove('active');
-      searchDropdown.classList.remove('active');
-      searchInput.blur();
-    }
-  });
-}
-
-function displaySearchResults(users, tracks, query) {
-  const searchDropdown = document.getElementById('searchDropdown');
-  
-  if (!searchDropdown) return;
-  
-  if (users.length === 0 && tracks.length === 0) {
-    searchDropdown.innerHTML = '<div class="search-dropdown-empty">No results found</div>';
-    return;
-  }
-  
-  let html = '';
-  
-  if (users.length > 0) {
-    html += '<div class="search-section-title">Artists</div>';
-    
-    users.slice(0, 5).forEach(user => {
-      const avatarHtml = user.avatarUrl 
-        ? `<img src="${user.avatarUrl}" alt="${user.username}">`
-        : `<div class="avatar-placeholder">${user.username.charAt(0).toUpperCase()}</div>`;
-      
-      html += `
-        <a href="/users/${user.username}" class="search-dropdown-item search-artist-item">
-          <div class="search-dropdown-cover artist-avatar">
-            ${avatarHtml}
-          </div>
-          <div class="search-dropdown-info">
-            <div class="search-dropdown-title">${user.name || user.username}</div>
-            <div class="search-dropdown-artist">@${user.username} • ${user.trackCount || 0} tracks</div>
-          </div>
-          <div class="search-dropdown-badge">
-            <i class="fa-solid fa-user"></i>
-          </div>
-        </a>
-      `;
-    });
-  }
-  
-  if (tracks.length > 0) {
-    html += '<div class="search-section-title">Songs</div>';
-    
-    tracks.slice(0, 8).forEach(track => {
-      const trackTitle = track.title.replace(/'/g, "\\'").replace(/"/g, '&quot;');
-      const trackArtist = (track.artist || 'Unknown Artist').replace(/'/g, "\\'").replace(/"/g, '&quot;');
-      const trackCover = track.coverUrl || 'https://images.unsplash.com/photo-1514525253161-7a46d19cd819?w=100';
-      
-      html += `
-        <a href="/track/${track._id}" class="search-dropdown-item">
-          <div class="search-dropdown-cover">
-            <img src="${trackCover}" alt="${track.title}">
-          </div>
-          <div class="search-dropdown-info">
-            <div class="search-dropdown-title">${track.title}</div>
-            <div class="search-dropdown-artist">${track.artist || 'Unknown Artist'}</div>
-          </div>
-          <div class="search-dropdown-play" onclick="event.preventDefault(); event.stopPropagation(); playTrackFromSearch('${track._id}', '${trackTitle}', '${trackArtist}', '${trackCover}', '${track.audioUrl}')">
-            <i class="fa-solid fa-play"></i>
-          </div>
-        </a>
-      `;
-    });
-  }
-  
-  searchDropdown.innerHTML = html;
-}
-
-async function loadPlaylists() {
-  try {
-    console.log('Loading playlists from API...');
-    const res = await fetch('/api/playlists');
-    
-    if (!res.ok) {
-      console.log('API not found, using server-side data');
-      updatePlaylistSubmenu();
-      return;
-    }
-    
-    const data = await res.json();
-    console.log('Playlists API response:', data);
-    
-    if (data.success && data.playlists) {
-      userPlaylists = data.playlists;
-      console.log('User playlists loaded:', userPlaylists.length, 'playlists');
-    }
-    
-    updatePlaylistSubmenu();
-  } catch (err) {
-    console.error('Load playlists error:', err);
-    console.log('Using existing playlists data:', userPlaylists.length);
-    updatePlaylistSubmenu();
-  }
-}
-
-function updatePlaylistSubmenu() {
-  const submenu = document.getElementById('playlistSubmenu');
-  if (!submenu) {
-    console.log('Submenu not found!');
-    return;
-  }
-  
-  console.log('Updating playlist submenu with', userPlaylists.length, 'playlists');
-  
-  submenu.innerHTML = `
-    <div class="submenu-item create-new" onclick="openCreatePlaylistModal()">
-      <i class="fa-solid fa-plus"></i> Create new playlist
-    </div>
-  `;
-  
-  userPlaylists.forEach(playlist => {
-    console.log('Adding playlist:', playlist.name);
-    const item = document.createElement('div');
-    item.className = 'submenu-item';
-    item.textContent = playlist.name;
-    item.onclick = (e) => {
-      e.stopPropagation();
-      addToPlaylist(playlist._id);
-    };
-    submenu.appendChild(item);
-  });
-  
-  console.log('Submenu updated. Total items:', submenu.children.length);
-}
-
-function showContextMenu(e, id, title, artist, cover, audioUrl) {
-  e.preventDefault();
-  e.stopPropagation();
-  
-  const menu = document.getElementById('contextMenu');
-  if (!menu) return;
-  
-  window.contextTrack = { 
-    id: id, 
-    title: title, 
-    artist: artist, 
-    cover: cover, 
-    audioUrl: audioUrl 
-  };
-  
-  menu.style.left = e.pageX + 'px';
-  menu.style.top = e.pageY + 'px';
-  menu.classList.add('active');
-  
-  updatePlaylistSubmenu();
-  
-  setTimeout(() => {
-    document.addEventListener('click', closeContextMenu);
-  }, 10);
-}
-
-function closeContextMenu() {
-  const menu = document.getElementById('contextMenu');
-  if (!menu) return;
-  
-  menu.classList.remove('active');
-  document.removeEventListener('click', closeContextMenu);
-}
-
-async function addToPlaylist(playlistId) {
-  if (!window.contextTrack) {
-    showNotification('Error: No track selected');
-    return;
-  }
-  
-  try {
-    const res = await fetch(`/playlists/${playlistId}/add-track`, {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ trackId: window.contextTrack.id })
-    });
-    
-    const data = await res.json();
-    
-    if (data.success) {
-      showNotification(data.message || 'Added to playlist');
-    } else {
-      showNotification(data.message || 'Could not add to playlist');
-    }
-  } catch (err) {
-    showNotification('An error occurred');
-  }
-}
-
-function showNotification(message) {
-  const existingNotifs = document.querySelectorAll('.custom-notification');
-  existingNotifs.forEach(n => n.remove());
-  
-  const notif = document.createElement('div');
-  notif.className = 'custom-notification';
-  notif.style.cssText = `
-    position: fixed;
-    bottom: 120px;
-    left: 50%;
-    transform: translateX(-50%);
-    background: rgba(40, 40, 40, 0.98);
-    backdrop-filter: blur(20px);
-    color: #fff;
-    padding: 16px 28px;
-    border-radius: 8px;
-    font-size: 14px;
-    font-weight: 600;
-    z-index: 10000;
-    box-shadow: 0 8px 24px rgba(0,0,0,0.8);
-    border: 1px solid rgba(30, 215, 96, 0.3);
-    animation: slideUp 0.3s ease-out;
-  `;
-  notif.textContent = message;
-  document.body.appendChild(notif);
-  
-  setTimeout(() => {
-    notif.style.transition = 'opacity 0.3s, transform 0.3s';
-    notif.style.opacity = '0';
-    notif.style.transform = 'translateX(-50%) translateY(10px)';
-    setTimeout(() => notif.remove(), 300);
-  }, 2500);
-}
-
-if (!document.getElementById('notif-animations')) {
-  const style = document.createElement('style');
-  style.id = 'notif-animations';
-  style.textContent = `
-    @keyframes slideUp {
-      from {
-        opacity: 0;
-        transform: translateX(-50%) translateY(20px);
-      }
-      to {
-        opacity: 1;
-        transform: translateX(-50%) translateY(0);
-      }
-    }
-  `;
-  document.head.appendChild(style);
-}
-
-let aiPreviewInterval = null;
-let aiPreviewLines = [];
-let aiPreviewIndex = 0;
-
-function renderPreview(lyrics, title) {
-  const container = document.getElementById('aiPreviewLines');
-  const titleEl = document.getElementById('aiPreviewTitle');
-  if (titleEl) titleEl.textContent = title || 'Preview';
-  if (!container) return;
-  
-  aiPreviewLines = (lyrics || '')
-    .split(/\r?\n/)
-    .map(l => l.trim())
-    .filter(Boolean);
-  aiPreviewIndex = 0;
-  stopPreview();
-
-  if (!aiPreviewLines.length) {
-    container.innerHTML = '<p style="color: var(--text-secondary); text-align:center; margin:0;">No lyrics yet</p>';
-    return;
-  }
-
-  container.innerHTML = aiPreviewLines.map((line, i) => 
-    `<div class="ai-line" data-idx="${i}">${line}</div>`
-  ).join('');
-}
-
-function highlightLine(idx) {
-  document.querySelectorAll('.ai-line').forEach(el => {
-    el.classList.remove('active', 'passed');
-  });
-  aiPreviewLines.forEach((_, i) => {
-    const el = document.querySelector(`.ai-line[data-idx="${i}"]`);
-    if (!el) return;
-    if (i < idx) el.classList.add('passed');
-    if (i === idx) el.classList.add('active');
-  });
-}
-
-window.playPreview = function() {
-  if (!aiPreviewLines.length) return;
-  stopPreview();
-  aiPreviewIndex = 0;
-  highlightLine(aiPreviewIndex);
-  aiPreviewInterval = setInterval(() => {
-    aiPreviewIndex += 1;
-    if (aiPreviewIndex >= aiPreviewLines.length) {
-      stopPreview();
-      return;
-    }
-    highlightLine(aiPreviewIndex);
-  }, 1400);
-};
-
-window.stopPreview = function() {
-  if (aiPreviewInterval) {
-    clearInterval(aiPreviewInterval);
-    aiPreviewInterval = null;
-  }
-};
-
-function initEventListeners() {
-  document.addEventListener('keydown', (e) => {
-    if (e.key === 'Escape') {
-      closeCreatePlaylistModal();
-      closeAIModal();
-    }
-  });
-  
-  const playlistNameInput = document.getElementById('playlistName');
-  if (playlistNameInput) {
-    playlistNameInput.addEventListener('keypress', (e) => {
-      if (e.key === 'Enter') {
-        createPlaylist();
-      }
-    });
-  }
-  
-  // Context menu event delegation
-  document.addEventListener('contextmenu', (e) => {
-    const card = e.target.closest('.track-card');
-    if (!card) return;
-    
-    e.preventDefault();
-    e.stopPropagation();
-    
-    const id = card.dataset.trackId;
-    const title = card.dataset.trackTitle;
-    const artist = card.dataset.trackArtist;
-    const cover = card.dataset.trackCover;
-    const audioUrl = card.dataset.trackAudio;
-    
-    showContextMenu(e, id, title, artist, cover, audioUrl);
-  });
-}
-
-// Quick genre chips
-document.addEventListener('click', (e) => {
-  const chip = e.target.closest('.chip');
-  if (!chip) return;
-  const val = chip.dataset.value;
-  const input = document.getElementById('aiGenre');
-  if (input) input.value = val;
-});
-
-// Dropdown toggles
-document.addEventListener('click', (e) => {
-  const toggle = e.target.closest('.dropdown-toggle');
-  const option = e.target.closest('.dropdown-option');
-
-  if (toggle) {
-    const targetId = toggle.dataset.target;
-    document.querySelectorAll('.dropdown-menu').forEach(menu => {
-      if (menu.id === targetId) {
-        menu.classList.toggle('open');
-      } else {
-        menu.classList.remove('open');
-      }
-    });
-    e.stopPropagation();
-    return;
-  }
-
-  if (option) {
-    const targetInput = option.dataset.input;
-    const value = option.dataset.value;
-    if (targetInput && value) {
-      const input = document.getElementById(targetInput);
-      if (input) input.value = value;
-    }
-    document.querySelectorAll('.dropdown-menu').forEach(menu => menu.classList.remove('open'));
-    e.stopPropagation();
-    return;
-  }
-
-  // Click outside closes dropdown
-  document.querySelectorAll('.dropdown-menu').forEach(menu => menu.classList.remove('open'));
-});
-
-// Initialize on page load
-window.addEventListener('DOMContentLoaded', () => {
-  initResizeSidebar();
-  initSearch();
-  initEventListeners();
-  
-  if (userPlaylists && userPlaylists.length > 0) {
-    console.log('Using server-side playlists:', userPlaylists.length);
-    updatePlaylistSubmenu();
-  } else {
-    loadPlaylists();
-  }
-  
-  const checkPlayer = setInterval(() => {
-    if (window.player) {
-      clearInterval(checkPlayer);
-    }
-  }, 100);
-  
-  setTimeout(() => clearInterval(checkPlayer), 5000);
-
-});
-</script>
 </body>
 </html>

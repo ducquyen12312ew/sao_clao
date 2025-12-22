@@ -10,10 +10,29 @@
   <link rel="stylesheet" href="/public/css/settings.css">
 </head>
 <body>
-  <header class="header">
-    <a href="/" class="logo">
-      <img src="/public/img/saoclao.png" alt="SAOCLAO" onerror="this.style.display='none'">
-    </a>
+  <header class="topbar">
+    <div class="topbar-left">
+      <a href="/home" class="brand">
+        <img src="/public/img/saoclao.png" alt="SAOCLAO" class="brand-logo" onerror="this.style.display='none'">
+        <span class="brand-name">SAOCLAO</span>
+      </a>
+      <nav class="nav">
+        <a href="/home" class="nav-link active">Home</a>
+        <a href="/feed" class="nav-link">Feed</a>
+        <a href="/library" class="nav-link">Library</a>
+      </nav>
+    </div>
+    <div class="search">
+      <i class="fa-solid fa-magnifying-glass"></i>
+      <input type="text" placeholder="Search for artists, tracks, podcasts" aria-label="Search">
+    </div>
+    <div class="actions">
+      <button class="icon-btn" title="Messages"><i class="fa-regular fa-envelope"></i></button>
+      <button class="icon-btn" title="Notifications"><i class="fa-regular fa-bell"></i></button>
+      <a href="/upload" class="btn ghost">Upload</a>
+      <a href="/artistpro" class="btn primary">Try Artist Pro</a>
+      <div class="avatar"><%= user.username ? user.username.charAt(0).toUpperCase() : 'U' %></div>
+    </div>
   </header>
   
   <div class="container">

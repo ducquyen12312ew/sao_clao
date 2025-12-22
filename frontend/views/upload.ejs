@@ -316,46 +316,6 @@
           <div class="filesize" id="audioSize"></div>
         </div>
       </div>
-
-      <div class="ai-box">
-        <div>
-          <h3 class="ai-title">AI song ideas</h3>
-          <p class="ai-desc">Enter an idea, pick a style, and let AI write lyrics.</p>
-        </div>
-        <div class="form-group">
-          <label>Idea / prompt</label>
-          <input type="text" id="aiPrompt" placeholder="Ex: A rainy afternoon missing an old love">
-        </div>
-        <div class="form-row">
-          <div class="form-group half">
-            <label>Genre</label>
-            <input type="text" id="aiGenre" placeholder="ballad, pop, rap...">
-          </div>
-          <div class="form-group half">
-            <label>Mood</label>
-            <input type="text" id="aiMood" placeholder="bright, mellow...">
-          </div>
-        </div>
-        <div class="form-row">
-          <div class="form-group half">
-            <label>Melody / vibe</label>
-            <input type="text" id="aiVibe" placeholder="chill, upbeat, cinematic...">
-          </div>
-          <div class="form-group half">
-            <label>Vocal tone</label>
-            <input type="text" id="aiVocal" placeholder="high male, low female...">
-          </div>
-        </div>
-        <div class="form-group">
-          <label>Desired length</label>
-          <input type="text" id="aiLength" placeholder="Short, medium, long">
-        </div>
-        <div class="ai-actions">
-          <button type="button" class="btn btn-secondary" id="aiFillDemo">Paste demo</button>
-          <button type="button" class="btn btn-primary" id="aiGenerate">Generate lyrics with AI</button>
-          <div id="aiStatus" class="ai-status" style="display:none;">Generating...</div>
-        </div>
-      </div>
       
       <div class="form-group">
         <label>Song title <span class="required">*</span></label>
@@ -481,67 +441,6 @@
           imagePreview.classList.remove('empty');
         };
         reader.readAsDataURL(file);
-      }
-    });
-
-    // AI helper
-    const aiBtn = document.getElementById('aiGenerate');
-    const aiStatus = document.getElementById('aiStatus');
-    const aiPrompt = document.getElementById('aiPrompt');
-    const aiGenre = document.getElementById('aiGenre');
-    const aiMood = document.getElementById('aiMood');
-    const aiVibe = document.getElementById('aiVibe');
-    const aiVocal = document.getElementById('aiVocal');
-    const aiLength = document.getElementById('aiLength');
-    const aiFillDemo = document.getElementById('aiFillDemo');
-
-    aiFillDemo?.addEventListener('click', () => {
-      aiPrompt.value = 'A young person reminiscing about childhood by the river';
-      aiGenre.value = 'ballad';
-      aiMood.value = 'nostalgic, warm';
-      aiVibe.value = 'acoustic, gentle guitar';
-      aiVocal.value = 'baritone male';
-      aiLength.value = 'medium';
-    });
-
-    aiBtn?.addEventListener('click', async () => {
-      if (!aiPrompt.value.trim()) {
-        alert('Please enter a prompt.');
-        aiPrompt.focus();
-        return;
-      }
-      aiStatus.style.display = 'inline-block';
-      aiStatus.textContent = 'Generating...';
-      aiBtn.disabled = true;
-
-      try {
-        const res = await fetch('/api/ai/generate-lyrics', {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({
-            prompt: aiPrompt.value,
-            genre: aiGenre.value,
-            mood: aiMood.value,
-            vibe: aiVibe.value,
-            vocal: aiVocal.value,
-            length: aiLength.value
-          })
-        });
-
-        const data = await res.json();
-        if (data.success) {
-          document.querySelector('input[name="title"]').value = data.title || '';
-          document.querySelector('textarea[name="lyricsText"]').value = data.lyrics || '';
-          aiStatus.textContent = 'Inserted into form ✓';
-        } else {
-          aiStatus.textContent = data.message || 'Could not generate lyrics.';
-        }
-      } catch (err) {
-        console.error(err);
-        aiStatus.textContent = 'AI connection error.';
-      } finally {
-        aiBtn.disabled = false;
-        setTimeout(() => aiStatus.style.display = 'none', 2500);
       }
     });
   </script>

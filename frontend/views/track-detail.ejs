@@ -174,7 +174,7 @@
         </a>
       </div>
       <nav class="nav-menu">
-        <a href="/profile" class="nav-link">
+        <a href="<%= user ? '/users/' + user.username : '/login' %>" class="nav-link">
           <i class="fa-solid fa-house"></i> Home
         </a>
         <a href="/playlists" class="nav-link">
