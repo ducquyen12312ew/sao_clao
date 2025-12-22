@@ -1,0 +1,105 @@
+<mxfile host="app.diagrams.net" agent="Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/143.0.0.0 Safari/537.36" version="29.2.9">
+  <diagram name="Page-1" id="mDTvXsyCJwcShYWTZyzN">
+    <mxGraphModel dx="1453" dy="704" grid="1" gridSize="10" guides="1" tooltips="1" connect="1" arrows="1" fold="1" page="1" pageScale="1" pageWidth="827" pageHeight="1169" math="0" shadow="0">
+      <root>
+        <mxCell id="0" />
+        <mxCell id="1" parent="0" />
+        <mxCell id="Title" parent="1" style="text;html=1;strokeColor=none;fillColor=none;align=center;verticalAlign=middle;whiteSpace=wrap;rounded=0;fontSize=16;fontStyle=1" value="DEPLOYMENT DIAGRAM: SAOCLAO ARCHITECTURE" vertex="1">
+          <mxGeometry height="30" width="760" x="40" y="10" as="geometry" />
+        </mxCell>
+        <mxCell id="UserDevice" parent="1" style="verticalAlign=top;align=left;spacingTop=8;spacingLeft=2;spacingRight=12;shape=cube;size=10;direction=south;fontStyle=4;html=1;whiteSpace=wrap;fillColor=#dae8fc;strokeColor=#6c8ebf;" value="End User Device" vertex="1">
+          <mxGeometry height="100" width="180" x="40" y="80" as="geometry" />
+        </mxCell>
+        <mxCell id="Browser" parent="UserDevice" style="html=1;whiteSpace=wrap;fillColor=#ffffff;strokeColor=#000000;" value="Web Browser" vertex="1">
+          <mxGeometry height="40" width="140" x="20" y="40" as="geometry" />
+        </mxCell>
+        <mxCell id="LocalDev" parent="1" style="verticalAlign=top;align=left;spacingTop=8;spacingLeft=2;spacingRight=12;shape=cube;size=10;direction=south;fontStyle=4;html=1;whiteSpace=wrap;fillColor=#e1d5e7;strokeColor=#9673a6;" value="Local" vertex="1">
+          <mxGeometry height="220" width="460" x="30" y="390" as="geometry" />
+        </mxCell>
+        <mxCell id="LocalRuntime" parent="LocalDev" style="verticalAlign=top;align=left;spacingTop=8;spacingLeft=2;spacingRight=12;shape=cube;size=10;direction=south;fontStyle=0;html=1;whiteSpace=wrap;fillColor=#ffffff;strokeColor=#000000;" value="Node.js Runtime" vertex="1">
+          <mxGeometry height="140" width="190" x="20" y="50" as="geometry" />
+        </mxCell>
+        <mxCell id="Scripts" parent="LocalRuntime" style="shape=note;whiteSpace=wrap;html=1;backgroundOutline=1;size=14;fillColor=#f5f5f5;strokeColor=#666666;align=left;" value="Scripts:&#xa;import-one.js&#xa;import-batch.js" vertex="1">
+          <mxGeometry height="60" width="120" x="35" y="50" as="geometry" />
+        </mxCell>
+        <mxCell id="LocalTools" parent="LocalDev" style="verticalAlign=top;align=left;spacingTop=8;spacingLeft=2;spacingRight=12;shape=cube;size=10;direction=south;fontStyle=0;html=1;whiteSpace=wrap;fillColor=#ffffff;strokeColor=#000000;" value="External Tools" vertex="1">
+          <mxGeometry height="140" width="180" x="240" y="50" as="geometry" />
+        </mxCell>
+        <mxCell id="YtDlp" parent="LocalTools" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#f5f5f5;strokeColor=#666666;" value="yt-dlp.exe" vertex="1">
+          <mxGeometry height="30" width="120" x="30" y="50" as="geometry" />
+        </mxCell>
+        <mxCell id="Ffmpeg" parent="LocalTools" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#f5f5f5;strokeColor=#666666;" value="ffmpeg.exe" vertex="1">
+          <mxGeometry height="30" width="120" x="30" y="90" as="geometry" />
+        </mxCell>
+        <mxCell id="RenderEnv" parent="1" style="verticalAlign=top;align=left;spacingTop=8;spacingLeft=2;spacingRight=12;shape=cube;size=10;direction=south;fontStyle=4;html=1;whiteSpace=wrap;fillColor=#d5e8d4;strokeColor=#82b366;" value="Render.com" vertex="1">
+          <mxGeometry height="180" width="200" x="300" y="80" as="geometry" />
+        </mxCell>
+        <mxCell id="RenderNode" parent="RenderEnv" style="verticalAlign=top;align=left;spacingTop=8;spacingLeft=2;spacingRight=12;shape=cube;size=10;direction=south;fontStyle=0;html=1;whiteSpace=wrap;fillColor=#ffffff;strokeColor=#000000;" value="Node.js Runtime" vertex="1">
+          <mxGeometry height="110" width="160" x="20" y="50" as="geometry" />
+        </mxCell>
+        <mxCell id="WebApp" parent="RenderNode" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#f5f5f5;strokeColor=#666666;" value="SAOCLAO App&lt;br&gt;(Express)" vertex="1">
+          <mxGeometry height="40" width="120" x="20" y="50" as="geometry" />
+        </mxCell>
+        <mxCell id="CloudGroup" parent="1" style="swimlane;html=1;startSize=20;horizontal=1;childLayout=stackLayout;horizontalStack=0;resizeParent=1;resizeParentMax=0;resizeLast=0;collapsible=0;marginBottom=0;whiteSpace=wrap;fillColor=#fff2cc;strokeColor=#d6b656;" value="External Cloud Services" vertex="1">
+          <mxGeometry height="330" width="200" x="600" y="80" as="geometry" />
+        </mxCell>
+        <mxCell id="Mongo" parent="CloudGroup" style="shape=cylinder3;whiteSpace=wrap;html=1;boundedLbl=1;backgroundOutline=1;size=15;fillColor=#ffffff;strokeColor=#000000;spacingTop=10;" value="MongoDB Atlas" vertex="1">
+          <mxGeometry height="90" width="200" y="20" as="geometry" />
+        </mxCell>
+        <mxCell id="Cloudinary" parent="CloudGroup" style="shape=cloud;whiteSpace=wrap;html=1;fillColor=#ffffff;strokeColor=#000000;" value="Cloudinary" vertex="1">
+          <mxGeometry height="110" width="200" y="110" as="geometry" />
+        </mxCell>
+        <mxCell id="Google" parent="CloudGroup" style="ellipse;shape=cloud;whiteSpace=wrap;html=1;fillColor=#ffffff;strokeColor=#000000;" value="Google OAuth" vertex="1">
+          <mxGeometry height="110" width="200" y="220" as="geometry" />
+        </mxCell>
+        <mxCell id="c1" edge="1" parent="1" source="UserDevice" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;entryX=0.283;entryY=0.988;entryDx=0;entryDy=0;entryPerimeter=0;" target="RenderEnv" value="">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="c2" edge="1" parent="1" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;entryX=0;entryY=0.5;entryDx=0;entryDy=0;entryPerimeter=0;" target="Mongo" value="">
+          <mxGeometry relative="1" as="geometry">
+            <mxPoint as="offset" />
+            <Array as="points">
+              <mxPoint x="500" y="145" />
+            </Array>
+            <mxPoint x="500" y="150" as="sourcePoint" />
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="c3" edge="1" parent="1" source="RenderEnv" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;entryX=0.31;entryY=0.8;entryDx=0;entryDy=0;entryPerimeter=0;exitX=1;exitY=0.5;exitDx=0;exitDy=0;exitPerimeter=0;" target="Cloudinary" value="">
+          <mxGeometry relative="1" as="geometry">
+            <Array as="points">
+              <mxPoint x="400" y="278" />
+            </Array>
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="c4" edge="1" parent="1" source="RenderEnv" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;entryX=0.16;entryY=0.5;entryDx=0;entryDy=0;entryPerimeter=0;exitX=1;exitY=0.75;exitDx=0;exitDy=0;exitPerimeter=0;" target="Google" value="">
+          <mxGeometry relative="1" as="geometry">
+            <Array as="points">
+              <mxPoint x="350" y="355" />
+            </Array>
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="c6" edge="1" parent="1" source="LocalRuntime" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;dashed=1;entryX=0;entryY=0.5;entryDx=0;entryDy=0;entryPerimeter=0;" target="LocalTools" value="">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="c7" edge="1" parent="1" source="LocalDev" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;entryX=0;entryY=0.75;entryDx=0;entryDy=0;entryPerimeter=0;exitX=0;exitY=0;exitDx=105;exitDy=0;exitPerimeter=0;" target="Mongo" value="">
+          <mxGeometry relative="1" as="geometry">
+            <Array as="points">
+              <mxPoint x="530" y="485" />
+              <mxPoint x="530" y="168" />
+            </Array>
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="c8" edge="1" parent="1" source="LocalDev" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;entryX=0.875;entryY=0.5;entryDx=0;entryDy=0;entryPerimeter=0;exitX=0;exitY=0;exitDx=210;exitDy=0;exitPerimeter=0;" target="Cloudinary" value="">
+          <mxGeometry relative="1" as="geometry">
+            <Array as="points">
+              <mxPoint x="810" y="600" />
+              <mxPoint x="810" y="250" />
+              <mxPoint x="775" y="250" />
+            </Array>
+            <mxPoint x="260" y="610" as="sourcePoint" />
+          </mxGeometry>
+        </mxCell>
+      </root>
+    </mxGraphModel>
+  </diagram>
+</mxfile>
