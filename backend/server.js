@@ -37,6 +37,8 @@ const PASSWORD_RULE_MESSAGE = 'Password must be at least 8 characters with upper
 app.set('view engine', 'ejs');
 app.set('views', path.join(__dirname, '..', 'frontend', 'views'));
 app.use('/public', express.static(path.join(__dirname, '..', 'frontend', 'public')));
+app.use('/css', express.static(path.join(__dirname, '..', 'frontend', 'public', 'css')));
+app.use('/js', express.static(path.join(__dirname, '..', 'frontend', 'public', 'js')));
 
 app.use(express.urlencoded({ extended: true }));
 app.use(express.json());
@@ -213,6 +215,11 @@ app.get('/', (req, res) => {
     return res.redirect('/home');
   }
   return res.render('landing', { title: 'SAOCLAO' });
+});
+
+app.get('/artistpro', (req, res) => {
+  const displayName = req.session.user?.name || req.session.user?.username || 'Tiep Kun';
+  res.render('artistpro', { userName: displayName });
 });
 
 app.get('/home', requireAuth, async (req, res) => {

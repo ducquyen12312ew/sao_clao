@@ -1,0 +1,286 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Stand out with Artist Pro</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="/css/artistpro.css">
+  <script defer src="/js/artistpro.js"></script>
+</head>
+<body>
+<% 
+  const benefits = [
+    {
+      title: 'Grow your audience',
+      body: 'Artist Pro subscribers get on average 400% more listens, thanks to our audio algorithm and featured playlists.'
+    },
+    {
+      title: 'Know your audience',
+      body: 'Get advanced fan insights and custom listening reports to build connections and plan promotions, releases, and tours.'
+    },
+    {
+      title: 'Upload unlimited tracks',
+      body: 'Replace unlimited tracks without losing your plays, likes, and comments.'
+    },
+    {
+      title: 'Upload and Distribution is included',
+      body: 'Distribute and get paid on SoundCloud and 60+ platforms including Spotify, Apple Music, and TikTok.'
+    }
+  ];
+
+  const plans = [
+    {
+      name: 'Artist',
+      subtitle: 'Tailored access to essential artist tools',
+      price: '₫40,000 / month, billed yearly for ₫480,000',
+      cta: 'Get started',
+      popular: false,
+      features: [
+        { label: '3 hours of uploads' },
+        { label: 'Boost tracks and get 100+ listeners', quota: '2X MONTH' },
+        { label: 'Distribute & monetize tracks', quota: '2X MONTH' },
+        { label: 'Replace tracks without losing stats', quota: '3X MONTH' },
+        { label: 'AI Mastering', quota: '1X MONTH' }
+      ]
+    },
+    {
+      name: 'Artist Pro',
+      subtitle: 'Unlimited access to all artist tools',
+      price: '₫95,000 / month, billed yearly for ₫1,140,000',
+      cta: 'Get started',
+      popular: true,
+      features: [
+        { label: 'Unlimited uploads' },
+        { label: 'Boost tracks and get 100+ listeners', quota: 'UNLIMITED' },
+        { label: 'Distribute & monetize tracks', quota: 'UNLIMITED' },
+        { label: 'Replace tracks without losing stats', quota: 'UNLIMITED' },
+        { label: 'AI Mastering', quota: '3X MONTH' },
+        { label: 'AND MORE', quota: 'Audience stats and insights' }
+      ]
+    }
+  ];
+
+  const comparisonColumns = ['Basic (Free)', 'Artist', 'Artist Pro'];
+
+  const comparisonGroups = [
+    {
+      title: 'Promote tracks',
+      description: 'Our algorithm analyzes and recommends your tracks to 100 or even 1000 listeners most likely to love it.',
+      rows: [
+        { label: 'Get playlisted', values: ['-', '2 tracks / month', 'Unlimited'] }
+      ]
+    },
+    {
+      title: 'Distribute and get paid',
+      description: 'Earn royalties from 60+ social and streaming platforms like Spotify and TikTok',
+      rows: [
+        { label: 'Distribute and get paid', values: ['-', '2 tracks / month', 'Unlimited'] }
+      ]
+    },
+    {
+      title: 'Advanced audience stats',
+      description: "See how listeners found your music, your top fans, and where they're located",
+      rows: [
+        { label: 'Advanced audience stats', values: ['-', 'Included', 'Included'] }
+      ]
+    },
+    {
+      title: 'Unlimited Comments hub',
+      description: 'Effectively track and answer messages and comments',
+      rows: [
+        { label: 'Comments hub', values: ['-', 'Included', 'Included'] }
+      ]
+    },
+    {
+      title: 'Manage your music',
+      rows: [
+        { label: 'Upload limit', values: ['2 hours', '3 hours', 'Unlimited'] },
+        { label: 'Free mastering credits', values: ['-', '1 track / month', '3 tracks / month'] },
+        { label: 'Replace tracks', values: ['-', '3 tracks / month', 'Unlimited'] },
+        { label: 'Quiet mode', values: ['-', 'Available', 'Available'] },
+        { label: 'Schedule track releases', values: ['-', 'Available', 'Available'] }
+      ]
+    },
+    {
+      title: 'Build your brand',
+      rows: [
+        { label: 'Profile badge', values: ['-', 'ARTIST', 'ARTIST PRO'] },
+        { label: 'Spotlight', values: ['-', '1 track', '5 tracks'] }
+      ]
+    },
+    {
+      title: 'Get paid',
+      rows: [
+        { label: 'Monetize on SoundCloud', values: ['-', '2 tracks / month', 'Unlimited'] },
+        { label: 'Distribute and monetize on 60+ other platforms', values: ['-', '2 tracks / month', 'Unlimited'] },
+        { label: 'YouTube Content ID', values: ['-', 'Included', 'Included'] },
+        { label: 'Split royalties', values: ['-', 'Included', 'Included'] }
+      ]
+    },
+    {
+      title: 'Special treatment',
+      rows: [
+        { label: 'Priority support', values: ['-', 'Available', 'Available'] },
+        { label: 'Get 50% off Go+', values: ['-', 'Included', 'Included'] },
+        { label: 'Exclusive Partner Savings', description: 'Exclusive offers & discounts from partners like Groover, Serato, and Tracklib.', values: ['Partial access', 'Partial access', 'Full access'] },
+        { label: 'Access level', values: ['Partial access', 'Partial access', 'Full access'] }
+      ]
+    }
+  ];
+%>
+
+  <div class="page">
+    <header class="hero">
+      <div class="hero-inner container">
+        <div class="hero-text">
+          <p class="eyebrow">SoundCloud for Artists</p>
+          <h1>Stand out with Artist Pro</h1>
+          <p class="lede">Reach more listeners.</p>
+          <p class="lede subtle">Join millions of artists that use SoundCloud to get heard.</p>
+          <div class="cta-row">
+            <a class="btn primary" href="#plans">Get Artist Pro</a>
+            <a class="link" href="#plans" aria-label="See all plans">See all plans</a>
+          </div>
+        </div>
+        <div class="hero-visual" aria-hidden="true">
+          <div class="halo"></div>
+          <div class="pulse"></div>
+        </div>
+      </div>
+      <div class="benefits container" aria-label="Key benefits">
+        <% benefits.forEach((item) => { %>
+          <article class="benefit-card">
+            <div class="icon-circle">
+              <svg viewBox="0 0 24 24" aria-hidden="true" focusable="false">
+                <path d="M12 2.5c5.247 0 9.5 4.253 9.5 9.5s-4.253 9.5-9.5 9.5S2.5 17.247 2.5 12 6.753 2.5 12 2.5Zm0 1.5a8 8 0 1 0 0 16 8 8 0 0 0 0-16Zm3.78 5.22a.75.75 0 0 1 .073.976l-.073.085-4.5 4.5a.75.75 0 0 1-.976.073l-.085-.073-2-2a.75.75 0 0 1 .976-1.134l.085.073 1.513 1.513 4.012-4.012a.75.75 0 0 1 1.134.976Z"></path>
+              </svg>
+            </div>
+            <h3><%= item.title %></h3>
+            <p><%= item.body %></p>
+          </article>
+        <% }) %>
+      </div>
+    </header>
+
+    <main>
+      <section class="plans" id="plans">
+        <div class="container">
+          <div class="section-header">
+            <h2>Choose the plan that's right for you</h2>
+            <p>Simple pricing so you can focus on creating.</p>
+          </div>
+          <div class="plan-grid">
+            <% plans.forEach((plan) => { %>
+              <article class="plan-card <%= plan.popular ? 'is-popular' : '' %>">
+                <div class="plan-top">
+                  <div class="plan-title-row">
+                    <h3><%= plan.name %></h3>
+                    <% if (plan.popular) { %>
+                      <span class="badge">MOST POPULAR</span>
+                    <% } %>
+                  </div>
+                  <p class="plan-subtitle"><%= plan.subtitle %></p>
+                  <p class="plan-price"><%= plan.price %></p>
+                </div>
+                <div class="plan-body">
+                  <button type="button" class="btn <%= plan.popular ? 'primary' : 'ghost' %>"><%= plan.cta %></button>
+                  <ul class="feature-list">
+                    <% plan.features.forEach((feature) => { %>
+                      <li class="feature-item">
+                        <div class="feature-icon" aria-hidden="true">
+                          <svg viewBox="0 0 24 24">
+                            <path d="M12 2.5c5.247 0 9.5 4.253 9.5 9.5s-4.253 9.5-9.5 9.5S2.5 17.247 2.5 12 6.753 2.5 12 2.5Zm0 1.5a8 8 0 1 0 0 16 8 8 0 0 0 0-16Zm3.28 5.72-4.25 4.25a.75.75 0 0 1-.976.073l-.084-.073-2-2a.75.75 0 0 1 .976-1.134l.084.073 1.513 1.513 3.764-3.764a.75.75 0 0 1 1.134.976Z"></path>
+                          </svg>
+                        </div>
+                        <span class="feature-label"><%= feature.label %></span>
+                        <% if (feature.quota) { %>
+                          <span class="feature-pill"><%= feature.quota %></span>
+                        <% } %>
+                      </li>
+                    <% }) %>
+                  </ul>
+                </div>
+              </article>
+            <% }) %>
+          </div>
+        </div>
+      </section>
+
+      <section class="compare" id="compare">
+        <div class="container">
+          <div class="section-header">
+            <h2>Compare features.</h2>
+            <p>See what you get with each plan.</p>
+          </div>
+          <div class="comparison-table" role="table" aria-label="Compare features across plans">
+            <div class="comparison-head" role="row">
+              <div class="head-cell" role="columnheader">Features</div>
+              <% comparisonColumns.forEach((col) => { %>
+                <div class="head-cell" role="columnheader"><%= col %></div>
+              <% }) %>
+            </div>
+            <% comparisonGroups.forEach((group) => { %>
+              <div class="comparison-group">
+                <div class="group-header">
+                  <h3><%= group.title %></h3>
+                  <% if (group.description) { %>
+                    <p class="group-description"><%= group.description %></p>
+                  <% } %>
+                </div>
+                <div class="comparison-rows">
+                  <% group.rows.forEach((row) => { %>
+                    <div class="comparison-row" role="row">
+                      <div class="row-label" role="rowheader">
+                        <span><%= row.label %></span>
+                        <% if (row.description) { %>
+                          <small><%= row.description %></small>
+                        <% } %>
+                      </div>
+                      <% row.values.forEach((value, idx) => { %>
+                        <div class="row-value" role="cell" data-col="<%= comparisonColumns[idx] %>">
+                          <% if (value === 'Available' || value === 'Included') { %>
+                            <span class="availability yes" aria-label="<%= comparisonColumns[idx] %> includes <%= row.label %>">
+                              <svg viewBox="0 0 24 24" aria-hidden="true">
+                                <path d="M12 2.5c5.247 0 9.5 4.253 9.5 9.5s-4.253 9.5-9.5 9.5S2.5 17.247 2.5 12 6.753 2.5 12 2.5Zm0 1.5a8 8 0 1 0 0 16 8 8 0 0 0 0-16Zm3.28 5.72-4.25 4.25a.75.75 0 0 1-.976.073l-.084-.073-2-2a.75.75 0 0 1 .976-1.134l.084.073 1.513 1.513 3.764-3.764a.75.75 0 0 1 1.134.976Z"></path>
+                              </svg>
+                              <span class="text">Included</span>
+                            </span>
+                          <% } else if (value === '-' || value === '' || value === null) { %>
+                            <span class="availability no" aria-label="<%= comparisonColumns[idx] %> does not include <%= row.label %>">-</span>
+                          <% } else { %>
+                            <span class="text"><%= value %></span>
+                          <% } %>
+                        </div>
+                      <% }) %>
+                    </div>
+                  <% }) %>
+                </div>
+              </div>
+            <% }) %>
+          </div>
+        </div>
+      </section>
+    </main>
+
+    <footer class="footer">
+      <div class="container footer-inner">
+        <p class="footer-user">Signed in as <%= typeof userName !== 'undefined' ? userName : 'Tiep Kun' %>. <a href="#" class="link">Sign out</a></p>
+        <nav aria-label="Legal">
+          <ul class="footer-links">
+            <li><a href="#" class="link">Legal</a></li>
+            <li><a href="#" class="link">Privacy</a></li>
+            <li><a href="#" class="link">Cookies</a></li>
+            <li><a href="#" class="link">Consent Manager</a></li>
+            <li><a href="#" class="link">Imprint</a></li>
+            <li><a href="#" class="link">Help Centre</a></li>
+          </ul>
+        </nav>
+        <p class="footer-language">Language: English (UK)</p>
+      </div>
+    </footer>
+  </div>
+</body>
+</html>
