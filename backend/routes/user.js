@@ -69,7 +69,7 @@ router.get('/:username', async (req, res) => {
     // Calculate total likes
     const totalLikes = tracks.reduce((sum, track) => sum + (track.likes || 0), 0);
     
-    res.render('user-profile', {
+    res.render('profile', {
       title: `${user.name} (@${user.username}) - SAOCLAO`,
       profileUser: user,
       user: req.session.user || null,

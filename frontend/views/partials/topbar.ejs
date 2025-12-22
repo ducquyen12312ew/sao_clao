@@ -1,0 +1,31 @@
+<header class="topbar">
+  <div class="topbar-left">
+    <a href="/" class="brand">
+      <img src="/public/img/saoclao.png" alt="SAOCLAO" class="brand-logo" onerror="this.style.display='none'">
+      <span class="brand-name">SAOCLAO</span>
+    </a>
+    <nav class="nav" aria-label="Primary">
+      <a class="nav-link <%= (activePage === 'home') ? 'active' : '' %>" href="/home">Home</a>
+      <a class="nav-link <%= (activePage === 'feed') ? 'active' : '' %>" href="/feed">Feed</a>
+      <a class="nav-link <%= (activePage === 'library') ? 'active' : '' %>" href="/library">Library</a>
+    </nav>
+  </div>
+
+  <div class="search">
+    <i class="fa-solid fa-magnifying-glass"></i>
+    <input type="text" placeholder="Search for artists, tracks, podcasts" aria-label="Search">
+  </div>
+
+  <div class="topbar-actions">
+    <button class="icon-btn" title="Messages"><i class="fa-regular fa-envelope"></i></button>
+    <button class="icon-btn" title="Notifications"><i class="fa-regular fa-bell"></i></button>
+    <button class="icon-btn" title="More"><i class="fa-solid fa-ellipsis"></i></button>
+    <a class="btn ghost" href="/upload">Upload</a>
+    <a class="btn primary" href="/artistpro">Try Artist Pro</a>
+    <div class="avatar-menu">
+      <a class="avatar" href="<%= currentUser && currentUser.username ? '/users/' + currentUser.username : '/login' %>" aria-label="Profile">
+        <%= (currentUser && currentUser.username ? currentUser.username.charAt(0).toUpperCase() : 'U') %>
+      </a>
+    </div>
+  </div>
+</header>

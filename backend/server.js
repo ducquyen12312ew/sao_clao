@@ -545,102 +545,12 @@ app.use('/users', userRoutes);
 app.use('/settings', settingsRoutes);
 app.use('/admin', adminRoutes);
 
-app.get(['/me', '/profile'], requireAuth, async (req, res) => {
-  try {
-    const userId = req.session.user.id;
-    const filter = getTrackFilter(req.session.user);
-    const baseFilter = { ...filter, deletedAt: null };
-
-    const recentPlays = await PlayHistoryCollection
-      .find({ userId })
-      .sort({ playedAt: -1 })
-      .limit(20)
-      .populate({
-        path: 'trackId',
-        match: baseFilter
-      })
-      .lean();
-    
-    const seenTracks = new Set();
-    const recentlyPlayed = [];
-    
-    for (const doc of recentPlays) {
-      if (doc.trackId && !seenTracks.has(doc.trackId._id.toString())) {
-        seenTracks.add(doc.trackId._id.toString());
-        recentlyPlayed.push(doc.trackId);
-        if (recentlyPlayed.length >= 12) break;
-      }
-    }
-
-    const playlists = await PlaylistCollection
-      .find({ userId })
-      .populate({
-        path: 'tracks',
-        match: baseFilter
-      })
-      .sort({ updatedAt: -1 })
-      .limit(6)
-      .lean();
-    
-    let moreOfWhatYouLike = [];
-    
-    if (recentlyPlayed.length > 0) {
-      const lastTrack = recentlyPlayed[0];
-      
-      const similarTracks = await TrackCollection.find({
-        ...baseFilter,
-        _id: { $ne: lastTrack._id },
-        $or: [
-          { genres: { $in: lastTrack.genres || [] } },
-          { tags: { $in: lastTrack.tags || [] } },
-          { mood: lastTrack.mood }
-        ]
-      }).limit(30).lean();
-      
-      const scoredTracks = similarTracks.map(track => {
-        let score = 0;
-        
-        const genreMatches = (track.genres || []).filter(g => 
-          (lastTrack.genres || []).includes(g)
-        ).length;
-        score += genreMatches * 3;
-        
-        const tagMatches = (track.tags || []).filter(t => 
-          (lastTrack.tags || []).includes(t)
-        ).length;
-        score += tagMatches * 2;
-        
-        if (track.mood === lastTrack.mood) score += 1;
-        
-        const wasPlayed = recentlyPlayed.some(r => 
-          r._id.toString() === track._id.toString()
-        );
-        if (wasPlayed) score -= 5;
-        
-        return { ...track, score };
-      });
-      
-      moreOfWhatYouLike = scoredTracks
-        .sort((a, b) => b.score - a.score)
-        .slice(0, 12);
-    } else {
-      moreOfWhatYouLike = await TrackCollection
-        .aggregate([
-          { $match: baseFilter },
-          { $sample: { size: 12 } }
-        ]);
-    }
-
-    res.render('profile', {
-      title: `@${req.session.user.username} • MusicCloud`,
-      user: req.session.user,
-      moreOfWhatYouLike,
-      recentlyPlayed,
-      playlists  
-    });
-  } catch (err) {
-    res.status(500).send('Server error');
+app.get(['/me', '/profile'], requireAuth, (req, res) => {
+  const username = req.session.user?.username;
+  if (!username) {
+    return res.redirect('/login');
   }
+  return res.redirect(`/users/${username}`);
 });
 
 app.get('/likes', requireAuth, async (req, res) => {

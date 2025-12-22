@@ -1,13 +1,14 @@
-(() => {
-  const links = document.querySelectorAll('a[href^="#"]');
-  links.forEach((link) => {
-    link.addEventListener('click', (event) => {
-      const targetId = link.getAttribute('href').slice(1);
-      const target = document.getElementById(targetId);
-      if (target) {
-        event.preventDefault();
-        target.scrollIntoView({ behavior: 'smooth', block: 'start' });
-      }
-    });
+(function () {
+  // smooth anchor scroll like the PDF flow
+  document.addEventListener("click", (e) => {
+    const a = e.target.closest('a[href^="#"]');
+    if (!a) return;
+
+    const id = a.getAttribute("href");
+    const el = document.querySelector(id);
+    if (!el) return;
+
+    e.preventDefault();
+    el.scrollIntoView({ behavior: "smooth", block: "start" });
   });
 })();

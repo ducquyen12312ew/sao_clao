@@ -8,6 +8,7 @@
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+  <link rel="stylesheet" href="/css/topbar.css">
   <style>
     :root {
       --bg: #0a0a0a;
@@ -213,6 +214,7 @@
     const following = Array.isArray(followingUsers) ? followingUsers : [];
     const historyList = Array.isArray(historyTracks) ? historyTracks : [];
   %>
+  <%- include('partials/topbar', { currentUser, activePage: 'library' }) %>
   <header class="topbar">
     <a class="logo" href="/home">
       <img src="/public/img/saoclao.png" alt="SAOCLAO">
@@ -263,7 +265,7 @@
           <i class="fa-solid fa-chevron-down"></i>
         </button>
         <div class="avatar-dropdown" id="avatarDropdown">
-          <a href="/profile"><i class="fa-regular fa-user"></i> Profile</a>
+          <a href="<%= currentUser ? '/users/' + currentUser.username : '/login' %>"><i class="fa-regular fa-user"></i> Profile</a>
           <a href="/likes"><i class="fa-regular fa-heart"></i> Likes</a>
           <a href="/playlists"><i class="fa-solid fa-compact-disc"></i> Playlists</a>
           <a href="/library#stations"><i class="fa-solid fa-tower-broadcast"></i> Stations</a>

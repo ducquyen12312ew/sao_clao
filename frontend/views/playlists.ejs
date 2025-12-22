@@ -7,9 +7,11 @@
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+  <link rel="stylesheet" href="/css/topbar.css">
   <link rel="stylesheet" href="/public/css/playlists.css">
 </head>
 <body>
+  <%- include('partials/topbar', { currentUser: user, activePage: 'library' }) %>
   <!-- Create playlist modal -->
   <div class="modal" id="createModal">
     <div class="modal-content">
@@ -40,7 +42,7 @@
         <img src="/public/img/saoclao.png" alt="SAOCLAO">
       </div>
       <nav class="nav-menu">
-        <a href="/profile" class="nav-link">
+        <a href="/users/<%= user.username %>" class="nav-link">
           <i class="fa-solid fa-house"></i> Home
         </a>
         <a href="/playlists" class="nav-link active">
