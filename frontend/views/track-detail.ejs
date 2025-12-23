@@ -77,8 +77,10 @@
 .lyrics-body {
   padding: 20px;
   max-height: 400px;
-  overflow-y: auto;
-  scroll-behavior: smooth;
+  overflow-y: scroll;
+  overflow-x: hidden;
+  overscroll-behavior-y: contain;
+  position: relative;
 }
 
 .lyrics-body::-webkit-scrollbar {
@@ -975,14 +977,37 @@ function startLyricSync() {
     document.querySelectorAll('.lyric-line.passed').forEach(el => el.classList.remove('passed'));
 
     const activeEl = document.querySelector(`.lyric-line[data-idx="${i}"]`);
-    if (activeEl) {
-      for (let k = 0; k < i; k++) {
-        const p = document.querySelector(`.lyric-line[data-idx="${k}"]`);
-        if (p) p.classList.add('passed');
-      }
-      activeEl.classList.add('active');
-      activeEl.scrollIntoView({ block: 'center', behavior: 'smooth' });
+if (activeEl) {
+  for (let k = 0; k < i; k++) {
+    const p = document.querySelector(`.lyric-line[data-idx="${k}"]`);
+    if (p) p.classList.add('passed');
+  }
+  activeEl.classList.add('active');
+  
+  // Scroll CHỈ trong lyrics-body container
+  const lyricsBody = document.querySelector('.lyrics-body');
+  if (lyricsBody) {
+    // Lấy vị trí tương đối của activeEl so với lyricsBody
+    const bodyRect = lyricsBody.getBoundingClientRect();
+    const activeRect = activeEl.getBoundingClientRect();
+    
+    // Tính khoảng cách từ top của body đến top của active element
+    const relativeTop = activeRect.top - bodyRect.top + lyricsBody.scrollTop;
+    
+    // Tính vị trí scroll để center active line
+    const containerHeight = lyricsBody.clientHeight;
+    const elementHeight = activeEl.offsetHeight;
+    const targetScroll = relativeTop - (containerHeight / 2) + (elementHeight / 2);
+    
+    // Smooth scroll
+    const currentScroll = lyricsBody.scrollTop;
+    const diff = targetScroll - currentScroll;
+    
+    if (Math.abs(diff) > 1) {
+      lyricsBody.scrollTop = currentScroll + (diff * 0.15);
     }
+  }
+}
     lyricRAF = requestAnimationFrame(step);
   };
   lyricRAF = requestAnimationFrame(step);
