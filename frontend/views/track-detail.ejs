@@ -174,7 +174,7 @@
         </a>
       </div>
       <nav class="nav-menu">
-        <a href="/profile" class="nav-link">
+        <a href="/home" class="nav-link">
           <i class="fa-solid fa-house"></i> Trang chủ
         </a>
         <a href="/playlists" class="nav-link">
@@ -182,6 +182,9 @@
         </a>
         <a href="/likes" class="nav-link">
           <i class="fa-solid fa-heart"></i> Đã thích
+        </a>
+        <a href="/ai" class="nav-link">
+          <i class="fa-solid fa-wand-magic-sparkles"></i> AI Generate
         </a>
       </nav>
     </div>
@@ -202,7 +205,6 @@
         <i class="fa-solid fa-cloud-arrow-up"></i>
         <span class="btn-text">Upload</span>
       </button>
-
       <a href="/users/<%= user.username %>" style="text-decoration: none;">
         <div class="user-avatar">
           <% if (user.avatarUrl) { %>
@@ -283,7 +285,7 @@
               <i class="fa-solid fa-list"></i>
               <span>Add to Queue</span>
             </button>
-            <button class="action-btn">
+            <button class="action-btn" id="shareBtn">
               <i class="fa-solid fa-share"></i>
               <span>Share</span>
             </button>
@@ -420,9 +422,9 @@
                   </div>
                   <p class="comment-text"><%= comment.text %></p>
                   <div class="comment-actions">
-                    <button class="comment-action">
-                      <i class="fa-regular fa-heart"></i>
-                      <span><%= comment.likes || 0 %></span>
+                    <button class="comment-action comment-like" data-comment-id="<%= comment._id %>" data-liked="<%= comment.liked ? 'true' : 'false' %>">
+                      <i class="<%= comment.liked ? 'fa-solid fa-heart' : 'fa-regular fa-heart' %>"></i>
+                      <span class="comment-like-count"><%= comment.likes || 0 %></span>
                     </button>
                     
                     <% if (user.role === 'admin') { %>
@@ -760,6 +762,14 @@ if (toggleLyricsBtn) {
 if (closeLyricsBtn) {
   closeLyricsBtn.addEventListener('click', closeLyrics);
 }
+
+(function autoOpenLyricsIfAvailable() {
+  const hasLyrics = (trackData.lyricsLRC && trackData.lyricsLRC.trim().length > 0) ||
+                    (trackData.lyricsText && trackData.lyricsText.trim().length > 0);
+  if (hasLyrics) {
+    openLyrics();
+  }
+})();
 
 (function hookLyricEvents() {
   const audio = window.player?.audio;
@@ -1234,6 +1244,7 @@ function initPlayerUI() {
 function initActions() {
   const likeBtn = document.getElementById('likeBtn');
   const addToQueueBtn = document.getElementById('addToQueueBtn');
+  const shareBtn = document.getElementById('shareBtn');
   const submitComment = document.getElementById('submitComment');
   const commentInput = document.getElementById('commentInput');
   
@@ -1258,8 +1269,55 @@ function initActions() {
   
   if (addToQueueBtn) {
     addToQueueBtn.addEventListener('click', () => {
-      if (window.player) {
-        window.player.addToQueue(trackData);
+      if (!window.player) {
+        alert('Player chưa sẵn sàng. Vui lòng thử lại sau.');
+        return;
+      }
+      const ok = window.player.addToQueue(trackData);
+      window.player.renderQueue();
+      const toast = document.createElement('div');
+      toast.textContent = ok ? 'Đã thêm vào hàng đợi' : 'Bài hát đã có trong hàng đợi';
+      toast.style.position = 'fixed';
+      toast.style.bottom = '20px';
+      toast.style.right = '20px';
+      toast.style.padding = '12px 14px';
+      toast.style.borderRadius = '10px';
+      toast.style.background = 'rgba(0,0,0,0.8)';
+      toast.style.color = '#fff';
+      toast.style.zIndex = '2000';
+      document.body.appendChild(toast);
+      setTimeout(() => toast.remove(), 2000);
+    });
+  }
+  
+  function showToast(message) {
+    const toast = document.createElement('div');
+    toast.textContent = message;
+    toast.style.position = 'fixed';
+    toast.style.bottom = '20px';
+    toast.style.right = '20px';
+    toast.style.padding = '12px 14px';
+    toast.style.borderRadius = '10px';
+    toast.style.background = 'rgba(0,0,0,0.8)';
+    toast.style.color = '#fff';
+    toast.style.zIndex = '2000';
+    document.body.appendChild(toast);
+    setTimeout(() => toast.remove(), 2000);
+  }
+
+  if (shareBtn) {
+    shareBtn.addEventListener('click', async () => {
+      const url = `${window.location.origin}/track/${trackData.id}`;
+      try {
+        if (navigator.clipboard?.writeText) {
+          await navigator.clipboard.writeText(url);
+          showToast('Đã copy link bài hát vào clipboard');
+        } else {
+          prompt('Sao chép link bài hát:', url);
+        }
+      } catch (err) {
+        console.error('Copy failed:', err);
+        prompt('Sao chép link bài hát:', url);
       }
     });
   }
@@ -1291,6 +1349,36 @@ function initActions() {
       }
     });
   }
+  
+  document.querySelectorAll('.comment-like').forEach(btn => {
+    btn.addEventListener('click', async () => {
+      const commentId = btn.dataset.commentId;
+      try {
+        const res = await fetch(`/api/comments/${commentId}/like`, { method: 'POST' });
+        let data = {};
+        if (!res.ok) {
+          const text = await res.text();
+          throw new Error(text || 'Request failed');
+        } else {
+          data = await res.json();
+        }
+        if (data.success) {
+          btn.dataset.liked = data.liked ? 'true' : 'false';
+          const icon = btn.querySelector('i');
+          if (icon) icon.className = data.liked ? 'fa-solid fa-heart' : 'fa-regular fa-heart';
+          const count = btn.querySelector('.comment-like-count');
+          if (count) count.textContent = data.likes;
+          showToast(data.liked ? 'Đã thả tim' : 'Đã bỏ tim');
+        } else {
+          showToast(data.message || 'Không thể thả tim bình luận');
+        }
+      } catch (err) {
+        console.error('Comment like error:', err);
+        const msg = err.message && err.message.includes('<!DOCTYPE') ? 'Không thể thả tim bình luận' : err.message;
+        showToast(msg || 'Không thể thả tim bình luận');
+      }
+    });
+  });
 }
 
 // ========== MV PLAYER ==========

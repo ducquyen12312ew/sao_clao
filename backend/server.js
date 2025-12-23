@@ -29,6 +29,7 @@ const playlistRoutes = require('./routes/playlist');
 const userRoutes = require('./routes/user');
 const settingsRoutes = require('./routes/settings');
 const adminRoutes = require('./routes/admin');
+const aiRoutes = require('./routes/ai');
 
 const app = express();
 const SALT_ROUNDS = 10;
@@ -212,7 +213,7 @@ const getTrackFilter = (user) => {
 
 app.get('/', async (req, res) => {
   try {
-    if (req.session.user) return res.redirect('/profile');
+    if (req.session.user) return res.redirect('/home');
     
     const tracks = await TrackCollection
       .find({ status: 'approved', deletedAt: null })
@@ -220,7 +221,7 @@ app.get('/', async (req, res) => {
       .limit(12)
       .lean();
     
-    res.render('home', { 
+    res.render('landing', { 
       title: 'MusicCloud - Discover. Get Discovered.', 
       tracks 
     });
@@ -232,7 +233,7 @@ app.get('/', async (req, res) => {
 app.get('/signup', (req, res) => {
   if (req.session.user) {
     req.session.flash = { type: 'info', message: 'Bạn đã đăng nhập rồi.' };
-    return req.session.save(() => res.redirect('/'));
+    return req.session.save(() => res.redirect('/home'));
   }
   res.render('signup', { title: 'Create account' });
 });
@@ -278,7 +279,7 @@ app.post('/signup', async (req, res) => {
 });
 
 app.get('/login', (req, res) => {
-  if (req.session.user) return res.redirect('/profile');
+  if (req.session.user) return res.redirect('/home');
   res.render('login', { title: 'Sign in' });
 });
 
@@ -351,6 +352,13 @@ if (passport._strategies && passport._strategies.google) {
 
 const doLogout = (req, res) => {
   req.session.destroy(() => res.redirect('/'));
+};
+
+const requireAuthJson = (req, res, next) => {
+  if (!req.session.user) {
+    return res.status(401).json({ success: false, message: 'Vui lòng đăng nhập' });
+  }
+  next();
 };
 
 app.get('/logout', doLogout);
@@ -454,8 +462,11 @@ app.use('/playlists', playlistRoutes);
 app.use('/users', userRoutes);  
 app.use('/settings', settingsRoutes);
 app.use('/admin', adminRoutes);
+app.use('/ai', aiRoutes);
 
-app.get(['/me', '/profile'], requireAuth, async (req, res) => {
+app.get(['/me', '/profile'], (req, res) => res.redirect('/home'));
+
+app.get('/home', requireAuth, async (req, res) => {
   try {
     const userId = req.session.user.id;
     const filter = getTrackFilter(req.session.user);
@@ -541,7 +552,7 @@ app.get(['/me', '/profile'], requireAuth, async (req, res) => {
         ]);
     }
 
-    res.render('profile', {
+    res.render('home', {
       title: `@${req.session.user.username} • MusicCloud`,
       user: req.session.user,
       moreOfWhatYouLike,
@@ -567,9 +578,7 @@ app.get('/likes', requireAuth, async (req, res) => {
       })
       .lean();
 
-    const tracks = likes
-      .map(l => l.trackId)
-      .filter(Boolean);
+    const tracks = likes.map(l => l.trackId).filter(Boolean);
 
     res.render('likes', {
       title: 'Bài hát đã thích - SAOCLAO',
@@ -581,7 +590,6 @@ app.get('/likes', requireAuth, async (req, res) => {
     res.status(500).send('Server error');
   }
 });
-
 app.post('/api/plays/:trackId', requireAuth, async (req, res) => {
   try {
     const trackId = req.params.trackId;
@@ -839,6 +847,14 @@ app.get('/track/:id', requireAuth, async (req, res) => {
       .sort({ createdAt: -1 })
       .lean();
     
+    const userId = req.session.user.id;
+    const mappedComments = comments.map(c => {
+      const likedBy = c.likedBy || [];
+      const liked = likedBy.some(id => id.toString() === userId.toString());
+      const likes = typeof c.likes === 'number' ? c.likes : likedBy.length;
+      return { ...c, liked, likes };
+    });
+    
     const relatedTracks = await TrackCollection.find({
       ...filter,
       deletedAt: null,
@@ -865,7 +881,7 @@ app.get('/track/:id', requireAuth, async (req, res) => {
     res.render('track-detail', {
       title: `${track.title} - ${track.artist}`,
       track,
-      comments,
+      comments: mappedComments,
       relatedTracks,
       playlists,
       user: req.session.user,
@@ -934,9 +950,71 @@ app.post('/api/tracks/:id/comments', requireAuth, async (req, res) => {
       .populate('userId', 'username avatarUrl')
       .lean();
     
+    populatedComment.likes = populatedComment.likes || 0;
+    populatedComment.likedBy = populatedComment.likedBy || [];
+    populatedComment.liked = false;
     res.json({ success: true, comment: populatedComment });
   } catch (err) {
     res.status(500).json({ success: false, error: err.message });
+  }
+});
+
+// Like/unlike comment
+app.post('/api/comments/:id/like', requireAuthJson, async (req, res) => {
+  try {
+    const userId = req.session.user.id;
+    const comment = await CommentCollection.findById(req.params.id);
+    if (!comment) {
+      return res.status(404).json({ success: false, message: 'Comment không tồn tại' });
+    }
+
+    comment.likedBy = comment.likedBy || [];
+    let liked;
+    const idx = comment.likedBy.findIndex(u => u.toString() === userId.toString());
+    if (idx !== -1) {
+      comment.likedBy.splice(idx, 1);
+      comment.likes = Math.max(0, (comment.likes || 0) - 1);
+      liked = false;
+    } else {
+      comment.likedBy.push(userId);
+      comment.likes = (comment.likes || 0) + 1;
+      liked = true;
+    }
+    await comment.save();
+
+    res.json({ success: true, likes: comment.likes, liked });
+  } catch (err) {
+    console.error('Like comment error:', err);
+    res.status(500).json({ success: false, message: 'Không thể thả tim bình luận' });
+  }
+});
+
+app.post('/api/comments/:id/like', requireAuthJson, async (req, res) => {
+  try {
+    const userId = req.session.user.id;
+    const comment = await CommentCollection.findById(req.params.id);
+    if (!comment) {
+      return res.status(404).json({ success: false, message: 'Comment không tồn tại' });
+    }
+
+    comment.likedBy = comment.likedBy || [];
+    let liked;
+    const idx = comment.likedBy.findIndex(u => u.toString() === userId.toString());
+    if (idx !== -1) {
+      comment.likedBy.splice(idx, 1);
+      comment.likes = Math.max(0, (comment.likes || 0) - 1);
+      liked = false;
+    } else {
+      comment.likedBy.push(userId);
+      comment.likes = (comment.likes || 0) + 1;
+      liked = true;
+    }
+    await comment.save();
+
+    res.json({ success: true, likes: comment.likes, liked });
+  } catch (err) {
+    console.error('Like comment error:', err);
+    res.status(500).json({ success: false, message: 'Không thể thả tim bình luận' });
   }
 });
 

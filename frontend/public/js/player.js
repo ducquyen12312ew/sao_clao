@@ -160,6 +160,12 @@ class MusicPlayer {
     
     this.hasTrackedCurrentPlay = false;
     this.currentTrack = track;
+    // đồng bộ queueIndex nếu track đã có trong queue
+    const idxInQueue = this.queue.findIndex(t => t.id === track.id);
+    if (idxInQueue !== -1) {
+      this.queueIndex = idxInQueue;
+    }
+    this.renderQueue();
     this.updateUI(track);
     this.audio.src = track.audioUrl;
     
@@ -253,15 +259,18 @@ class MusicPlayer {
     const exists = this.queue.find(t => t.id === track.id);
     if (exists) {
       console.log('Track already in queue');
+      this.renderQueue();
       return false;
     }
     
     this.queue.push(track);
     this.originalQueue.push(track);
     
-    if (this.queue.length === 1) {
+    if (!this.currentTrack) {
       this.queueIndex = 0;
       this.playTrack(track);
+    } else if (this.queueIndex === -1) {
+      this.queueIndex = 0;
     }
     
     this.renderQueue();
@@ -436,31 +445,46 @@ class MusicPlayer {
     const playerTitle = document.getElementById('playerTitle');
     const playerArtist = document.getElementById('playerArtist');
     const playerThumb = document.getElementById('playerThumb');
+
+    const titleText = track?.title || 'Chưa chọn bài hát';
+    const artistText = track?.artist || 'Unknown Artist';
+    if (playerTitle) playerTitle.textContent = titleText;
+    if (playerArtist) playerArtist.textContent = artistText;
     
-    if (playerTitle) playerTitle.textContent = track.title;
-    if (playerArtist) playerArtist.textContent = track.artist || 'Unknown Artist';
-    
-    const thumbHTML = track.cover ? `<img src="${track.cover}" alt="${track.title}">` : '';
+    const thumbHTML = track?.cover ? `<img src="${track.cover}" alt="${titleText}">` : '';
     if (playerThumb) playerThumb.innerHTML = thumbHTML;
     
     const sidebarTitle = document.getElementById('sidebarTitle');
     const sidebarArtist = document.getElementById('sidebarArtist');
     const sidebarImage = document.getElementById('sidebarImage');
     
-    if (sidebarTitle) sidebarTitle.textContent = track.title;
-    if (sidebarArtist) sidebarArtist.textContent = track.artist || 'Unknown Artist';
+    if (sidebarTitle) sidebarTitle.textContent = titleText;
+    if (sidebarArtist) sidebarArtist.textContent = artistText;
     if (sidebarImage) sidebarImage.innerHTML = thumbHTML;
     
-    document.title = `${track.title} - ${track.artist || 'Unknown'} • SAOCLAO`;
+    if (track?.title) {
+      document.title = `${track.title} - ${track.artist || 'Unknown'} • SAOCLAO`;
+    }
   }
 
   toggleQueuePanel() {
     if (this.queuePanel) {
       this.queuePanel.classList.toggle('active');
+      const btn = document.getElementById('sidebarToggle');
+      if (btn && btn.querySelector('i')) {
+        btn.querySelector('i').className = this.queuePanel.classList.contains('active')
+          ? 'fa-solid fa-chevron-right'
+          : 'fa-solid fa-chevron-left';
+      }
     }
   }
 
   renderQueue() {
+    const queueCount = document.getElementById('queueCount');
+    if (queueCount) {
+      queueCount.textContent = this.queue.length;
+    }
+
     if (!this.queueList) return;
     
     this.queueList.innerHTML = this.queue.map((track, index) => `
@@ -480,11 +504,6 @@ class MusicPlayer {
         </button>
       </div>
     `).join('');
-    
-    const queueCount = document.getElementById('queueCount');
-    if (queueCount) {
-      queueCount.textContent = this.queue.length;
-    }
   }
 
   playQueueItem(index) {
@@ -523,23 +542,19 @@ class MusicPlayer {
   }
 
   clearQueue() {
-    // giữ bài đang phát, xóa phần còn lại
-    const current = this.currentTrack;
-    if (current) {
-      this.queue = [current];
-      this.originalQueue = [current];
-      this.queueIndex = 0;
-    } else {
-      this.queue = [];
-      this.originalQueue = [];
-      this.queueIndex = -1;
+    this.queue = [];
+    this.originalQueue = [];
+    this.queueIndex = -1;
+    this.currentTrack = null;
+    this.hasTrackedCurrentPlay = false;
+    if (this.audio) {
       this.audio.pause();
       this.audio.src = '';
     }
-    this.hasTrackedCurrentPlay = false;
-    if (this.playerEl && this.queue.length === 0) {
+    if (this.playerEl) {
       this.playerEl.classList.remove('active');
     }
+    this.updateUI({});
     this.renderQueue();
     this.saveState();
     console.log('Queue cleared');

@@ -5,609 +5,876 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title><%= title %></title>
   <link rel="preconnect" href="https://fonts.googleapis.com">
-  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&display=swap" rel="stylesheet">
-  <style>
-    * { margin: 0; padding: 0; box-sizing: border-box; }
-    body { 
-      font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; 
-      background: #000; 
-      color: #fff; 
-      line-height: 1.6; 
-      overflow-x: hidden;
-    }
-    #snow-layer {
-      position: fixed;
-      inset: 0;
-      width: 100vw;
-      height: 100vh;
-      pointer-events: none;
-      z-index: 2;
-      mix-blend-mode: screen;
-      opacity: 0.9;
-    }
-    
-    /* Hero Section */
-    .hero-slider { 
-      position: relative; 
-      height: 60vh;
-      min-height: 480px;
-      max-height: 600px;
-      overflow: hidden; 
-      margin: 20px 60px 80px;
-      border-radius: 20px;
-    }
-    .hero-slide { 
-      position: absolute; 
-      top: 0; 
-      left: 0; 
-      width: 100%; 
-      height: 100%; 
-      opacity: 0; 
-      transition: opacity 1.2s ease-in-out; 
-      background-size: cover; 
-      background-position: center; 
-    }
-    .hero-slide.active { opacity: 1; }
-    .hero-overlay { 
-      position: absolute; 
-      inset: 0; 
-      background: linear-gradient(135deg, rgba(0,0,0,0.85) 0%, rgba(0,0,0,0.4) 50%, rgba(0,0,0,0.2) 100%); 
-    }
-    .hero-content { 
-      position: relative; 
-      z-index: 10; 
-      height: 100%; 
-      display: flex; 
-      flex-direction: column; 
-      justify-content: space-between; 
-      padding: 40px 60px; 
-      max-width: 1600px;
-      margin: 0 auto;
-    }
-    
-    /* Header */
-    .hero-header { 
-      display: flex; 
-      justify-content: space-between; 
-      align-items: center; 
-    }
-    .logo-link {
-      display: flex;
-      align-items: center;
-      text-decoration: none;
-      transition: transform 0.3s;
-    }
-    .logo-link:hover { transform: scale(1.05); }
-    .logo-img {
-      height: 36px;
-      width: auto;
-    }
-    .auth-buttons { 
-      display: flex; 
-      gap: 16px; 
-    }
-    .btn { 
-      padding: 14px 32px; 
-      border-radius: 50px; 
-      text-decoration: none; 
-      font-weight: 600; 
-      transition: all 0.3s; 
-      border: none; 
-      cursor: pointer; 
-      font-size: 15px; 
-      display: inline-block; 
-    }
-    .btn.outline { 
-      background: transparent; 
-      color: #fff; 
-      border: 2px solid rgba(255,255,255,0.3); 
-      backdrop-filter: blur(10px);
-    }
-    .btn.outline:hover { 
-      background: rgba(255,255,255,0.1); 
-      border-color: #fff;
-      transform: translateY(-2px);
-    }
-    .btn.primary { 
-      background: #fff; 
-      color: #000; 
-      border: 2px solid #fff;
-    }
-    .btn.primary:hover { 
-      background: #f0f0f0; 
-      transform: translateY(-2px);
-      box-shadow: 0 8px 24px rgba(255,255,255,0.2);
-    }
-    
-    /* Hero Main */
-    .hero-main { 
-      flex: 1; 
-      display: flex; 
-      flex-direction: column; 
-      justify-content: center; 
-      max-width: 750px; 
-      padding: 40px 0;
-    }
-    .hero-main h1 { 
-      font-size: 72px; 
-      font-weight: 900; 
-      margin-bottom: 24px; 
-      line-height: 1.05; 
-      letter-spacing: -2px;
-      text-shadow: 0 4px 20px rgba(0,0,0,0.5);
-    }
-    .hero-main p { 
-      font-size: 20px; 
-      color: rgba(255,255,255,0.95); 
-      margin-bottom: 40px; 
-      line-height: 1.6; 
-      font-weight: 400;
-      max-width: 650px;
-    }
-    
-    /* Hero Footer */
-    .hero-footer { 
-      display: flex; 
-      justify-content: space-between; 
-      align-items: center; 
-    }
-    .slider-dots { 
-      display: flex; 
-      gap: 14px; 
-    }
-    .dot { 
-      width: 12px; 
-      height: 12px; 
-      border-radius: 50%; 
-      background: rgba(255,255,255,0.3); 
-      cursor: pointer; 
-      transition: all 0.4s; 
-    }
-    .dot.active { 
-      background: #fff; 
-      width: 40px; 
-      border-radius: 6px; 
-    }
-    .artist-credit { 
-      text-align: right; 
-      font-size: 14px; 
-      color: rgba(255,255,255,0.9); 
-      backdrop-filter: blur(10px);
-      background: rgba(0,0,0,0.2);
-      padding: 12px 20px;
-      border-radius: 50px;
-    }
-    .artist-credit .name { 
-      font-weight: 700; 
-      display: block; 
-    }
-    .artist-credit .title { 
-      color: rgba(255,255,255,0.6); 
-      font-size: 13px;
-    }
-    
-    /* Search Section */
-    .container { 
-      max-width: 1400px; 
-      margin: 0 auto; 
-      padding: 0 60px 80px; 
-    }
-    .search-section { 
-      text-align: center; 
-      margin-bottom: 80px; 
-      padding: 60px 0;
-      background: linear-gradient(180deg, rgba(20,20,20,0.5) 0%, transparent 100%);
-      border-radius: 20px;
-    }
-    .search-section h2 { 
-      font-size: 32px; 
-      margin-bottom: 40px; 
-      font-weight: 700; 
-      letter-spacing: -0.5px;
-    }
-    .search-box { 
-      max-width: 700px; 
-      margin: 0 auto 24px; 
-      position: relative; 
-    }
-    .search-box input { 
-      width: 100%; 
-      padding: 20px 28px; 
-      background: #111; 
-      border: 2px solid #222; 
-      border-radius: 50px; 
-      color: #fff; 
-      font-size: 17px; 
-      font-weight: 500;
-      transition: all 0.3s;
-    }
-    .search-box input:focus { 
-      outline: none; 
-      border-color: #fff; 
-      background: #1a1a1a; 
-      box-shadow: 0 8px 32px rgba(255,255,255,0.1);
-    }
-    .search-box input::placeholder {
-      color: #666;
-      font-weight: 400;
-    }
-    .or { 
-      color: #666; 
-      margin: 28px 0; 
-      font-size: 15px; 
-      font-weight: 600;
-    }
-    
-    /* Trending Section */
-    .trending-header {
-      display: flex;
-      align-items: center;
-      gap: 12px;
-      margin-bottom: 32px;
-    }
-    .trending-header h2 { 
-      font-size: 36px; 
-      font-weight: 800; 
-      letter-spacing: -1px;
-    }
-    
-    /* Cards Grid - Spotify Style */
-    .cards { 
-      display: grid; 
-      grid-template-columns: repeat(5, 1fr); 
-      gap: 24px; 
-    }
-    
-    .card { 
-      background: #181818; 
-      border-radius: 8px; 
-      overflow: hidden; 
-      transition: all 0.3s;
-      cursor: pointer;
-      text-decoration: none;
-      color: inherit;
-      display: block;
-    }
-    .card:hover { 
-      background: #282828;
-    }
-    
-    .thumb-wrapper {
-      position: relative;
-      overflow: hidden;
-      aspect-ratio: 1;
-      background: #282828;
-    }
-    
-    .thumb { 
-      width: 100%;
-      height: 100%;
-      background-size: cover; 
-      background-position: center;
-      transition: all 0.3s;
-    }
-    
-    /* Play button overlay */
-    .play-overlay {
-      position: absolute;
-      inset: 0;
-      background: rgba(0, 0, 0, 0.4);
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      opacity: 0;
-      transition: opacity 0.3s;
-    }
-    
-    .card:hover .play-overlay {
-      opacity: 1;
-    }
-    
-    .play-icon {
-      width: 56px;
-      height: 56px;
-      background: #fff;
-      border-radius: 50%;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      box-shadow: 0 8px 24px rgba(0, 0, 0, 0.5);
-      transition: all 0.3s;
-    }
-    
-    .card:hover .play-icon {
-      transform: scale(1.05);
-    }
-    
-    .play-icon::after {
-      content: '';
-      width: 0;
-      height: 0;
-      border-left: 16px solid #000;
-      border-top: 10px solid transparent;
-      border-bottom: 10px solid transparent;
-      margin-left: 4px;
-    }
-    
-    .meta { 
-      padding: 16px; 
-    }
-    
-    .title { 
-      font-weight: 700; 
-      font-size: 16px;
-      margin-bottom: 8px;
-      white-space: nowrap;
-      overflow: hidden;
-      text-overflow: ellipsis;
-      color: #fff;
-    }
-    
-    .artist { 
-      color: #b3b3b3; 
-      font-size: 14px; 
-      font-weight: 500;
-      white-space: nowrap;
-      overflow: hidden;
-      text-overflow: ellipsis;
-    }
-    
-    .empty-state {
-      text-align: center;
-      padding: 80px 20px;
-      color: #666;
-    }
-    .empty-state a {
-      color: #fff;
-      text-decoration: none;
-      font-weight: 700;
-      border-bottom: 2px solid #fff;
-      transition: opacity 0.3s;
-    }
-    .empty-state a:hover {
-      opacity: 0.8;
-    }
-    
-    /* Responsive */
-    @media (max-width: 1400px) {
-      .cards { grid-template-columns: repeat(4, 1fr); }
-    }
-    
-    @media (max-width: 1024px) {
-      .hero-slider { height: 65vh; min-height: 500px; }
-      .hero-content { padding: 32px 40px; }
-      .hero-main h1 { font-size: 56px; }
-      .container { padding: 0 40px 60px; }
-      .cards { grid-template-columns: repeat(3, 1fr); }
-    }
-    
-    @media (max-width: 768px) {
-      .hero-slider { height: 70vh; min-height: 600px; margin-bottom: 40px; }
-      .hero-content { padding: 24px; }
-      .hero-header { flex-direction: column; gap: 20px; align-items: flex-start; }
-      .hero-main { padding: 20px 0; }
-      .hero-main h1 { font-size: 42px; letter-spacing: -1px; }
-      .hero-main p { font-size: 17px; }
-      .hero-footer { flex-direction: column; gap: 20px; align-items: flex-start; }
-      .artist-credit { text-align: left; }
-      .container { padding: 0 24px 40px; }
-      .search-section { margin-bottom: 40px; padding: 40px 20px; }
-      .search-section h2 { font-size: 24px; }
-      .trending-header h2 { font-size: 28px; }
-      .cards { grid-template-columns: repeat(2, 1fr); gap: 16px; }
-      .logo-img { height: 28px; }
-      .btn { padding: 12px 24px; font-size: 14px; }
-    }
-  </style>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+  <link rel="stylesheet" href="/public/css/profile.css">
 </head>
 <body>
-  <section class="hero-slider">
-    <div class="hero-slide active" style="background-image: url('/public/img/banner1.png');">
-      <div class="hero-overlay"></div>
-      <div class="hero-content">
-        <div class="hero-header">
-          <a class="logo-link" href="/">
-            <img src="/public/img/saoclao.png" alt="SAOCLAO" class="logo-img">
-          </a>
-          <div class="auth-buttons">
-            <a href="/login" class="btn outline">Đăng nhập</a>
-            <a href="/signup" class="btn primary">Đăng ký</a>
-          </div>
-        </div>
-        <div class="hero-main">
-          <h1>Khám phá.<br>Được khám phá.</h1>
-          <p>Nơi nghệ sĩ và người nghe gặp nhau</p>
-          <a href="/upload" class="btn primary">Bắt đầu ngay</a>
-        </div>
-        <div class="hero-footer">
-          <div class="slider-dots">
-            <span class="dot active" data-slide="0"></span>
-            <span class="dot" data-slide="1"></span>
-            <span class="dot" data-slide="2"></span>
-          </div>
-          <div class="artist-credit">
-            <span class="name">No Beat Battler</span>
-            <span class="title">Phan Quyen</span>
-          </div>
+  <!-- Context Menu -->
+  <div class="context-menu" id="contextMenu">
+    <div class="context-menu-item" onclick="addToQueue(window.contextTrack)">
+      <i class="fa-solid fa-list"></i>
+      <span>Thêm vào hàng đợi</span>
+    </div>
+    <div class="context-menu-divider"></div>
+    <div class="context-menu-item">
+      <i class="fa-solid fa-heart"></i>
+      <span>Thêm vào playlist</span>
+      <i class="fa-solid fa-chevron-right" style="margin-left: auto; font-size: 12px;"></i>
+      <div class="context-submenu" id="playlistSubmenu">
+        <div class="submenu-item create-new" onclick="openCreatePlaylistModal()">
+          <i class="fa-solid fa-plus"></i> Tạo playlist mới
         </div>
       </div>
     </div>
-    <div class="hero-slide" style="background-image: url('/public/img/banner2.png');">
-      <div class="hero-overlay"></div>
-      <div class="hero-content">
-        <div class="hero-header">
-          <a class="logo-link" href="/">
-            <img src="/public/img/saoclao.png" alt="SAOCLAO" class="logo-img">
-          </a>
-          <div class="auth-buttons">
-            <a href="/login" class="btn outline">Đăng nhập</a>
-            <a href="/signup" class="btn primary">Đăng ký</a>
-          </div>
-        </div>
-        <div class="hero-main">
-          <h1>Chia sẻ âm nhạc.<br>Xây dựng fanbase.</h1>
-          <p>Tiếp cận hàng triệu người nghe</p>
-          <a href="/upload" class="btn primary">Upload ngay</a>
-        </div>
-        <div class="hero-footer">
-          <div class="slider-dots">
-            <span class="dot" data-slide="0"></span>
-            <span class="dot active" data-slide="1"></span>
-            <span class="dot" data-slide="2"></span>
-          </div>
-          <div class="artist-credit">
-            <span class="name">Indie Artist</span>
-            <span class="title">SAOCLAO Community</span>
-          </div>
-        </div>
-      </div>
-    </div>
-    <div class="hero-slide" style="background-image: url('/public/img/banner3.png');">
-      <div class="hero-overlay"></div>
-      <div class="hero-content">
-        <div class="hero-header">
-          <a class="logo-link" href="/">
-            <img src="/public/img/saoclao.png" alt="SAOCLAO" class="logo-img">
-          </a>
-          <div class="auth-buttons">
-            <a href="/login" class="btn outline">Đăng nhập</a>
-            <a href="/signup" class="btn primary">Đăng ký</a>
-          </div>
-        </div>
-        <div class="hero-main">
-          <h1>Kết nối.<br>Qua âm nhạc.</h1>
-          <p>Cộng đồng yêu nhạc Việt</p>
-          <a href="/" class="btn primary">Khám phá</a>
-        </div>
-        <div class="hero-footer">
-          <div class="slider-dots">
-            <span class="dot" data-slide="0"></span>
-            <span class="dot" data-slide="1"></span>
-            <span class="dot active" data-slide="2"></span>
-          </div>
-          <div class="artist-credit">
-            <span class="name">Music Lover</span>
-            <span class="title">SAOCLAO Fan</span>
-          </div>
-        </div>
-      </div>
-    </div>
-  </section>
-
-  <div class="container">
-    <section class="search-section">
-      <h2>Hear what's trending for free in the SoundCloud community</h2>
-      <div class="search-box">
-        <input type="text" placeholder="Search for artists, bands, tracks, podcasts" id="searchInput">
-      </div>
-      <div class="or">or</div>
-      <a href="/upload" class="btn primary">Upload your own</a>
-    </section>
-
-    <section>
-      <div class="trending-header">
-        <h2>Trending</h2>
-      </div>
-      <div class="cards">
-        <% 
-  // Chỉ hiển thị 5 bài ngẫu nhiên
-  const displayTracks = (tracks || []).sort(() => 0.5 - Math.random()).slice(0, 5);
-  displayTracks.forEach(t => { const cover = t.coverUrl || 'https://images.unsplash.com/photo-1470225620780-dba8ba36b745?w=400'; 
-        %>
-          <a href="/login" class="card">
-            <div class="thumb-wrapper">
-              <div class="thumb" style="background-image:url('<%= cover %>');"></div>
-              <div class="play-overlay">
-                <div class="play-icon"></div>
-              </div>
-            </div>
-            <div class="meta">
-              <div class="title"><%= t.title %></div>
-              <div class="artist"><%= t.artist || 'Unknown Artist' %></div>
-            </div>
-          </a>
-        <% }) %>
-      </div>
-      <% if (!tracks || tracks.length===0) { %>
-        <div class="empty-state">
-          <p style="font-size: 18px; margin-bottom: 12px;">Chưa có bài nào.</p>
-          <p>Hãy <a href="/upload">upload</a> bài đầu tiên.</p>
-        </div>
-      <% } %>
-    </section>
   </div>
 
-  <canvas id="snow-layer"></canvas>
+  <!-- Create Playlist Modal -->
+  <div class="modal" id="createPlaylistModal">
+    <div class="modal-content">
+      <h3 class="modal-title">Tạo playlist mới</h3>
+      <div class="form-group">
+        <label class="form-label">Tên playlist</label>
+        <input type="text" class="form-input" id="playlistName" placeholder="Nhập tên playlist">
+      </div>
+      <div class="form-group">
+        <label class="form-label">Mô tả</label>
+        <textarea class="form-input form-textarea" id="playlistDescription" placeholder="Mô tả về playlist (không bắt buộc)"></textarea>
+      </div>
+      <div class="modal-footer">
+        <button class="btn btn-secondary" onclick="closeCreatePlaylistModal()">Hủy</button>
+        <button class="btn btn-primary" onclick="createPlaylist()">Tạo</button>
+      </div>
+    </div>
+  </div>
 
+  <!-- Header -->
+  <header class="header">
+    <div style="display: flex; align-items: center;">
+      <div class="logo">
+        <a href="/home">
+          <img src="/public/img/saoclao.png" alt="SAOCLAO">
+        </a>
+      </div>
+      <nav class="nav-menu">
+        <a href="/home" class="nav-link active">
+          <i class="fa-solid fa-house"></i>
+          <span>Trang chủ</span>
+        </a>
+        <a href="/playlists" class="nav-link">
+          <i class="fa-solid fa-music"></i>
+          <span>Playlist</span>
+        </a>
+        <a href="/likes" class="nav-link">
+          <i class="fa-solid fa-heart"></i>
+          <span>Đã thích</span>
+        </a>
+        <a href="/ai" class="nav-link">
+          <i class="fa-solid fa-wand-magic-sparkles"></i>
+          <span>AI Generate</span>
+        </a>
+      </nav>
+    </div>
+    
+    <div class="search-container">
+      <div class="search-icon">
+        <i class="fa-solid fa-magnifying-glass"></i>
+      </div>
+      <input type="text" class="search-input" id="searchInput" placeholder="Tìm bài hát, nghệ sĩ...">
+      <button class="search-clear" id="searchClear">
+        <i class="fa-solid fa-xmark"></i>
+      </button>
+      <div id="searchDropdown" class="search-dropdown"></div>
+    </div>
+    
+    <div class="header-actions">
+      <button class="upload-btn" onclick="window.location.href='/upload'">
+        <i class="fa-solid fa-cloud-arrow-up"></i>
+        <span class="btn-text">Upload</span>
+      </button>
+
+      <a href="/users/<%= user.username %>" style="text-decoration: none;">
+        <div class="user-avatar">
+          <img src="<%= user.avatarUrl || '/public/img/default-avatar.png' %>" alt="<%= user.username %>">
+        </div>
+      </a>
+
+      <form method="post" action="/logout" style="display:inline; margin-left: 8px;">
+        <button type="submit" class="btn-logout">Đăng xuất</button>
+      </form>
+    </div>
+  </header>
+  
+  <!-- Main Layout -->
+  <div class="main-layout">
+    <div class="content-area">
+      <!-- Recommendations Section -->
+      <section class="section" id="recommendations-section">
+        <div class="section-header">
+          <h2 class="section-title">Có thể bạn thích</h2>
+        </div>
+        
+        <% if (moreOfWhatYouLike && moreOfWhatYouLike.length > 0) { %>
+          <div class="cards-grid">
+            <% moreOfWhatYouLike.slice(0, 6).forEach((track) => { %>
+              <div class="card track-card" 
+                   data-track-id="<%= track._id %>" 
+                   data-track-title="<%= track.title %>"
+                   data-track-artist="<%= track.artist || 'Unknown' %>"
+                   data-track-cover="<%= track.coverUrl || '' %>"
+                   data-track-audio="<%= track.audioUrl %>"
+                   data-title="<%= track.title.toLowerCase() %>" 
+                   data-artist="<%= (track.artist || '').toLowerCase() %>">
+                <a href="/track/<%= track._id %>" class="card-image">
+                  <img src="<%= track.coverUrl || 'https://images.unsplash.com/photo-1470225620780-dba8ba36b745?w=400' %>" alt="<%= track.title %>">
+                  <button class="play-btn" onclick="event.preventDefault(); event.stopPropagation(); playFromButton(this)"
+                          data-track-id="<%= track._id %>"
+                          data-track-title="<%= track.title.replace(/"/g, '&quot;') %>"
+                          data-track-artist="<%= (track.artist || 'Unknown').replace(/"/g, '&quot;') %>"
+                          data-track-cover="<%= track.coverUrl || '' %>"
+                          data-track-audio="<%= track.audioUrl %>">
+                    <i class="fa-solid fa-play"></i>
+                  </button>
+                </a>
+                <div class="card-info">
+                  <div class="card-title"><%= track.title %></div>
+                  <div class="card-artist"><%= track.artist || 'Nghệ sĩ không rõ' %></div>
+                </div>
+              </div>
+            <% }) %>
+          </div>
+        <% } else { %>
+          <div class="empty-state">
+            <h3>Chưa có gợi ý</h3>
+            <p>Nghe thêm nhạc để nhận gợi ý cá nhân hóa</p>
+          </div>
+        <% } %>
+      </section>
+
+      <!-- Recently Played Section -->
+      <% if (recentlyPlayed && recentlyPlayed.length > 0) { %>
+      <section class="section" id="recently-played-section">
+        <div class="section-header">
+          <h2 class="section-title">Nghe gần đây</h2>
+        </div>
+        <div class="cards-grid">
+          <% recentlyPlayed.forEach((track) => { %>
+            <div class="card track-card" 
+                 data-track-id="<%= track._id %>" 
+                 data-track-title="<%= track.title %>"
+                 data-track-artist="<%= track.artist || 'Unknown' %>"
+                 data-track-cover="<%= track.coverUrl || '' %>"
+                 data-track-audio="<%= track.audioUrl %>"
+                 data-title="<%= track.title.toLowerCase() %>" 
+                 data-artist="<%= (track.artist || '').toLowerCase() %>">
+              <a href="/track/<%= track._id %>" class="card-image">
+                <img src="<%= track.coverUrl || 'https://images.unsplash.com/photo-1470225620780-dba8ba36b745?w=400' %>" alt="<%= track.title %>">
+                <button class="play-btn" onclick="event.preventDefault(); event.stopPropagation(); playFromButton(this)"
+                        data-track-id="<%= track._id %>"
+                        data-track-title="<%= track.title.replace(/"/g, '&quot;') %>"
+                        data-track-artist="<%= (track.artist || 'Unknown').replace(/"/g, '&quot;') %>"
+                        data-track-cover="<%= track.coverUrl || '' %>"
+                        data-track-audio="<%= track.audioUrl %>">
+                  <i class="fa-solid fa-play"></i>
+                </button>
+              </a>
+              <div class="card-info">
+                <div class="card-title"><%= track.title %></div>
+                <div class="card-artist"><%= track.artist || 'Nghệ sĩ không rõ' %></div>
+              </div>
+            </div>
+          <% }) %>
+        </div>
+      </section>
+      <% } %>
+
+      <!-- Playlists Section -->
+      <section class="section" id="playlists-section">
+        <div class="section-header">
+          <h2 class="section-title">Playlist của tôi</h2>
+          <a href="/playlists" class="view-all">Xem tất cả</a>
+        </div>
+        
+        <% if (playlists && playlists.length > 0) { %>
+          <div class="cards-grid">
+            <% playlists.forEach((playlist) => { 
+              const trackCount = playlist.tracks.length;
+              const covers = playlist.tracks.slice(0, 4).map(t => t.coverUrl).filter(Boolean);
+            %>
+              <a href="/playlists/<%= playlist._id %>" class="playlist-card">
+                <div class="playlist-cover">
+                  <% if (covers.length === 0) { %>
+                    <div class="playlist-cover-empty">
+                      <i class="fa-solid fa-music"></i>
+                    </div>
+                  <% } else if (covers.length === 1) { %>
+                    <div class="playlist-cover-item" style="background-image: url('<%= covers[0] %>'); width: 100%; height: 100%;"></div>
+                  <% } else { %>
+                    <div class="playlist-cover-grid">
+                      <% for (let i = 0; i < 4; i++) { %>
+                        <% if (covers[i]) { %>
+                          <div class="playlist-cover-item" style="background-image: url('<%= covers[i] %>');"></div>
+                        <% } else { %>
+                          <div class="playlist-cover-item"></div>
+                        <% } %>
+                      <% } %>
+                    </div>
+                  <% } %>
+                </div>
+                <div class="playlist-info">
+                  <div class="playlist-name"><%= playlist.name %></div>
+                  <div class="playlist-count"><%= trackCount %> bài hát</div>
+                </div>
+              </a>
+            <% }) %>
+          </div>
+        <% } else { %>
+          <div class="empty-state">
+            <h3>Chưa có playlist nào</h3>
+            <p>Tạo playlist đầu tiên của bạn</p>
+          </div>
+        <% } %>
+      </section>
+    </div>
+    
+    <!-- Resize Handle -->
+    <div class="resize-handle" id="resizeHandle"></div>
+    
+    <!-- Right Sidebar -->
+    <aside class="right-sidebar" id="rightSidebar">
+      <h3 class="sidebar-title">Đang phát</h3>
+      <div class="now-playing-card">
+        <div class="now-playing-image" id="sidebarImage"></div>
+        <div class="now-playing-info">
+          <div class="now-playing-title" id="sidebarTitle">-</div>
+          <div class="now-playing-artist" id="sidebarArtist">-</div>
+        </div>
+      </div>
+    </aside>
+  </div>
+  
+  <!-- Sidebar Toggle Button -->
+  <button class="sidebar-toggle" id="sidebarToggle" onclick="toggleSidebar()">
+    <i class="fa-solid fa-chevron-left"></i>
+  </button>
+  
+  <!-- Queue Panel -->
+  <div class="queue-panel" id="queuePanel">
+    <div class="queue-header">
+      <div style="display:flex; align-items:center; gap:10px;">
+        <button class="queue-close" onclick="player.toggleQueuePanel()" title="Đóng" style="padding:8px 10px;">
+          <i class="fa-solid fa-chevron-left"></i>
+        </button>
+        <h3 class="queue-title" style="margin:0;">Hàng đợi</h3>
+      </div>
+      <button class="queue-clear" onclick="player.clearQueue()">Xóa tất cả</button>
+    </div>
+    <div class="queue-list" id="queueList"></div>
+  </div>
+  
+  <!-- Music Player -->
+  <div class="music-player" id="musicPlayer">
+    <div class="player-wrapper">
+      <div class="player-left">
+        <div class="player-thumb" id="playerThumb"></div>
+        <div class="player-info">
+          <div class="player-title" id="playerTitle">Tên bài hát</div>
+          <div class="player-artist" id="playerArtist">Nghệ sĩ</div>
+        </div>
+      </div>
+      
+      <div class="player-center">
+        <div class="player-buttons">
+          <button class="control-btn" id="shuffleBtn" title="Shuffle">
+            <i class="fa-solid fa-shuffle"></i>
+          </button>
+          <button class="control-btn" id="prevBtn" title="Previous">
+            <i class="fa-solid fa-backward-step"></i>
+          </button>
+          <button class="control-btn play" id="playPauseBtn">
+            <i class="fa-solid fa-play"></i>
+          </button>
+          <button class="control-btn" id="nextBtn" title="Next">
+            <i class="fa-solid fa-forward-step"></i>
+          </button>
+          <button class="control-btn" id="repeatBtn" title="Repeat">
+            <i class="fa-solid fa-repeat"></i>
+          </button>
+        </div>
+        <div class="player-progress-wrapper">
+          <span class="time" id="currentTime">0:00</span>
+          <div class="progress-bar" id="progressBar">
+            <div class="progress-fill" id="progressFill"></div>
+          </div>
+          <span class="time" id="duration">0:00</span>
+        </div>
+      </div>
+      
+      <div class="player-right">
+        <div class="volume-control">
+          <i class="fa-solid fa-volume-high volume-icon" id="volumeIcon"></i>
+          <input type="range" class="volume-slider" id="volumeSlider" min="0" max="100" value="70">
+        </div>
+        <button class="queue-toggle" id="queueBtn" title="Queue">
+          <i class="fa-solid fa-list"></i>
+          <span class="queue-count" id="queueCount">0</span>
+        </button>
+      </div>
+    </div>
+  </div>
+  
+  <audio id="audioPlayer"></audio>
+  
+  <script src="/public/js/player.js"></script>
+  
   <script>
-    (() => {
-      const canvas = document.getElementById('snow-layer');
-      if (!canvas) return;
-      const ctx = canvas.getContext('2d');
-      let flakes = [];
-      const baseCount = 140;
-      const burstCount = 28;
-      const dpr = Math.max(window.devicePixelRatio || 1, 1);
+// Global playlists data
+let userPlaylists = JSON.parse('<%- JSON.stringify(playlists || []) %>');
+console.log('Initial playlists from server:', userPlaylists.length);
 
-      const resize = () => {
-        canvas.width = window.innerWidth * dpr;
-        canvas.height = window.innerHeight * dpr;
-        ctx.scale(dpr, dpr);
-      };
-      resize();
-      window.addEventListener('resize', resize);
+// Global functions
+window.toggleSidebar = function() {
+  const sidebar = document.getElementById('rightSidebar');
+  const toggle = document.getElementById('sidebarToggle');
+  const icon = toggle?.querySelector('i');
+  
+  if (!sidebar) return;
+  
+  sidebar.classList.toggle('active');
+  
+  if (icon) {
+    if (sidebar.classList.contains('active')) {
+      icon.className = 'fa-solid fa-chevron-right';
+    } else {
+      icon.className = 'fa-solid fa-chevron-left';
+    }
+  }
+};
 
-      const spawnFlake = (x, y, burst = false) => {
-        const size = burst ? 1 + Math.random() * 3 : 1 + Math.random() * 2.5;
-        flakes.push({
-          x: x ?? Math.random() * window.innerWidth,
-          y: y ?? Math.random() * window.innerHeight,
-          r: size,
-          vy: burst ? 1 + Math.random() * 2 : 0.5 + Math.random() * 1.5,
-          vx: burst ? (Math.random() - 0.5) * 2 : (Math.random() - 0.5) * 0.6,
-          life: burst ? 120 + Math.random() * 60 : null
-        });
-      };
+window.playTrack = function(id, title, artist, cover, audioUrl) {
+  if (window.player) {
+    window.player.playTrack({ id, title, artist, cover, audioUrl });
+  }
+};
 
-      for (let i = 0; i < baseCount; i++) spawnFlake();
+// Play button on cards
+function playFromButton(btn) {
+  const track = {
+    id: btn.dataset.trackId,
+    title: btn.dataset.trackTitle,
+    artist: btn.dataset.trackArtist,
+    cover: btn.dataset.trackCover,
+    audioUrl: btn.dataset.trackAudio
+  };
+  if (!window.player) {
+    alert('Player chưa sẵn sàng. Vui lòng thử lại.');
+    return;
+  }
+  // Nếu đang phát đúng bài này thì toggle play/pause
+  if (window.player.currentTrack?.id === track.id) {
+    window.player.togglePlay();
+  } else {
+    window.player.playTrack(track);
+    window.player.addToQueue(track);
+  }
+}
 
-      window.addEventListener('click', (e) => {
-        for (let i = 0; i < burstCount; i++) {
-          spawnFlake(e.clientX, e.clientY, true);
+window.playTrackFromSearch = function(id, title, artist, cover, audioUrl) {
+  if (window.player) {
+    window.player.playTrack({ id, title, artist, cover, audioUrl });
+  }
+};
+
+window.addToQueue = function(track) {
+  if (!track) {
+    showNotification('Lỗi: Không có bài hát');
+    return;
+  }
+  
+  if (!window.player) {
+    showNotification('Lỗi: Player chưa sẵn sàng');
+    return;
+  }
+  
+  const success = window.player.addToQueue(track);
+  
+  if (success) {
+    showNotification('Đã thêm vào hàng đợi');
+  } else {
+    showNotification('Bài hát đã có trong hàng đợi');
+  }
+  
+  closeContextMenu();
+};
+
+window.openCreatePlaylistModal = function() {
+  closeContextMenu();
+  const modal = document.getElementById('createPlaylistModal');
+  const input = document.getElementById('playlistName');
+  
+  if (modal) modal.classList.add('active');
+  if (input) {
+    input.focus();
+    input.value = '';
+  }
+  
+  const descInput = document.getElementById('playlistDescription');
+  if (descInput) descInput.value = '';
+};
+
+window.closeCreatePlaylistModal = function() {
+  const modal = document.getElementById('createPlaylistModal');
+  const nameInput = document.getElementById('playlistName');
+  const descInput = document.getElementById('playlistDescription');
+  
+  if (modal) modal.classList.remove('active');
+  if (nameInput) nameInput.value = '';
+  if (descInput) descInput.value = '';
+};
+
+window.createPlaylist = async function() {
+  const nameInput = document.getElementById('playlistName');
+  const descInput = document.getElementById('playlistDescription');
+  
+  const name = nameInput?.value.trim();
+  const description = descInput?.value.trim();
+  
+  if (!name) {
+    showNotification('Vui lòng nhập tên playlist');
+    return;
+  }
+  
+  try {
+    const res = await fetch('/playlists/create', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ name, description: description || '' })
+    });
+    
+    const data = await res.json();
+    
+    if (data.success) {
+      showNotification('Tạo playlist thành công');
+      closeCreatePlaylistModal();
+      
+      await loadPlaylists();
+      
+      if (window.contextTrack) {
+        await addToPlaylist(data.playlist._id);
+      }
+      
+      setTimeout(() => location.reload(), 1000);
+    } else {
+      showNotification(data.message || 'Tạo playlist thất bại');
+    }
+  } catch (err) {
+    showNotification('Có lỗi xảy ra');
+  }
+};
+
+function initResizeSidebar() {
+  const resizeHandle = document.getElementById('resizeHandle');
+  const rightSidebar = document.getElementById('rightSidebar');
+  
+  if (!resizeHandle || !rightSidebar) return;
+  
+  let isResizing = false;
+
+  resizeHandle.addEventListener('mousedown', (e) => {
+    isResizing = true;
+    document.body.style.cursor = 'col-resize';
+    document.body.style.userSelect = 'none';
+    rightSidebar.style.transition = 'none';
+  });
+
+  document.addEventListener('mousemove', (e) => {
+    if (!isResizing) return;
+    const newWidth = Math.min(Math.max(window.innerWidth - e.clientX, 320), 600);
+    rightSidebar.style.width = newWidth + 'px';
+  });
+
+  document.addEventListener('mouseup', () => {
+    if (isResizing) {
+      isResizing = false;
+      document.body.style.cursor = '';
+      document.body.style.userSelect = '';
+      rightSidebar.style.transition = '';
+    }
+  });
+}
+
+function initSearch() {
+  const searchInput = document.getElementById('searchInput');
+  const searchClear = document.getElementById('searchClear');
+  let searchDropdown = document.getElementById('searchDropdown');
+  
+  if (!searchInput || !searchClear) return;
+  
+  if (!searchDropdown) {
+    searchDropdown = document.createElement('div');
+    searchDropdown.id = 'searchDropdown';
+    searchDropdown.className = 'search-dropdown';
+    
+    const searchContainer = document.querySelector('.search-container');
+    if (searchContainer) {
+      searchContainer.appendChild(searchDropdown);
+    } else {
+      return;
+    }
+  }
+  
+  let searchTimeout;
+  
+  searchInput.addEventListener('input', async (e) => {
+    const query = e.target.value.trim();
+    
+    searchClear.classList.toggle('active', query.length > 0);
+    
+    clearTimeout(searchTimeout);
+    
+    if (query.length < 2) {
+      searchDropdown.classList.remove('active');
+      return;
+    }
+    
+    searchDropdown.innerHTML = '<div class="search-dropdown-loading"><i class="fa-solid fa-spinner fa-spin"></i> Đang tìm kiếm...</div>';
+    searchDropdown.classList.add('active');
+    
+    searchTimeout = setTimeout(async () => {
+      try {
+        const url = `/api/search?q=${encodeURIComponent(query)}`;
+        const res = await fetch(url);
+        const data = await res.json();
+        
+        if (data.success) {
+          displaySearchResults(data.users || [], data.tracks || [], query);
+        } else {
+          searchDropdown.innerHTML = '<div class="search-dropdown-empty">Không tìm thấy kết quả</div>';
         }
-      });
+      } catch (err) {
+        searchDropdown.innerHTML = '<div class="search-dropdown-empty">Lỗi khi tìm kiếm</div>';
+      }
+    }, 300);
+  });
+  
+  searchClear.addEventListener('click', () => {
+    searchInput.value = '';
+    searchClear.classList.remove('active');
+    searchDropdown.classList.remove('active');
+    searchInput.focus();
+  });
+  
+  document.addEventListener('click', (e) => {
+    if (!e.target.closest('.search-container')) {
+      searchDropdown.classList.remove('active');
+    }
+  });
+  
+  searchInput.addEventListener('focus', () => {
+    if (searchInput.value.trim().length >= 2 && searchDropdown.children.length > 0) {
+      searchDropdown.classList.add('active');
+    }
+  });
+  
+  searchInput.addEventListener('keydown', (e) => {
+    if (e.key === 'Escape') {
+      searchInput.value = '';
+      searchClear.classList.remove('active');
+      searchDropdown.classList.remove('active');
+      searchInput.blur();
+    }
+  });
+}
 
-      const render = () => {
-        ctx.clearRect(0, 0, canvas.width, canvas.height);
-        const width = window.innerWidth;
-        const height = window.innerHeight;
+function displaySearchResults(users, tracks, query) {
+  const searchDropdown = document.getElementById('searchDropdown');
+  
+  if (!searchDropdown) return;
+  
+  if (users.length === 0 && tracks.length === 0) {
+    searchDropdown.innerHTML = '<div class="search-dropdown-empty">Không tìm thấy kết quả</div>';
+    return;
+  }
+  
+  let html = '';
+  
+  if (users.length > 0) {
+    html += '<div class="search-section-title">Nghệ sĩ</div>';
+    
+    users.slice(0, 5).forEach(user => {
+      const avatarHtml = user.avatarUrl 
+        ? `<img src="${user.avatarUrl}" alt="${user.username}">`
+        : `<div class="avatar-placeholder">${user.username.charAt(0).toUpperCase()}</div>`;
+      
+      html += `
+        <a href="/users/${user.username}" class="search-dropdown-item search-artist-item">
+          <div class="search-dropdown-cover artist-avatar">
+            ${avatarHtml}
+          </div>
+          <div class="search-dropdown-info">
+            <div class="search-dropdown-title">${user.name || user.username}</div>
+            <div class="search-dropdown-artist">@${user.username} • ${user.trackCount || 0} bài hát</div>
+          </div>
+          <div class="search-dropdown-badge">
+            <i class="fa-solid fa-user"></i>
+          </div>
+        </a>
+      `;
+    });
+  }
+  
+  if (tracks.length > 0) {
+    html += '<div class="search-section-title">Bài hát</div>';
+    
+    tracks.slice(0, 8).forEach(track => {
+      const trackTitle = track.title.replace(/'/g, "\\'").replace(/"/g, '&quot;');
+      const trackArtist = (track.artist || 'Unknown Artist').replace(/'/g, "\\'").replace(/"/g, '&quot;');
+      const trackCover = track.coverUrl || 'https://images.unsplash.com/photo-1514525253161-7a46d19cd819?w=100';
+      
+      html += `
+        <a href="/track/${track._id}" class="search-dropdown-item">
+          <div class="search-dropdown-cover">
+            <img src="${trackCover}" alt="${track.title}">
+          </div>
+          <div class="search-dropdown-info">
+            <div class="search-dropdown-title">${track.title}</div>
+            <div class="search-dropdown-artist">${track.artist || 'Unknown Artist'}</div>
+          </div>
+          <div class="search-dropdown-play" onclick="event.preventDefault(); event.stopPropagation(); playTrackFromSearch('${track._id}', '${trackTitle}', '${trackArtist}', '${trackCover}', '${track.audioUrl}')">
+            <i class="fa-solid fa-play"></i>
+          </div>
+        </a>
+      `;
+    });
+  }
+  
+  searchDropdown.innerHTML = html;
+}
 
-        flakes = flakes.filter(f => {
-          f.x += f.vx;
-          f.y += f.vy;
-          if (f.life !== null) f.life -= 1;
+async function loadPlaylists() {
+  try {
+    console.log('Loading playlists from API...');
+    const res = await fetch('/api/playlists');
+    
+    if (!res.ok) {
+      console.log('API not found, using server-side data');
+      updatePlaylistSubmenu();
+      return;
+    }
+    
+    const data = await res.json();
+    console.log('Playlists API response:', data);
+    
+    if (data.success && data.playlists) {
+      userPlaylists = data.playlists;
+      console.log('User playlists loaded:', userPlaylists.length, 'playlists');
+    }
+    
+    updatePlaylistSubmenu();
+  } catch (err) {
+    console.error('Load playlists error:', err);
+    console.log('Using existing playlists data:', userPlaylists.length);
+    updatePlaylistSubmenu();
+  }
+}
 
-          if (f.y > height + 10) {
-            f.y = -10;
-            f.x = Math.random() * width;
-          }
-          if (f.x < -10) f.x = width + 10;
-          if (f.x > width + 10) f.x = -10;
+function updatePlaylistSubmenu() {
+  const submenu = document.getElementById('playlistSubmenu');
+  if (!submenu) {
+    console.log('Submenu not found!');
+    return;
+  }
+  
+  console.log('Updating playlist submenu with', userPlaylists.length, 'playlists');
+  
+  submenu.innerHTML = `
+    <div class="submenu-item create-new" onclick="openCreatePlaylistModal()">
+      <i class="fa-solid fa-plus"></i> Tạo playlist mới
+    </div>
+  `;
+  
+  userPlaylists.forEach(playlist => {
+    console.log('Adding playlist:', playlist.name);
+    const item = document.createElement('div');
+    item.className = 'submenu-item';
+    item.textContent = playlist.name;
+    item.onclick = (e) => {
+      e.stopPropagation();
+      addToPlaylist(playlist._id);
+    };
+    submenu.appendChild(item);
+  });
+  
+  console.log('Submenu updated. Total items:', submenu.children.length);
+}
 
-          ctx.beginPath();
-          ctx.fillStyle = 'rgba(255,255,255,0.8)';
-          ctx.arc(f.x, f.y, f.r, 0, Math.PI * 2);
-          ctx.fill();
-          return f.life === null || f.life > 0;
-        });
+function showContextMenu(e, id, title, artist, cover, audioUrl) {
+  e.preventDefault();
+  e.stopPropagation();
+  
+  const menu = document.getElementById('contextMenu');
+  if (!menu) return;
+  
+  window.contextTrack = { 
+    id: id, 
+    title: title, 
+    artist: artist, 
+    cover: cover, 
+    audioUrl: audioUrl 
+  };
+  
+  menu.style.left = e.pageX + 'px';
+  menu.style.top = e.pageY + 'px';
+  menu.classList.add('active');
+  
+  updatePlaylistSubmenu();
+  
+  setTimeout(() => {
+    document.addEventListener('click', closeContextMenu);
+  }, 10);
+}
 
-        while (flakes.length < baseCount) spawnFlake();
-        requestAnimationFrame(render);
-      };
-      render();
-    })();
-  </script>
-  <script src="/public/js/slider.js"></script>
+function closeContextMenu() {
+  const menu = document.getElementById('contextMenu');
+  if (!menu) return;
+  
+  menu.classList.remove('active');
+  document.removeEventListener('click', closeContextMenu);
+}
+
+async function addToPlaylist(playlistId) {
+  if (!window.contextTrack) {
+    showNotification('Lỗi: Không có bài hát được chọn');
+    return;
+  }
+  
+  try {
+    const res = await fetch(`/playlists/${playlistId}/add-track`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ trackId: window.contextTrack.id })
+    });
+    
+    const data = await res.json();
+    
+    if (data.success) {
+      showNotification(data.message || 'Đã thêm vào playlist');
+    } else {
+      showNotification(data.message || 'Thêm thất bại');
+    }
+  } catch (err) {
+    showNotification('Có lỗi xảy ra');
+  }
+}
+
+function showNotification(message) {
+  const existingNotifs = document.querySelectorAll('.custom-notification');
+  existingNotifs.forEach(n => n.remove());
+  
+  const notif = document.createElement('div');
+  notif.className = 'custom-notification';
+  notif.style.cssText = `
+    position: fixed;
+    bottom: 120px;
+    left: 50%;
+    transform: translateX(-50%);
+    background: rgba(40, 40, 40, 0.98);
+    backdrop-filter: blur(20px);
+    color: #fff;
+    padding: 16px 28px;
+    border-radius: 8px;
+    font-size: 14px;
+    font-weight: 600;
+    z-index: 10000;
+    box-shadow: 0 8px 24px rgba(0,0,0,0.8);
+    border: 1px solid rgba(30, 215, 96, 0.3);
+    animation: slideUp 0.3s ease-out;
+  `;
+  notif.textContent = message;
+  document.body.appendChild(notif);
+  
+  setTimeout(() => {
+    notif.style.transition = 'opacity 0.3s, transform 0.3s';
+    notif.style.opacity = '0';
+    notif.style.transform = 'translateX(-50%) translateY(10px)';
+    setTimeout(() => notif.remove(), 300);
+  }, 2500);
+}
+
+if (!document.getElementById('notif-animations')) {
+  const style = document.createElement('style');
+  style.id = 'notif-animations';
+  style.textContent = `
+    @keyframes slideUp {
+      from {
+        opacity: 0;
+        transform: translateX(-50%) translateY(20px);
+      }
+      to {
+        opacity: 1;
+        transform: translateX(-50%) translateY(0);
+      }
+    }
+  `;
+  document.head.appendChild(style);
+}
+
+function initEventListeners() {
+  document.addEventListener('keydown', (e) => {
+    if (e.key === 'Escape') {
+      closeCreatePlaylistModal();
+    }
+  });
+  
+  const playlistNameInput = document.getElementById('playlistName');
+  if (playlistNameInput) {
+    playlistNameInput.addEventListener('keypress', (e) => {
+      if (e.key === 'Enter') {
+        createPlaylist();
+      }
+    });
+  }
+  
+  // Context menu event delegation
+  document.addEventListener('contextmenu', (e) => {
+    const card = e.target.closest('.track-card');
+    if (!card) return;
+    
+    e.preventDefault();
+    e.stopPropagation();
+    
+    const id = card.dataset.trackId;
+    const title = card.dataset.trackTitle;
+    const artist = card.dataset.trackArtist;
+    const cover = card.dataset.trackCover;
+    const audioUrl = card.dataset.trackAudio;
+    
+    showContextMenu(e, id, title, artist, cover, audioUrl);
+  });
+}
+
+// Initialize on page load
+window.addEventListener('DOMContentLoaded', () => {
+  initResizeSidebar();
+  initSearch();
+  initEventListeners();
+  
+  if (userPlaylists && userPlaylists.length > 0) {
+    console.log('Using server-side playlists:', userPlaylists.length);
+    updatePlaylistSubmenu();
+  } else {
+    loadPlaylists();
+  }
+  
+  const checkPlayer = setInterval(() => {
+    if (window.player) {
+      clearInterval(checkPlayer);
+    }
+  }, 100);
+  
+  setTimeout(() => clearInterval(checkPlayer), 5000);
+
+});
+</script>
 </body>
 </html>

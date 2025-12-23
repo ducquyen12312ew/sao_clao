@@ -42,7 +42,8 @@ router.get('/:id', requireAuth, async (req, res) => {
       return res.redirect('/playlists');
     }
 
-    const isOwner = playlist.userId.toString() === userId.toString();
+    const playlistOwnerId = playlist.userId?._id?.toString?.() || playlist.userId?.toString?.();
+    const isOwner = playlistOwnerId === userId.toString();
     if (!playlist.isPublic && !isOwner) {
       req.session.flash = { type: 'danger', message: 'Playlist này ở chế độ riêng tư.' };
       return res.redirect('/playlists');
@@ -101,7 +102,11 @@ router.post('/:id/add-track', requireAuth, async (req, res) => {
       return res.json({ success: false, message: 'Không tìm thấy playlist' });
     }
 
-    if (playlist.tracks.includes(trackId)) {
+    if (!trackId) {
+      return res.json({ success: false, message: 'Thiếu trackId' });
+    }
+
+    if (playlist.tracks.some(id => id.toString() === trackId)) {
       return res.json({ success: false, message: 'Bài hát đã có trong playlist' });
     }
 

@@ -43,6 +43,11 @@ PORT=3000
 CLOUDINARY_CLOUD_NAME=your_cloud_name
 CLOUDINARY_API_KEY=your_api_key
 CLOUDINARY_API_SECRET=your_api_secret
+CLOUDINARY_DEFAULT_COVER_URL=
+AI_SERVICE_URL=http://127.0.0.1:8000/generate
+AI_MODEL_PATH=./ai-service/model_saved
+SOUNDFONT_PATH=/usr/share/sounds/sf2/FluidR3_GM.sf2
+TMP_DIR=
 
 # OAuth (bật nếu muốn đăng nhập Google/Facebook)
 GOOGLE_CLIENT_ID=
@@ -166,5 +171,28 @@ node scripts/import-batch.js urls.txt quynhchi video
 - **Storage:** Cloudinary
 - **Audio/Video Processing:** yt-dlp, ffmpeg
 - **Frontend:** EJS, CSS
+
+## AI Generate nhạc (tùy chọn)
+
+1) Chạy service AI (FastAPI) trong repo:
+```
+cd ai-service
+pip install -r requirements.txt
+uvicorn app:app --host 127.0.0.1 --port 8000
+```
+Biến môi trường: 
+- `AI_MODEL_PATH` (bắt buộc): file `.keras`/`.h5` hoặc thư mục SavedModel (app dùng `TFSMLayer` để load inference-only). 
+- `SOUNDFONT_PATH` (mặc định /usr/share/sounds/sf2/FluidR3_GM.sf2), `TMP_DIR` (tùy chọn).
+Yêu cầu tool: `fluidsynth` + `ffmpeg` có trong PATH.
+
+2) Cấu hình `.env` web: `AI_SERVICE_URL` trỏ tới `http://127.0.0.1:8000/generate` (hoặc host/port bạn chạy), Cloudinary giữ nguyên.
+
+3) Sử dụng trên web:
+- Đăng nhập -> vào `/ai`.
+- Upload MIDI hoặc audio (mp3/wav/m4a/flac/ogg), nhập thời lượng (5–120 giây) và temperature (0.2–2.0).
+- Server Node gửi file sang AI service; service chuyển audio -> MIDI (basic-pitch), chọn instrument chính, load model TensorFlow tại `AI_MODEL_PATH`, sinh continuation, render MP3 qua fluidsynth + ffmpeg.
+- Node upload MP3 lên Cloudinary (resource_type video, folder `saoclai/generated`), tạo Track mới (status approved, đánh dấu `aiGenerated`) và chuyển sang trang track.
+
+Nếu thiếu model hoặc thiếu fluidsynth/ffmpeg/soundfont, service trả lỗi rõ ràng, không crash web.
 
 ---

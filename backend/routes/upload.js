@@ -77,6 +77,10 @@ router.post(
         req.session.flash = { type: 'danger', message: 'Thiếu tiêu đề hoặc file audio.' };
         return res.redirect('/upload');
       }
+      if (!process.env.CLOUDINARY_CLOUD_NAME || !process.env.CLOUDINARY_API_KEY || !process.env.CLOUDINARY_API_SECRET) {
+        req.session.flash = { type: 'danger', message: 'Chưa cấu hình Cloudinary trong .env' };
+        return res.redirect('/upload');
+      }
 
       const parsedGenres = (genres || '')
         .split(',')
@@ -110,13 +114,14 @@ router.post(
         lyricsLRC: (lyricsLRC || '').trim()
       });
 
-      req.session.flash = { type: 'success', message: 'Upload thành công!' };
-      res.redirect('/');
-    } catch (err) {
+    req.session.flash = { type: 'success', message: 'Upload thành công!' };
+    res.redirect('/');
+  } catch (err) {
       console.error('Upload error:', err);
-      req.session.flash = { type: 'danger', message: 'Upload thất bại.' };
+      const message = err.message || 'Upload thất bại.';
+      req.session.flash = { type: 'danger', message };
       res.redirect('/upload');
-    }
+  }
   }
 );
 
