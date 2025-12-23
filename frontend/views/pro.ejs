@@ -27,11 +27,7 @@
     ul { list-style:none; padding:0; margin:0; display:grid; gap:8px; color:#c8cedd; }
     .form-hidden { display:none; }
     .controls { display:flex; gap:10px; }
-    .table { width:100%; border-collapse:collapse; margin-top:12px; }
-    .table th, .table td { border-bottom:1px solid rgba(255,255,255,0.08); padding:12px; text-align:center; }
-    .table th { background:rgba(255,255,255,0.04); font-weight:800; }
-    .table td:first-child, .table th:first-child { text-align:left; }
-    .steps { display:grid; grid-template-columns:repeat(auto-fit,minmax(260px,1fr)); gap:12px; margin-top:10px; }
+    .steps { display:flex; flex-direction:column; gap:12px; margin-top:10px; }
     .step { padding:16px; border-radius:16px; border:1px solid rgba(255,255,255,0.08); background:rgba(255,255,255,0.02); box-shadow:0 14px 40px rgba(0,0,0,0.3); }
     @media(max-width:900px){ .plans{grid-template-columns:1fr;} .controls{flex-wrap:wrap;} }
   </style>
@@ -44,7 +40,6 @@
         <span class="badge">SAOCLAO Pro</span>
       </div>
       <div class="controls">
-        <a class="btn btn-ghost" href="/ai"><i class="fa-solid fa-wand-magic-sparkles"></i> AI Studio</a>
         <a class="btn btn-primary" href="/upload"><i class="fa-solid fa-cloud-arrow-up"></i> Upload</a>
       </div>
     </div>
@@ -54,65 +49,22 @@
       <div class="plans">
         <div class="plan">
           <h2>Gói tháng</h2>
-          <div class="price">15.000 VND/tháng</div>
+          <div class="price">$5 / tháng</div>
           <ul>
-            <li><i class="fa-solid fa-check" style="color:#8ef1c7;"></i> Upload ưu tiên</li>
-            <li><i class="fa-solid fa-check" style="color:#8ef1c7;"></i> AI generate nhanh hơn</li>
-            <li><i class="fa-solid fa-check" style="color:#8ef1c7;"></i> Không quảng cáo</li>
+            <li><i class="fa-solid fa-check" style="color:#8ef1c7;"></i> Bỏ quảng cáo</li>
           </ul>
           <button class="btn btn-primary" onclick="pay('monthly')">Bắt đầu (Stripe)</button>
         </div>
         <div class="plan">
           <h2>Gói năm</h2>
-          <div class="price">100.000 VND/năm</div>
+          <div class="price">$50 / năm</div>
           <ul>
-            <li><i class="fa-solid fa-check" style="color:#8ef1c7;"></i> Tiết kiệm hơn 40%</li>
-            <li><i class="fa-solid fa-check" style="color:#8ef1c7;"></i> Hỗ trợ ưu tiên</li>
-            <li><i class="fa-solid fa-check" style="color:#8ef1c7;"></i> Tặng badge Pro</li>
+            <li><i class="fa-solid fa-check" style="color:#8ef1c7;"></i> Bỏ quảng cáo</li>
+            <li><i class="fa-solid fa-check" style="color:#8ef1c7;"></i> Tiết kiệm hơn</li>
           </ul>
           <button class="btn btn-primary" onclick="pay('yearly')">Bắt đầu (Stripe)</button>
         </div>
       </div>
-    </div>
-
-    <div class="section">
-      <div class="section-title"><i class="fa-solid fa-table"></i> So sánh tính năng</div>
-      <table class="table">
-        <thead>
-          <tr>
-            <th>Tính năng</th>
-            <th>Cơ bản</th>
-            <th>Pro Tháng</th>
-            <th>Pro Năm</th>
-          </tr>
-        </thead>
-        <tbody>
-          <tr>
-            <td>Upload nhạc</td>
-            <td>Giới hạn</td>
-            <td>Ưu tiên, không giới hạn</td>
-            <td>Ưu tiên, không giới hạn</td>
-          </tr>
-          <tr>
-            <td>AI Generate</td>
-            <td>Hạn chế tốc độ</td>
-            <td>Nhanh hơn</td>
-            <td>Nhanh nhất</td>
-          </tr>
-          <tr>
-            <td>Không quảng cáo</td>
-            <td>-</td>
-            <td>Có</td>
-            <td>Có</td>
-          </tr>
-          <tr>
-            <td>Hỗ trợ</td>
-            <td>Chuẩn</td>
-            <td>Ưu tiên</td>
-            <td>Ưu tiên cao</td>
-          </tr>
-        </tbody>
-      </table>
     </div>
 
     <div class="section">
@@ -131,7 +83,6 @@
           <p style="margin:0; color:#c8cedd;">Quay lại SAOCLAO, tài khoản tự động nâng cấp Pro.</p>
         </div>
       </div>
-      <p style="margin-top:12px; color:#9ba4b5;">Lưu ý: cần cấu hình Stripe keys trong .env và webhook để tự động nâng cấp Pro.</p>
     </div>
   </div>
   <script>

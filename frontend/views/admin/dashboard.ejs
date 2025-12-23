@@ -13,8 +13,11 @@
     <!-- HEADER -->
     <header class="admin-header">
       <div class="header-left">
-        <h1>ADMIN DASHBOARD</h1>
-        <div class="user-badge"><%= user.name %> - Administrator</div>
+        <div class="logo-mark">SAO</div>
+        <div>
+          <h1>Admin Dashboard</h1>
+          <div class="user-badge"><%= user.name %> • Moderation Center</div>
+        </div>
       </div>
       <div class="header-right">
         <a href="/admin/reports" class="btn-reports">
@@ -53,6 +56,25 @@
         <span class="stat-number"><%= stats.reports %></span>
         <span class="stat-label">Pending Reports</span>
       </div>
+    </div>
+
+    <!-- QUICK ACTIONS -->
+    <div class="quick-actions">
+      <a class="pill" href="/admin/reports">
+        <i class="fa-solid fa-flag"></i> Báo cáo
+      </a>
+      <a class="pill" href="/admin/search?status=pending">
+        <i class="fa-solid fa-hourglass-half"></i> Chờ duyệt
+      </a>
+      <a class="pill" href="/admin/search?status=approved">
+        <i class="fa-solid fa-circle-check"></i> Đã duyệt
+      </a>
+      <a class="pill" href="/admin/search?status=rejected">
+        <i class="fa-solid fa-circle-xmark"></i> Từ chối
+      </a>
+      <a class="pill" href="/admin/deleted">
+        <i class="fa-solid fa-trash"></i> Đã xóa
+      </a>
     </div>
 
     <!-- SEARCH SECTION -->
