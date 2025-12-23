@@ -34,10 +34,7 @@
     <div class="bar"></div>
   </div>
 
-  <script>
-    // Expose playlist public state to JS as a boolean literal
-    const __PLAYLIST_IS_PUBLIC__ = JSON.parse('<%= JSON.stringify(!!playlist.isPublic) %>');
-  </script>
+  <!-- playlist metadata for client scripts -->
 
   <header class="header">
     <div style="display: flex; align-items: center;">
@@ -109,7 +106,7 @@
     </div>
   </div>
   
-  <div class="playlist-actions" data-is-public="<%= !!playlist.isPublic %>">
+  <div class="playlist-actions" data-is-public="<%= !!playlist.isPublic %>" data-playlist-id="<%= playlist._id %>">
     <% if (playlist.tracks.length > 0) { %>
       <button class="btn-play-all" onclick="playAll()">
         <i class="fa-solid fa-play"></i>
@@ -273,12 +270,6 @@
   </div>
   
   <audio id="audioPlayer"></audio>
-  <script>
-  window.__PLAYLIST_DETAIL__ = <%- JSON.stringify({
-    id: playlist._id,
-    isPublic: !!playlist.isPublic
-  }) %>;
-</script>
 
  <script src="/public/js/player.js"></script>
 <script src="/public/js/playlist-detail.js"></script>

@@ -1,4 +1,9 @@
-const PLAYLIST = window.__PLAYLIST_DETAIL__;
+// Read playlist metadata from the DOM
+const playlistActionsEl = document.querySelector('.playlist-actions');
+const PLAYLIST = {
+  id: playlistActionsEl?.dataset?.playlistId || null,
+  isPublic: playlistActionsEl?.dataset?.isPublic === 'true'
+};
 const hiddenKey = `playlist_hidden_${PLAYLIST.id}`;
 
 
@@ -92,6 +97,9 @@ window.playAll = function () {
   window.player.playTrack(tracks[0]);
   window.player.renderQueue();
   window.player.saveState();
+  // update shuffle button UI
+  const sb = document.getElementById('shuffleBtn');
+  if (sb) sb.classList.remove('active');
 };
 
 window.shufflePlay = function () {
@@ -108,9 +116,23 @@ window.shufflePlay = function () {
   });
 
   window.player.playTrack(shuffled[0]);
-  window.player.shuffleBtn?.classList.add('active');
+  const sb = document.getElementById('shuffleBtn');
+  if (sb) sb.classList.add('active');
   window.player.renderQueue();
   window.player.saveState();
+};
+
+// Play from an inline button element (used by each track's play button)
+window.playFromButton = function (btn) {
+  if (!btn) return;
+  const id = btn.dataset.trackId;
+  const title = btn.dataset.trackTitle;
+  const artist = btn.dataset.trackArtist;
+  const cover = btn.dataset.trackCover;
+  const audio = btn.dataset.trackAudio;
+  if (!audio || !id) return alert('Không tìm thấy audio để phát');
+  // Use the same behavior as window.playTrack to set the queue
+  window.playTrack(id, title, artist, cover, audio);
 };
 
 
@@ -187,6 +209,7 @@ window.deletePlaylist = async function () {
 
 window.toggleVisibility = async function () {
   const next = !PLAYLIST.isPublic;
+  if (!PLAYLIST.id) return alert('Playlist ID missing');
   const res = await fetch(`/playlists/${PLAYLIST.id}/visibility`, {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
@@ -197,6 +220,7 @@ window.toggleVisibility = async function () {
 };
 
 window.copyShareLink = function () {
+  if (!PLAYLIST.id) return alert('Playlist ID missing');
   navigator.clipboard
     .writeText(`${location.origin}/playlists/${PLAYLIST.id}`)
     .then(() => alert('Đã sao chép link'));
@@ -209,3 +233,6 @@ function initQueueToggle() {
     document.getElementById('queuePanel')?.classList.toggle('active');
   });
 }
+
+// expose for debugging
+window.__PLAYLIST_DETAIL__ = PLAYLIST;
