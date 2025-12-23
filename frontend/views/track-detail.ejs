@@ -20,6 +20,61 @@
   animation: slideDown 0.3s ease-out;
 }
 
+</style>
+<script>
+// ========== REPORT MODAL ==========
+function openReportModal() {
+  const modal = document.getElementById('reportModal');
+  if (modal) modal.classList.add('active');
+}
+
+function closeReportModal() {
+  const modal = document.getElementById('reportModal');
+  if (modal) {
+    modal.classList.remove('active');
+    document.querySelectorAll('input[name="reportReason"]').forEach(r => r.checked = false);
+    const desc = document.getElementById('reportDescription');
+    if (desc) desc.value = '';
+  }
+}
+
+const reportBtn = document.getElementById('reportBtn');
+if (reportBtn) {
+  reportBtn.addEventListener('click', openReportModal);
+}
+
+const submitReport = document.getElementById('submitReport');
+if (submitReport) {
+  submitReport.addEventListener('click', async function() {
+    const selectedReason = document.querySelector('input[name="reportReason"]:checked');
+    if (!selectedReason) {
+      alert('Vui lòng chọn lý do báo cáo');
+      return;
+    }
+    const trackId = reportBtn?.dataset.trackId;
+    const reason = selectedReason.value;
+    const description = (document.getElementById('reportDescription')?.value || '').trim();
+    try {
+      const res = await fetch(`/api/tracks/${trackId}/report`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ reason, description })
+      });
+      const data = await res.json();
+      if (data.success) {
+        closeReportModal();
+        alert(data.message || 'Đã gửi báo cáo');
+      } else {
+        alert(data.message || 'Không thể gửi báo cáo');
+      }
+    } catch (err) {
+      console.error('Report error:', err);
+      alert('Không thể gửi báo cáo');
+    }
+  });
+}
+</script>
+<style>
 .lyrics-panel[hidden] {
   display: none;
 }
@@ -909,16 +964,7 @@
   <script src="/public/js/player.js"></script>
  <script>
 // ====== Track data ======
-const trackData = {
-  id: '<%= track._id || "" %>',
-  title: '<%= track.title || "" %>',
-  artist: '<%= track.artist || "" %>',
-  cover: '<%= track.coverUrl || "" %>',
-  audioUrl: '<%= track.audioUrl || "" %>',
-  lyricsLRC: `<%= (track.lyricsLRC || "").replace(/`/g, "\\`").replace(/\$/g, "\\$") %>`,
-  lyricsText: `<%= (track.lyricsText || "").replace(/`/g, "\\`").replace(/\$/g, "\\$") %>`,
-  liked: <%= !!liked %>
-};
+const trackData = JSON.parse('<%- JSON.stringify({ id: track._id || "", title: track.title || "", artist: track.artist || "", cover: track.coverUrl || "", audioUrl: track.audioUrl || "", lyricsLRC: track.lyricsLRC || "", lyricsText: track.lyricsText || "", liked: !!liked }) %>');
 
 console.log('Track data loaded:', trackData);
 
@@ -1374,6 +1420,88 @@ function initActions() {
     document.body.appendChild(toast);
     setTimeout(() => toast.remove(), 2000);
   }
+
+  // ====== ADD TO PLAYLIST ======
+  const playlistModal = document.getElementById('playlistModal');
+  const playlistList = document.getElementById('playlistList');
+  const playlistLoading = document.getElementById('playlistLoading');
+  const playlistError = document.getElementById('playlistError');
+
+  function closePlaylistModal() {
+    playlistModal?.classList.remove('active');
+  }
+
+  async function loadPlaylists() {
+    if (!playlistList) return;
+    playlistLoading.style.display = 'block';
+    playlistError.style.display = 'none';
+    playlistList.innerHTML = '';
+    try {
+      const res = await fetch(`/playlists/api/mine?trackId=${trackData.id}`);
+      const data = await res.json();
+      if (!data.success) throw new Error(data.message || 'Không tải được playlist');
+      const lists = data.playlists || [];
+      if (lists.length === 0) {
+        playlistList.innerHTML = '<div style="color: var(--text-secondary);">Bạn chưa có playlist nào.</div>';
+      } else {
+        lists.forEach(pl => {
+          const item = document.createElement('div');
+          item.className = 'playlist-item';
+          const left = document.createElement('div');
+          left.innerHTML = `<div class="playlist-name">${pl.name}</div><div class="playlist-meta">${pl.isPublic ? 'Công khai' : 'Riêng tư'}</div>`;
+          const btn = document.createElement('button');
+          btn.className = 'playlist-add-btn';
+          btn.textContent = pl.hasTrack ? 'Đã có' : 'Thêm';
+          if (pl.hasTrack) btn.disabled = true;
+          btn.addEventListener('click', async () => {
+            btn.disabled = true;
+            btn.textContent = 'Đang thêm...';
+            try {
+              const resAdd = await fetch(`/playlists/${pl._id}/add-track`, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ trackId: trackData.id })
+              });
+              const dataAdd = await resAdd.json();
+              if (dataAdd.success) {
+                btn.textContent = 'Đã thêm';
+                showToast('Đã thêm vào playlist');
+              } else {
+                btn.disabled = false;
+                btn.textContent = 'Thêm';
+                showToast(dataAdd.message || 'Không thể thêm vào playlist');
+              }
+            } catch (err) {
+              console.error('Add to playlist error:', err);
+              btn.disabled = false;
+              btn.textContent = 'Thêm';
+              showToast('Không thể thêm vào playlist');
+            }
+          });
+          item.appendChild(left);
+          item.appendChild(btn);
+          playlistList.appendChild(item);
+        });
+      }
+    } catch (err) {
+      console.error('Load playlists error:', err);
+      playlistError.style.display = 'block';
+      playlistError.textContent = err.message || 'Không tải được playlist';
+    } finally {
+      playlistLoading.style.display = 'none';
+    }
+  }
+
+  function openPlaylistModal() {
+    if (!playlistModal) return;
+    playlistModal.classList.add('active');
+    loadPlaylists();
+  }
+
+  if (addToPlaylistBtn) {
+    addToPlaylistBtn.addEventListener('click', openPlaylistModal);
+  }
+  window.closePlaylistModal = closePlaylistModal;
 }
 
 // ========== MV PLAYER ==========
