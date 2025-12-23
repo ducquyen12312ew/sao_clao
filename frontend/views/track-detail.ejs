@@ -571,18 +571,30 @@ function closeReportModal() {
 
 <script src="/public/js/player.js"></script>
 <script src="/public/js/track-detail.js"></script>
+<!-- Embed track data as JSON inside a non-JS script tag to avoid EJS tokens inside JavaScript -->
+<script id="track-data" type="application/json"><%- JSON.stringify({
+  id: track && track._id ? String(track._id) : '',
+  title: track && track.title ? track.title : '',
+  artist: track && track.artist ? track.artist : '',
+  cover: track && track.coverUrl ? track.coverUrl : '',
+  audioUrl: track && track.audioUrl ? track.audioUrl : '',
+  lyricsLRC: track && track.lyricsLRC ? track.lyricsLRC : '',
+  lyricsText: track && track.lyricsText ? track.lyricsText : '',
+  liked: !!liked
+}) %></script>
 <script>
-// Set track data first
-window.setTrackData({
-  id: '<%= track._id || "" %>',
-  title: '<%= track.title || "" %>',
-  artist: '<%= track.artist || "" %>',
-  cover: '<%= track.coverUrl || "" %>',
-  audioUrl: '<%= track.audioUrl || "" %>',
-  lyricsLRC: `<%= (track.lyricsLRC || "").replace(/`/g, "\\`").replace(/\$/g, "\\$") %>`,
-  lyricsText: `<%= (track.lyricsText || "").replace(/`/g, "\\`").replace(/\$/g, "\\$") %>`,
-  liked: <%= !!liked %>
-});
+// Read the JSON blob and initialize track data
+(function(){
+  try {
+    const el = document.getElementById('track-data');
+    const json = el ? el.textContent : '{}';
+    const data = JSON.parse(json);
+    window.setTrackData(data);
+  } catch (err) {
+    console.error('Failed to parse track data', err);
+    window.setTrackData({});
+  }
+})();
 </script>
 </body>
 </html>
