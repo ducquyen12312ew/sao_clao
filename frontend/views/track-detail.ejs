@@ -688,7 +688,7 @@ function closeReportModal() {
         <div class="comments-list" id="commentsList">
           <% if (comments.length > 0) { %>
             <% comments.forEach(comment => { %>
-              <div class="comment" id="comment-<%= comment._id %>" data-comment-id="<%= comment._id %>">
+              <div class="comment" id="comment-<%= comment._id %>" data-comment-id="<%= comment._id %>" data-can-edit="<%= (comment.isOwner || (user && user.role === 'admin')) ? 'true' : 'false' %>">
                 <div class="comment-avatar">
                   <% if (comment.userId.avatarUrl) { %>
                     <img src="<%= comment.userId.avatarUrl %>" alt="<%= comment.userId.username %>">
@@ -1197,11 +1197,16 @@ function initCommentHandlers() {
     const deleteBtn = e.target.closest('.comment-delete');
     if (!editBtn && !deleteBtn) return;
 
-    const commentId = (editBtn || deleteBtn).dataset.commentId;
-    const commentEl = document.getElementById(`comment-${commentId}`);
+  const commentId = (editBtn || deleteBtn).dataset.commentId;
+  const commentEl = document.getElementById(`comment-${commentId}`);
+  const canEdit = commentEl?.dataset?.canEdit === 'true';
     const textEl = commentEl?.querySelector('.comment-text');
 
     if (editBtn) {
+      if (!canEdit) {
+        showToast('Bạn không có quyền chỉnh sửa bình luận này');
+        return;
+      }
       const currentText = textEl ? textEl.textContent.trim() : '';
       const newText = prompt('Chỉnh sửa bình luận', currentText);
       if (newText === null) return;
@@ -1230,6 +1235,10 @@ function initCommentHandlers() {
     }
 
     if (deleteBtn) {
+      if (!canEdit) {
+        showToast('Bạn không có quyền xóa bình luận này');
+        return;
+      }
       if (!confirm('Xóa bình luận này?')) return;
       try {
         const res = await fetch(`/api/comments/${commentId}`, { method: 'DELETE' });
