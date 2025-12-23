@@ -62,6 +62,30 @@ app.use(express.urlencoded({ extended: true }));
 app.use(express.json());
 app.get('/favicon.ico', (req, res) => res.status(204).end());
 
+// Basic payload sanitization to prevent NoSQL injection-style keys
+const dangerousKey = (key) => key.startsWith('$') || key.includes('.') || key === '__proto__' || key === 'constructor';
+function sanitizeObject(obj) {
+  if (!obj || typeof obj !== 'object') return obj;
+  if (Array.isArray(obj)) {
+    return obj.forEach(sanitizeObject);
+  }
+  Object.keys(obj).forEach((key) => {
+    if (dangerousKey(key)) {
+      delete obj[key];
+    } else if (typeof obj[key] === 'object') {
+      sanitizeObject(obj[key]);
+    }
+  });
+  return obj;
+}
+
+app.use((req, _res, next) => {
+  ['body', 'query', 'params'].forEach((k) => {
+    if (req[k]) sanitizeObject(req[k]);
+  });
+  next();
+});
+
 const sessionSecret = process.env.SESSION_SECRET || 'dev_secret_change_in_production';
 app.use(session({
   secret: sessionSecret,
