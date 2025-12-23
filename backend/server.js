@@ -30,6 +30,7 @@ const userRoutes = require('./routes/user');
 const settingsRoutes = require('./routes/settings');
 const adminRoutes = require('./routes/admin');
 const aiRoutes = require('./routes/ai');
+const querystring = require('querystring');
 
 const app = express();
 const SALT_ROUNDS = 10;
@@ -88,7 +89,7 @@ const isStrongPassword = (password) => {
 };
 
 const buildSessionUser = (user) => ({
-  id: user._id,
+  id: user._id?.toString(),
   name: user.name,
   username: user.username,
   avatarUrl: user.avatarUrl || '',
@@ -463,6 +464,75 @@ app.use('/users', userRoutes);
 app.use('/settings', settingsRoutes);
 app.use('/admin', adminRoutes);
 app.use('/ai', aiRoutes);
+
+// PRO page
+app.get('/pro', requireAuth, (req, res) => {
+  res.render('pro', { title: 'SAOCLAO Pro', user: req.session.user });
+});
+
+function buildVnpayUrl({ amount, orderInfo, ipAddr, plan }) {
+  const tmnCode = process.env.VNPAY_TMN_CODE;
+  const secretKey = process.env.VNPAY_HASH_SECRET;
+  const returnUrl = process.env.VNPAY_RETURN_URL || `${APP_BASE_URL}/pro`;
+  const vnpUrl = process.env.VNPAY_PAYMENT_URL || 'https://sandbox.vnpayment.vn/paymentv2/vpcpay.html';
+  const createDate = new Date();
+  const formatDate = (d) => {
+    const pad = (n) => (n < 10 ? '0' + n : '' + n);
+    return (
+      d.getFullYear().toString() +
+      pad(d.getMonth() + 1) +
+      pad(d.getDate()) +
+      pad(d.getHours()) +
+      pad(d.getMinutes()) +
+      pad(d.getSeconds())
+    );
+  };
+
+  let vnp_Params = {
+    vnp_Version: '2.1.0',
+    vnp_Command: 'pay',
+    vnp_TmnCode: tmnCode,
+    vnp_Locale: 'vn',
+    vnp_CurrCode: 'VND',
+    vnp_TxnRef: `${Date.now()}`,
+    vnp_OrderInfo: orderInfo,
+    vnp_OrderType: 'other',
+    vnp_Amount: amount * 100, // VNPAY expects amount in VND * 100
+    vnp_ReturnUrl: returnUrl,
+    vnp_IpAddr: ipAddr,
+    vnp_CreateDate: formatDate(createDate),
+    vnp_BankCode: ''
+  };
+
+  vnp_Params = Object.fromEntries(Object.entries(vnp_Params).sort());
+  const signData = querystring.stringify(vnp_Params, { encode: false });
+  const crypto = require('crypto');
+  const hmac = crypto.createHmac('sha512', secretKey);
+  const secureHash = hmac.update(Buffer.from(signData, 'utf-8')).digest('hex');
+  vnp_Params['vnp_SecureHash'] = secureHash;
+  const paymentUrl = vnpUrl + '?' + querystring.stringify(vnp_Params, { encode: false });
+  return paymentUrl;
+}
+
+app.post('/pro/pay', requireAuth, (req, res) => {
+  try {
+    const plan = req.body.plan;
+    const priceMap = { monthly: 15000, yearly: 100000 };
+    const amount = priceMap[plan] || priceMap.monthly;
+    if (!process.env.VNPAY_TMN_CODE || !process.env.VNPAY_HASH_SECRET) {
+      req.session.flash = { type: 'danger', message: 'Chưa cấu hình VNPAY (VNPAY_TMN_CODE, VNPAY_HASH_SECRET)' };
+      return req.session.save(() => res.redirect('/pro'));
+    }
+    const ipAddr = req.headers['x-forwarded-for'] || req.connection.remoteAddress || req.socket.remoteAddress || '';
+    const orderInfo = `SAOCLAO Pro - ${plan}`;
+    const url = buildVnpayUrl({ amount, orderInfo, ipAddr, plan });
+    res.redirect(url);
+  } catch (err) {
+    console.error('VNPAY pay error:', err);
+    req.session.flash = { type: 'danger', message: 'Không thể tạo liên kết thanh toán.' };
+    req.session.save(() => res.redirect('/pro'));
+  }
+});
 
 app.get(['/me', '/profile'], (req, res) => res.redirect('/home'));
 
@@ -852,7 +922,9 @@ app.get('/track/:id', requireAuth, async (req, res) => {
       const likedBy = c.likedBy || [];
       const liked = likedBy.some(id => id.toString() === userId.toString());
       const likes = typeof c.likes === 'number' ? c.likes : likedBy.length;
-      return { ...c, liked, likes };
+      const ownerId = c.userId?._id?.toString?.() || c.userId?.toString?.();
+      const isOwner = ownerId === userId.toString();
+      return { ...c, liked, likes, isOwner };
     });
     
     const relatedTracks = await TrackCollection.find({
@@ -960,7 +1032,7 @@ app.post('/api/tracks/:id/comments', requireAuth, async (req, res) => {
 });
 
 // Like/unlike comment
-app.post('/api/comments/:id/like', requireAuthJson, async (req, res) => {
+const toggleCommentLike = async (req, res) => {
   try {
     const userId = req.session.user.id;
     const comment = await CommentCollection.findById(req.params.id);
@@ -987,50 +1059,39 @@ app.post('/api/comments/:id/like', requireAuthJson, async (req, res) => {
     console.error('Like comment error:', err);
     res.status(500).json({ success: false, message: 'Không thể thả tim bình luận' });
   }
-});
+};
 
-app.post('/api/comments/:id/like', requireAuthJson, async (req, res) => {
+app.post('/api/comments/:id/like', requireAuthJson, toggleCommentLike);
+
+// UPDATE COMMENT (OWNER)
+app.put('/api/comments/:id', requireAuthJson, async (req, res) => {
   try {
-    const userId = req.session.user.id;
+    const { text } = req.body;
+    const sessionUserId = (req.session.user.id || '').toString();
+    if (!text || !text.trim()) {
+      return res.status(400).json({ success: false, message: 'Nội dung trống' });
+    }
     const comment = await CommentCollection.findById(req.params.id);
     if (!comment) {
       return res.status(404).json({ success: false, message: 'Comment không tồn tại' });
     }
-
-    comment.likedBy = comment.likedBy || [];
-    let liked;
-    const idx = comment.likedBy.findIndex(u => u.toString() === userId.toString());
-    if (idx !== -1) {
-      comment.likedBy.splice(idx, 1);
-      comment.likes = Math.max(0, (comment.likes || 0) - 1);
-      liked = false;
-    } else {
-      comment.likedBy.push(userId);
-      comment.likes = (comment.likes || 0) + 1;
-      liked = true;
+    if (comment.userId.toString() !== sessionUserId && req.session.user.role !== 'admin') {
+      return res.status(403).json({ success: false, message: 'Không có quyền sửa comment này' });
     }
+    comment.text = text.trim();
     await comment.save();
-
-    res.json({ success: true, likes: comment.likes, liked });
+    res.json({ success: true, message: 'Đã cập nhật comment', comment: { id: comment._id, text: comment.text } });
   } catch (err) {
-    console.error('Like comment error:', err);
-    res.status(500).json({ success: false, message: 'Không thể thả tim bình luận' });
+    console.error('Update comment error:', err);
+    res.status(500).json({ success: false, message: 'Có lỗi xảy ra' });
   }
 });
 
-// DELETE COMMENT - ADMIN ONLY (NEW!)
-app.delete('/api/comments/:id', requireAuth, async (req, res) => {
+// DELETE COMMENT - OWNER OR ADMIN
+app.delete('/api/comments/:id', requireAuthJson, async (req, res) => {
   try {
-    if (req.session.user.role !== 'admin') {
-      return res.status(403).json({ 
-        success: false, 
-        message: 'Chỉ admin mới có quyền xóa comment' 
-      });
-    }
-    
-    const commentId = req.params.id;
-    
-    const comment = await CommentCollection.findByIdAndDelete(commentId);
+    const sessionUserId = (req.session.user.id || '').toString();
+    const comment = await CommentCollection.findById(req.params.id);
     
     if (!comment) {
       return res.status(404).json({ 
@@ -1038,6 +1099,15 @@ app.delete('/api/comments/:id', requireAuth, async (req, res) => {
         message: 'Comment không tồn tại' 
       });
     }
+
+    const isOwner = comment.userId.toString() === sessionUserId;
+    const isAdmin = req.session.user.role === 'admin';
+
+    if (!isOwner && !isAdmin) {
+      return res.status(403).json({ success: false, message: 'Không có quyền xóa comment này' });
+    }
+    
+    await CommentCollection.findByIdAndDelete(comment._id);
     
     res.json({ 
       success: true, 
@@ -1127,6 +1197,9 @@ app.get('/api/admin/notifications/count', requireAuth, async (req, res) => {
 });
 
 app.use((req, res) => {
+  if (req.path.startsWith('/api/')) {
+    return res.status(404).json({ success: false, message: 'Endpoint không tồn tại' });
+  }
   res.status(404).render('404', { title: 'Not found' });
 });
 

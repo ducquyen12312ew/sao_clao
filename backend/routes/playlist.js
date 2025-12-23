@@ -29,6 +29,30 @@ router.get('/', requireAuth, async (req, res) => {
   }
 });
 
+// API: lấy playlist của user (để thêm bài hát)
+router.get('/api/mine', requireAuth, async (req, res) => {
+  try {
+    const userId = req.session.user.id;
+    const playlists = await PlaylistCollection.find({ userId })
+      .select('_id name isPublic tracks updatedAt')
+      .sort({ updatedAt: -1 })
+      .lean();
+
+    res.json({
+      success: true,
+      playlists: playlists.map(p => ({
+        _id: p._id,
+        name: p.name,
+        isPublic: p.isPublic,
+        hasTrack: (p.tracks || []).some(t => t?.toString() === req.query.trackId)
+      }))
+    });
+  } catch (err) {
+    console.error('Get my playlists error:', err);
+    res.status(500).json({ success: false, message: 'Không tải được playlist' });
+  }
+});
+
 router.get('/:id', requireAuth, async (req, res) => {
   try {
     const userId = req.session.user.id;

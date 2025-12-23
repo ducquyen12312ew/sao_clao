@@ -18,11 +18,11 @@
     .glow.two { background: #7cf2d4; bottom: -80px; right: -40px; animation: float 14s ease-in-out infinite reverse; }
     @keyframes float { 0%,100% { transform: translateY(0); } 50% { transform: translateY(30px); } }
 
-    .hero { display: grid; grid-template-columns: 1.1fr 0.9fr; gap: 24px; align-items: stretch; position: relative; z-index: 1; }
+    .hero { display: grid; grid-template-columns: 1fr; gap: 18px; position: relative; z-index: 1; }
     .hero-card {
       border: 1px solid rgba(255,255,255,0.08);
       background: linear-gradient(135deg, rgba(255,255,255,0.03), rgba(255,255,255,0.01));
-      border-radius: 18px; padding: 24px; box-shadow: 0 20px 60px rgba(0,0,0,0.35);
+      border-radius: 18px; padding: 26px; box-shadow: 0 20px 60px rgba(0,0,0,0.35);
       backdrop-filter: blur(8px);
     }
     .headline { display: flex; align-items: center; gap: 12px; }
@@ -38,10 +38,10 @@
     .chip { padding: 8px 12px; border-radius: 999px; border: 1px solid rgba(255,255,255,0.12); color: #eaeaea; background: rgba(255,255,255,0.04); font-size: 13px; }
 
     .ai-form { display: grid; gap: 14px; margin-top: 16px; }
-    .ai-form .form-row { display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap: 12px; }
+    .ai-form .form-row { display: grid; grid-template-columns: repeat(auto-fit, minmax(240px, 1fr)); gap: 14px; }
     .ai-form .form-group input,
     .ai-form .form-group textarea,
-    .ai-form .form-group input[type="file"] { background: rgba(255,255,255,0.04); color: #fff; border: 1px solid rgba(255,255,255,0.12); border-radius: 12px; padding: 12px; }
+    .ai-form .form-group input[type="file"] { background: rgba(255,255,255,0.06); color: #fff; border: 1px solid rgba(255,255,255,0.16); border-radius: 14px; padding: 16px; }
     .ai-form .form-group label { font-weight: 600; color: #f5f5f5; }
     .ai-hint { color: #9aa0a6; margin: 6px 0 0; font-size: 13px; }
 
@@ -49,11 +49,11 @@
     .btn-primary { background: linear-gradient(135deg, #8effd1, #8fa4ff); color: #000; border: none; font-weight: 700; }
     .btn-ghost { border: 1px solid rgba(255,255,255,0.12); background: transparent; color: #eaeaea; }
 
-    .steps { display: grid; grid-template-columns: repeat(auto-fit, minmax(180px,1fr)); gap: 12px; margin-top: 16px; }
-    .step { padding: 12px; border: 1px dashed rgba(255,255,255,0.12); border-radius: 12px; color: #d1d1d1; font-size: 14px; }
+    .steps { display: grid; grid-template-columns: 1fr; gap: 12px; margin-top: 16px; }
+    .step { padding: 14px; border: 1px dashed rgba(255,255,255,0.12); border-radius: 12px; color: #d1d1d1; font-size: 15px; background: rgba(255,255,255,0.02); }
     .step strong { color: #fff; }
 
-    .aside-card { height: 100%; border: 1px solid rgba(255,255,255,0.08); border-radius: 18px; padding: 20px; background: rgba(255,255,255,0.02); box-shadow: 0 12px 40px rgba(0,0,0,0.35); backdrop-filter: blur(6px); }
+    .aside-card { border: 1px solid rgba(255,255,255,0.08); border-radius: 18px; padding: 20px; background: rgba(255,255,255,0.02); box-shadow: 0 12px 40px rgba(0,0,0,0.35); backdrop-filter: blur(6px); }
     .aside-card h3 { margin-top: 0; }
     .aside-list { list-style: none; padding: 0; margin: 12px 0 0; display: grid; gap: 8px; color: #cfcfcf; }
     .aside-list li { display: flex; gap: 8px; align-items: flex-start; }
@@ -87,6 +87,10 @@
         <a href="/ai" class="nav-link active">
           <i class="fa-solid fa-wand-magic-sparkles"></i>
           <span>AI Generate</span>
+        </a>
+        <a href="/pro" class="nav-link">
+          <i class="fa-solid fa-bolt"></i>
+          <span>Try Pro</span>
         </a>
       </nav>
     </div>
@@ -135,18 +139,18 @@
             <form class="ai-form" action="/ai/generate" method="post" enctype="multipart/form-data">
               <div class="form-group" style="margin:0;">
                 <label>File MIDI / Audio <span class="required">*</span></label>
-                <input type="file" name="file" accept=".mid,.midi,.mp3,.wav,.m4a,.flac,.ogg,audio/*" required>
+                <input type="file" name="file" accept=".mid,.midi,.mp3,.wav,.m4a,.flac,.ogg,audio/*" required style="padding:18px; font-size:16px;">
                 <p class="ai-hint">Upload MIDI để tiếp nối, hoặc MP3/WAV để tự chuyển sang MIDI (có thể có sai số). Tối đa 30MB.</p>
               </div>
               <div class="form-row">
                 <div class="form-group">
                   <label>Thời lượng mong muốn (giây)</label>
-                  <input type="number" name="seconds" min="5" max="120" value="30" step="1" required>
+                  <input type="number" name="seconds" min="5" max="120" value="30" step="1" required style="padding:16px; font-size:16px;">
                   <p class="ai-hint">Đoạn sinh ra sẽ dài xấp xỉ giá trị này.</p>
                 </div>
                 <div class="form-group">
                   <label>Temperature</label>
-                  <input type="number" name="temperature" min="0.2" max="2.0" step="0.1" value="1.0" required>
+                  <input type="number" name="temperature" min="0.2" max="2.0" step="0.1" value="1.0" required style="padding:16px; font-size:16px;">
                   <p class="ai-hint">0.2 an toàn, 2.0 sáng tạo.</p>
                 </div>
               </div>
@@ -159,15 +163,19 @@
                 </button>
               </div>
             </form>
+          </div>
+
+          <div class="hero-card">
+            <h3 style="margin-top:0;">Quy trình thực hiện</h3>
             <div class="steps">
-              <div class="step"><strong>1.</strong> Nhận file → chuyển audio thành MIDI (nếu cần).</div>
-              <div class="step"><strong>2.</strong> Model TF sinh continuation theo tempo/temperature.</div>
-              <div class="step"><strong>3.</strong> Render bằng soundfont → MP3 → đăng track.</div>
+              <div class="step"><strong>Bước 1.</strong> Nhận file → chuyển audio thành MIDI (nếu cần).</div>
+              <div class="step"><strong>Bước 2.</strong> Model TF sinh continuation theo tempo/temperature.</div>
+              <div class="step"><strong>Bước 3.</strong> Render bằng soundfont → MP3 → đăng track.</div>
             </div>
           </div>
 
-          <div class="aside-card">
-            <h3><i class="fa-solid fa-lightbulb"></i> Mẹo tạo hay</h3>
+          <div class="hero-card">
+            <h3 style="margin-top:0;"><i class="fa-solid fa-lightbulb"></i> Mẹo tạo hay</h3>
             <ul class="aside-list">
               <li><i class="fa-solid fa-wave-square"></i> Chọn MIDI ít nhạc cụ, giai điệu rõ.</li>
               <li><i class="fa-solid fa-gauge-high"></i> Tăng temperature cho ý tưởng lạ, giảm để an toàn.</li>
