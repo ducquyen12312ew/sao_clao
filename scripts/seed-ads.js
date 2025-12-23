@@ -36,6 +36,33 @@ async function seedAds() {
         isActive: true,
         priority: 10,
         impressions: 0
+      },
+      {
+        title: 'Quảng cáo Hot Deal',
+        audioUrl: '/public/uploads/ads/ad_03.mp3',
+        imageUrl: 'https://res.cloudinary.com/dysgt8t4d/image/upload/v1766493820/9928f8ee71145c77c427997094ce19fb_brkozb.jpg',
+        duration: 6,
+        isActive: true,
+        priority: 10,
+        impressions: 0
+      },
+      {
+        title: 'Quảng cáo Khác',
+        audioUrl: '/public/uploads/ads/ad_04.mp3',
+        imageUrl: 'https://res.cloudinary.com/dysgt8t4d/image/upload/v1766493820/9c8355c2eab5a86416e4489e255bfea7_n8xsxw.jpg',
+        duration: 6,
+        isActive: true,
+        priority: 10,
+        impressions: 0
+      },
+      {
+        title: 'Quảng cáo Cuối',
+        audioUrl: '/public/uploads/ads/ad_05.mp3',
+        imageUrl: 'https://res.cloudinary.com/dysgt8t4d/image/upload/v1766493820/7e5401c91366910c1ad4e3920297b898_fmx8ye.jpg',
+        duration: 6,
+        isActive: true,
+        priority: 10,
+        impressions: 0
       }
     ];
 

@@ -60,10 +60,7 @@
             <li><i class="fa-solid fa-check" style="color:#8ef1c7;"></i> AI generate nhanh hơn</li>
             <li><i class="fa-solid fa-check" style="color:#8ef1c7;"></i> Không quảng cáo</li>
           </ul>
-          <form class="form-hidden" method="post" action="/pro/pay">
-            <input type="hidden" name="plan" value="monthly">
-          </form>
-          <button class="btn btn-primary" onclick="submitPlan(this)">Bắt đầu (VNPAY)</button>
+          <button class="btn btn-primary" onclick="pay('monthly')">Bắt đầu (Stripe)</button>
         </div>
         <div class="plan">
           <h2>Gói năm</h2>
@@ -73,10 +70,7 @@
             <li><i class="fa-solid fa-check" style="color:#8ef1c7;"></i> Hỗ trợ ưu tiên</li>
             <li><i class="fa-solid fa-check" style="color:#8ef1c7;"></i> Tặng badge Pro</li>
           </ul>
-          <form class="form-hidden" method="post" action="/pro/pay">
-            <input type="hidden" name="plan" value="yearly">
-          </form>
-          <button class="btn btn-primary" onclick="submitPlan(this)">Bắt đầu (VNPAY)</button>
+          <button class="btn btn-primary" onclick="pay('yearly')">Bắt đầu (Stripe)</button>
         </div>
       </div>
     </div>
@@ -126,24 +120,37 @@
       <div class="steps">
         <div class="step">
           <h3 style="margin:0 0 6px;">Bước 1</h3>
-          <p style="margin:0; color:#c8cedd;">Chọn gói tháng hoặc năm, nhấn “Bắt đầu (VNPAY)”.</p>
+          <p style="margin:0; color:#c8cedd;">Chọn gói tháng hoặc năm, nhấn “Bắt đầu (Stripe)”.</p>
         </div>
         <div class="step">
           <h3 style="margin:0 0 6px;">Bước 2</h3>
-          <p style="margin:0; color:#c8cedd;">Hệ thống chuyển tới cổng VNPAY, bạn hoàn tất thanh toán.</p>
+          <p style="margin:0; color:#c8cedd;">Hệ thống chuyển tới Stripe Checkout, bạn hoàn tất thanh toán.</p>
         </div>
         <div class="step">
           <h3 style="margin:0 0 6px;">Bước 3</h3>
           <p style="margin:0; color:#c8cedd;">Quay lại SAOCLAO, tài khoản tự động nâng cấp Pro.</p>
         </div>
       </div>
-      <p style="margin-top:12px; color:#9ba4b5;">Lưu ý: cần cấu hình VNPAY (TMN code, secret, return URL) trong .env; nếu thiếu, việc chuyển hướng có thể thất bại.</p>
+      <p style="margin-top:12px; color:#9ba4b5;">Lưu ý: cần cấu hình Stripe keys trong .env và webhook để tự động nâng cấp Pro.</p>
     </div>
   </div>
   <script>
-    function submitPlan(btn) {
-      const form = btn.previousElementSibling;
-      form.submit();
+    async function pay(plan) {
+      try {
+        const res = await fetch('/pro/pay', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ plan })
+        });
+        const data = await res.json();
+        if (data.success && data.checkoutUrl) {
+          window.location.href = data.checkoutUrl;
+        } else {
+          alert(data.message || 'Không tạo được phiên thanh toán');
+        }
+      } catch (e) {
+        alert('Lỗi kết nối. Vui lòng thử lại.');
+      }
     }
   </script>
 </body>

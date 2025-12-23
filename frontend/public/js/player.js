@@ -15,7 +15,7 @@ class MusicPlayer {
     this.adConfig = {
       secondsPerTrackBeforeAd: 10, // Phát ad sau 10s nghe 1 bài
       adDuration: 6, // Thời lượng ad (giây)
-      skipButtonDelay: 3 // Nút skip xuất hiện sau 3s
+      skipButtonDelay: 2 // Nút skip xuất hiện sau 2s
     };
     this.adStats = {
       tracksPlayed: 0,
