@@ -1,0 +1,230 @@
+/**
+ * Advertisement Overlay Styles
+ * Hiển thị overlay khi phát quảng cáo
+ */
+
+.ad-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background: rgba(0, 0, 0, 0.98);
+  backdrop-filter: blur(10px);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 9999;
+  opacity: 0;
+  visibility: hidden;
+  transition: opacity 0.3s ease, visibility 0.3s ease;
+}
+
+.ad-overlay.active {
+  opacity: 1;
+  visibility: visible;
+}
+
+.ad-content {
+  text-align: center;
+  color: white;
+  max-width: 800px;
+  width: 90%;
+  padding: 40px;
+  animation: adSlideIn 0.4s ease-out;
+  position: relative;
+}
+
+@keyframes adSlideIn {
+  from {
+    transform: translateY(-30px);
+    opacity: 0;
+  }
+  to {
+    transform: translateY(0);
+    opacity: 1;
+  }
+}
+
+/* Ảnh quảng cáo */
+.ad-image-container {
+  width: 100%;
+  max-width: 600px;
+  margin: 0 auto 30px;
+  border-radius: 16px;
+  overflow: hidden;
+  box-shadow: 0 12px 40px rgba(0, 0, 0, 0.5);
+  animation: adImageZoom 0.6s ease-out;
+}
+
+@keyframes adImageZoom {
+  from {
+    transform: scale(0.9);
+    opacity: 0;
+  }
+  to {
+    transform: scale(1);
+    opacity: 1;
+  }
+}
+
+.ad-image {
+  width: 100%;
+  height: auto;
+  display: block;
+  border-radius: 16px;
+}
+
+.ad-info {
+  margin-bottom: 20px;
+}
+
+.ad-title {
+  font-size: 24px;
+  font-weight: 700;
+  margin-bottom: 16px;
+  color: #ffffff;
+  text-transform: uppercase;
+  letter-spacing: 2px;
+}
+
+.ad-timer {
+  margin-bottom: 20px;
+}
+
+.ad-progress-bar {
+  width: 100%;
+  max-width: 400px;
+  margin: 0 auto;
+  height: 8px;
+  background: rgba(255, 255, 255, 0.15);
+  border-radius: 4px;
+  overflow: hidden;
+  margin-bottom: 12px;
+}
+
+.ad-progress-fill {
+  height: 100%;
+  background: linear-gradient(90deg, #00d9ff, #0066ff);
+  width: 0%;
+  transition: width 0.1s linear;
+  border-radius: 4px;
+}
+
+.ad-time-remaining {
+  font-size: 20px;
+  font-weight: 700;
+  color: #00d9ff;
+}
+
+/* Nút Skip */
+.ad-skip-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  padding: 14px 28px;
+  background: rgba(255, 255, 255, 0.1);
+  border: 2px solid rgba(255, 255, 255, 0.3);
+  color: white;
+  border-radius: 50px;
+  font-weight: 600;
+  font-size: 16px;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  margin-bottom: 16px;
+  animation: skipBtnAppear 0.3s ease-out;
+}
+
+@keyframes skipBtnAppear {
+  from {
+    transform: scale(0.8);
+    opacity: 0;
+  }
+  to {
+    transform: scale(1);
+    opacity: 1;
+  }
+}
+
+.ad-skip-btn:hover {
+  background: rgba(255, 255, 255, 0.2);
+  border-color: rgba(255, 255, 255, 0.5);
+  transform: translateY(-2px);
+  box-shadow: 0 4px 15px rgba(255, 255, 255, 0.2);
+}
+
+.ad-skip-btn i {
+  font-size: 16px;
+}
+
+.ad-upgrade-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 10px;
+  padding: 16px 32px;
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  color: white;
+  text-decoration: none;
+  border-radius: 50px;
+  font-weight: 600;
+  font-size: 16px;
+  transition: all 0.3s ease;
+  box-shadow: 0 4px 15px rgba(102, 126, 234, 0.4);
+}
+
+.ad-upgrade-btn:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 6px 20px rgba(102, 126, 234, 0.6);
+  text-decoration: none;
+  color: white;
+}
+
+.ad-upgrade-btn i {
+  font-size: 18px;
+}
+
+/* Responsive */
+@media (max-width: 768px) {
+  .ad-content {
+    padding: 30px 20px;
+  }
+
+  .ad-image-container {
+    max-width: 100%;
+    margin-bottom: 20px;
+  }
+
+  .ad-title {
+    font-size: 18px;
+  }
+
+  .ad-skip-btn {
+    padding: 12px 24px;
+    font-size: 14px;
+  }
+
+  .ad-upgrade-btn {
+    padding: 14px 24px;
+    font-size: 14px;
+  }
+}
+
+/* Pro badge indicator (optional - hiển thị ở header) */
+.pro-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 6px 12px;
+  background: linear-gradient(135deg, #ffd700, #ffed4e);
+  color: #000;
+  border-radius: 20px;
+  font-weight: 700;
+  font-size: 12px;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  box-shadow: 0 2px 8px rgba(255, 215, 0, 0.3);
+}
+
+.pro-badge i {
+  font-size: 14px;
+}

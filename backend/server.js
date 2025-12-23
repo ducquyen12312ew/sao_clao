@@ -30,6 +30,7 @@ const userRoutes = require('./routes/user');
 const settingsRoutes = require('./routes/settings');
 const adminRoutes = require('./routes/admin');
 const aiRoutes = require('./routes/ai');
+const adsRoutes = require('./routes/ads');
 const querystring = require('querystring');
 
 const app = express();
@@ -94,7 +95,8 @@ const buildSessionUser = (user) => ({
   username: user.username,
   avatarUrl: user.avatarUrl || '',
   bio: user.bio || '',
-  role: user.role || 'user'
+  role: user.role || 'user',
+  isPro: user.isPro || false
 });
 
 async function ensureUniqueUsername(base) {
@@ -208,9 +210,112 @@ const requireAuth = (req, res, next) => {
   next();
 };
 
-const getTrackFilter = (user) => {
-  return user?.role === 'admin' ? {} : { status: 'approved' };
+const requireAuthJson = (req, res, next) => {
+  if (!req.session.user) {
+    return res.status(401).json({ success: false, message: 'Vui lòng đăng nhập' });
+  }
+  next();
 };
+
+const getTrackFilter = (user, ownerId = null) => {
+  if (user?.role === 'admin') return {};
+
+  if (ownerId && user?.id === ownerId.toString()) {
+    return { status: 'approved' };
+  }
+
+  // người khác → ẩn private
+  return { status: 'approved', isPrivate: { $ne: true } };
+};
+
+// TOGGLE TRACK PRIVACY (OWNER ONLY)
+app.patch('/tracks/:id/privacy', requireAuthJson, async (req, res) => {
+  try {
+    const trackId = req.params.id;
+    const userId = req.session.user.id;
+    const { isPrivate } = req.body;
+
+    const track = await TrackCollection.findOne({
+      _id: trackId,
+      deletedAt: null
+    });
+
+    if (!track) {
+      return res.status(404).json({
+        success: false,
+        message: 'Track không tồn tại'
+      });
+    }
+
+    if (track.userId.toString() !== userId.toString()) {
+      return res.status(403).json({
+        success: false,
+        message: 'Không có quyền thay đổi track này'
+      });
+    }
+
+    track.isPrivate = !!isPrivate;
+    await track.save();
+
+    console.log(`Track ${trackId} privacy updated to:`, track.isPrivate);
+
+    res.json({
+      success: true,
+      isPrivate: track.isPrivate
+    });
+  } catch (err) {
+    console.error('Toggle privacy error:', err);
+    res.status(500).json({
+      success: false,
+      message: 'Không thể cập nhật trạng thái track'
+    });
+  }
+});
+
+// DELETE TRACK (OWNER / ADMIN)
+app.delete('/tracks/:id', requireAuthJson, async (req, res) => {
+  try {
+    const trackId = req.params.id;
+    const userId = req.session.user.id;
+
+    const track = await TrackCollection.findOne({
+      _id: trackId,
+      deletedAt: null
+    });
+
+    if (!track) {
+      return res.status(404).json({
+        success: false,
+        message: 'Track không tồn tại'
+      });
+    }
+
+    const isOwner = track.userId.toString() === userId.toString();
+    const isAdmin = req.session.user.role === 'admin';
+
+    if (!isOwner && !isAdmin) {
+      return res.status(403).json({
+        success: false,
+        message: 'Không có quyền xoá track này'
+      });
+    }
+
+    track.deletedAt = new Date();
+    await track.save();
+
+    res.json({
+      success: true,
+      message: 'Đã xoá track'
+    });
+  } catch (err) {
+    console.error('Delete track error:', err);
+    res.status(500).json({
+      success: false,
+      message: 'Không thể xoá track'
+    });
+  }
+});
+
 
 app.get('/', async (req, res) => {
   try {
@@ -355,13 +460,6 @@ const doLogout = (req, res) => {
   req.session.destroy(() => res.redirect('/'));
 };
 
-const requireAuthJson = (req, res, next) => {
-  if (!req.session.user) {
-    return res.status(401).json({ success: false, message: 'Vui lòng đăng nhập' });
-  }
-  next();
-};
-
 app.get('/logout', doLogout);
 app.post('/logout', doLogout);
 
@@ -464,6 +562,7 @@ app.use('/users', userRoutes);
 app.use('/settings', settingsRoutes);
 app.use('/admin', adminRoutes);
 app.use('/ai', aiRoutes);
+app.use('/api/ads', adsRoutes);
 
 // PRO page
 app.get('/pro', requireAuth, (req, res) => {
@@ -1195,6 +1294,7 @@ app.get('/api/admin/notifications/count', requireAuth, async (req, res) => {
     res.status(500).json({ success: false });
   }
 });
+
 
 app.use((req, res) => {
   if (req.path.startsWith('/api/')) {

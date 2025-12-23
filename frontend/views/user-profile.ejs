@@ -85,21 +85,37 @@
 
             <div class="track-details">
               <div class="track-header">
-                <div>
-                  <div class="track-meta">
-                    <i class="fa-solid fa-clock"></i>
-                    <%= new Date(track.createdAt).toLocaleDateString('vi-VN') %>
-                  </div>
-                  <div class="track-title-text"><%= track.title %></div>
-                  <div class="track-artist-text"><%= track.artist %></div>
-                </div>
-              </div>
+  <div>
+    <div class="track-meta">
+      <i class="fa-solid fa-clock"></i>
+      <%= new Date(track.createdAt).toLocaleDateString('vi-VN') %>
+    </div>
+    <div class="track-title-text"><%= track.title %></div>
+    <div class="track-artist-text"><%= track.artist %></div>
+  </div>
 
-              <div class="track-waveform">
-                <% for (let i = 0; i < 50; i++) { %>
-                  <div class="waveform-bar"></div>
-                <% } %>
-              </div>
+  <% if (isOwnProfile) { %>
+    <div class="track-owner-actions" onclick="event.stopPropagation()">
+      <!-- Public / Private -->
+      <button
+        class="icon-btn toggle-privacy"
+        data-id="<%= track._id %>"
+        data-private="<%= track.isPrivate ? 'true' : 'false' %>"
+        title="<%= track.isPrivate ? 'Private' : 'Public' %>">
+        <i class="fa-solid <%= track.isPrivate ? 'fa-lock' : 'fa-globe' %>"></i>
+      </button>
+
+      <!-- Delete -->
+      <button
+        class="icon-btn delete-track"
+        data-id="<%= track._id %>"
+        title="Delete track">
+        <i class="fa-solid fa-trash"></i>
+      </button>
+    </div>
+  <% } %>
+</div>
+
 
               <div class="track-stats">
                 <div class="track-stat"><i class="fa-solid fa-play"></i> <%= track.playCount || 0 %></div>
@@ -202,6 +218,73 @@
         setTimeout(() => notif.remove(), 300);
       }, 3000);
     }
+
+    document.querySelectorAll('.delete-track').forEach(btn => {
+  btn.addEventListener('click', async function (e) {
+    e.preventDefault();
+    e.stopPropagation();
+    const trackId = this.dataset.id;
+
+    if (!confirm('Bạn có chắc muốn xoá track này không?')) return;
+
+    try {
+      const res = await fetch(`/tracks/${trackId}`, {
+        method: 'DELETE'
+      });
+      const data = await res.json();
+
+      if (data.success) {
+        showNotification('Đã xoá track');
+        this.closest('.track-item').remove();
+      }
+    } catch (err) {
+      console.error(err);
+    }
+  });
+});
+
+document.querySelectorAll('.toggle-privacy').forEach(btn => {
+  btn.addEventListener('click', async function (e) {
+    e.preventDefault();
+    e.stopPropagation();
+    const trackId = this.dataset.id;
+    const isPrivate = this.dataset.private === 'true';
+
+    try {
+      const res = await fetch(`/tracks/${trackId}/privacy`, {
+        method: 'PATCH',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ isPrivate: !isPrivate })
+      });
+
+      const data = await res.json();
+
+      if (data.success) {
+        const newPrivateState = !isPrivate;
+        this.dataset.private = newPrivateState.toString();
+        
+        const icon = this.querySelector('i');
+        if (newPrivateState) {
+          icon.className = 'fa-solid fa-lock';
+          this.title = 'Private';
+        } else {
+          icon.className = 'fa-solid fa-globe';
+          this.title = 'Public';
+        }
+
+        showNotification(
+          newPrivateState ? 'Track đã chuyển sang Private' : 'Track đã Public'
+        );
+      } else {
+        showNotification('Không thể cập nhật trạng thái track');
+      }
+    } catch (err) {
+      console.error('Toggle privacy error:', err);
+      showNotification('Có lỗi xảy ra');
+    }
+  });
+});
+
   </script>
 </body>
 </html>

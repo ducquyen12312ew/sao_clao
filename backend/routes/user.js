@@ -46,11 +46,32 @@ router.get('/:username', async (req, res) => {
     }
     
     // Get user's tracks
+    let trackFilter = { userId: user._id, deletedAt: null };
+    
+    // If viewing own profile, show all approved tracks
+    // If viewing other profile, only show approved and public tracks
+    if (isOwnProfile) {
+      trackFilter.status = 'approved';
+    } else {
+      trackFilter.status = 'approved';
+      trackFilter.isPrivate = { $ne: true };
+    }
+    
+    // Ensure isPrivate field exists with default value
     const tracks = await TrackCollection
-      .find({ userId: user._id })
+      .find(trackFilter)
       .sort({ createdAt: -1 })
       .limit(12)
-      .lean();
+      .lean()
+      .exec();
+    
+    // Add default isPrivate if not set
+    const tracksWithDefault = tracks.map(track => ({
+      ...track,
+      isPrivate: track.isPrivate !== undefined ? track.isPrivate : false
+    }));
+    
+    console.log('User profile tracks:', tracksWithDefault.map(t => ({ id: t._id, title: t.title, isPrivate: t.isPrivate })));
     
     // Get user's public playlists
     const playlists = await PlaylistCollection
@@ -64,10 +85,10 @@ router.get('/:username', async (req, res) => {
       .lean();
     
     // Calculate total plays
-    const totalPlays = tracks.reduce((sum, track) => sum + (track.playCount || 0), 0);
+    const totalPlays = tracksWithDefault.reduce((sum, track) => sum + (track.playCount || 0), 0);
     
     // Calculate total likes
-    const totalLikes = tracks.reduce((sum, track) => sum + (track.likes || 0), 0);
+    const totalLikes = tracksWithDefault.reduce((sum, track) => sum + (track.likes || 0), 0);
     
     res.render('user-profile', {
       title: `${user.name} (@${user.username}) - SAOCLAO`,
@@ -75,7 +96,7 @@ router.get('/:username', async (req, res) => {
       user: req.session.user || null,
       isOwnProfile,
       isFollowing,
-      tracks,
+      tracks: tracksWithDefault,
       playlists,
       totalPlays,
       totalLikes

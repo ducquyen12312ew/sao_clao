@@ -8,8 +8,72 @@
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
   <link rel="stylesheet" href="/public/css/profile.css">
+  <link rel="stylesheet" href="/public/css/ads.css">
+  <style>
+    .flash-notification {
+      position: fixed;
+      top: 80px;
+      left: 50%;
+      transform: translateX(-50%);
+      padding: 16px 32px;
+      border-radius: 12px;
+      font-size: 15px;
+      font-weight: 600;
+      z-index: 10000;
+      box-shadow: 0 8px 32px rgba(0, 0, 0, 0.3);
+      backdrop-filter: blur(20px);
+      animation: slideDown 0.3s ease-out;
+      transition: opacity 0.3s, transform 0.3s;
+    }
+
+    .flash-success {
+      background: rgba(30, 215, 96, 0.95);
+      color: white;
+      border: 1px solid rgba(30, 215, 96, 0.5);
+    }
+
+    .flash-danger {
+      background: rgba(255, 59, 48, 0.95);
+      color: white;
+      border: 1px solid rgba(255, 59, 48, 0.5);
+    }
+
+    .flash-warning {
+      background: rgba(255, 149, 0, 0.95);
+      color: white;
+      border: 1px solid rgba(255, 149, 0, 0.5);
+    }
+
+    @keyframes slideDown {
+      from {
+        opacity: 0;
+        transform: translateX(-50%) translateY(-30px);
+      }
+      to {
+        opacity: 1;
+        transform: translateX(-50%) translateY(0);
+      }
+    }
+  </style>
 </head>
 <body>
+  <!-- Flash Notification -->
+  <% if (flash) { %>
+    <div class="flash-notification flash-<%= flash.type %>">
+      <%= flash.message %>
+    </div>
+    <script>
+      setTimeout(() => {
+        const notification = document.querySelector('.flash-notification');
+        if (notification) {
+          notification.style.opacity = '0';
+          notification.style.transform = 'translateX(-50%) translateY(-20px)';
+          setTimeout(() => notification.remove(), 300);
+        }
+      }, 4000);
+    </script>
+  <% } %>
+
   <!-- Context Menu -->
   <div class="context-menu" id="contextMenu">
     <div class="context-menu-item" onclick="addToQueue(window.contextTrack)">
@@ -335,11 +399,9 @@
   <script src="/public/js/player.js"></script>
   
   <script>
-// Global playlists data
 let userPlaylists = JSON.parse('<%- JSON.stringify(playlists || []) %>');
 console.log('Initial playlists from server:', userPlaylists.length);
 
-// Global functions
 window.toggleSidebar = function() {
   const sidebar = document.getElementById('rightSidebar');
   const toggle = document.getElementById('sidebarToggle');
@@ -364,7 +426,6 @@ window.playTrack = function(id, title, artist, cover, audioUrl) {
   }
 };
 
-// Play button on cards
 function playFromButton(btn) {
   const track = {
     id: btn.dataset.trackId,
@@ -377,7 +438,6 @@ function playFromButton(btn) {
     alert('Player chưa sẵn sàng. Vui lòng thử lại.');
     return;
   }
-  // Nếu đang phát đúng bài này thì toggle play/pause
   if (window.player.currentTrack?.id === track.id) {
     window.player.togglePlay();
   } else {
@@ -842,7 +902,6 @@ function initEventListeners() {
     });
   }
   
-  // Context menu event delegation
   document.addEventListener('contextmenu', (e) => {
     const card = e.target.closest('.track-card');
     if (!card) return;
@@ -860,7 +919,6 @@ function initEventListeners() {
   });
 }
 
-// Initialize on page load
 window.addEventListener('DOMContentLoaded', () => {
   initResizeSidebar();
   initSearch();
@@ -880,7 +938,6 @@ window.addEventListener('DOMContentLoaded', () => {
   }, 100);
   
   setTimeout(() => clearInterval(checkPlayer), 5000);
-
 });
 </script>
 </body>

@@ -9,6 +9,23 @@ class MusicPlayer {
     this.originalQueue = [];
     this.hasTrackedCurrentPlay = false;
     
+    // Advertisement System
+    this.isPlayingAd = false;
+    this.isPro = false;
+    this.adConfig = {
+      secondsPerTrackBeforeAd: 10, // Phát ad sau 10s nghe 1 bài
+      adDuration: 6, // Thời lượng ad (giây)
+      skipButtonDelay: 3 // Nút skip xuất hiện sau 3s
+    };
+    this.adStats = {
+      tracksPlayed: 0,
+      lastAdTime: Date.now(),
+      totalListeningTime: 0,
+      currentSessionStart: Date.now()
+    };
+    this.pausedTrack = null; // Track bị tạm dừng để phát ad
+    this.adAudio = null; // Reference to ad audio element
+    
     if (!this.audio) {
       console.error('Audio element not found!');
       return;
@@ -16,11 +33,24 @@ class MusicPlayer {
     
     this.initElements();
     this.initEventListeners();
+    this.checkProStatus(); // Check Pro status on init
     
     // Restore state after a short delay
     setTimeout(() => {
       this.restoreState();
     }, 100);
+  }
+
+  async checkProStatus() {
+    try {
+      const response = await fetch('/api/ads/check-pro');
+      const data = await response.json();
+      this.isPro = data.isPro || false;
+      console.log('Pro status:', this.isPro ? 'Pro User' : 'Free User');
+    } catch (error) {
+      console.error('Error checking Pro status:', error);
+      this.isPro = false;
+    }
   }
 
   isValidTrack(track) {
@@ -133,15 +163,235 @@ class MusicPlayer {
   checkPlayTracking() {
     if (this.hasTrackedCurrentPlay) return;
     if (!this.currentTrack || !this.currentTrack.id) return;
+    if (this.isPlayingAd) return; // Không track khi đang phát ad
     
-    const duration = this.audio.duration;
     const currentTime = this.audio.currentTime;
     
-    if (currentTime >= 30 || (duration > 0 && currentTime / duration >= 0.5)) {
-      this.recordPlay(this.currentTrack.id);
-      this.hasTrackedCurrentPlay = true;
-      console.log('Play tracked for:', this.currentTrack.title);
+    // Trigger ad sau 10 giây nghe nhạc
+    if (currentTime >= this.adConfig.secondsPerTrackBeforeAd) {
+      if (!this.hasTrackedCurrentPlay) {
+        this.recordPlay(this.currentTrack.id);
+        this.hasTrackedCurrentPlay = true;
+        console.log('Play tracked for:', this.currentTrack.title);
+        
+        // Ngay lập tức phát quảng cáo sau 10s
+        this.playAdvertisement();
+      }
     }
+  }
+
+  /**
+   * Kiểm tra xem có nên phát quảng cáo không
+   */
+  checkIfShouldPlayAd() {
+    // Không cần nữa - logic đã chuyển vào checkPlayTracking
+  }
+
+  /**
+   * Phát quảng cáo
+   */
+  async playAdvertisement() {
+    if (this.isPlayingAd || this.isPro) return;
+
+    try {
+      // Fetch ad từ server
+      const response = await fetch('/api/ads/get');
+      const data = await response.json();
+
+      if (!data.success || !data.ad) {
+        console.log('No ad available');
+        return;
+      }
+
+      const ad = data.ad;
+      console.log('Playing advertisement:', ad.title);
+
+      // Pause track hiện tại và lưu trạng thái
+      const currentTime = this.audio.currentTime;
+      this.pausedTrack = {
+        track: this.currentTrack,
+        time: currentTime,
+        wasPlaying: !this.audio.paused
+      };
+
+      // DỪNG HẾT NHẠC
+      this.audio.pause();
+      this.isPlayingAd = true;
+
+      // Show ad UI với ảnh
+      this.showAdUI(ad);
+
+      // Không phát audio ad nữa, chỉ hiển thị hình ảnh
+      // Tự động kết thúc sau adDuration
+      setTimeout(() => {
+        this.onAdvertisementEnded();
+      }, this.adConfig.adDuration * 1000);
+
+      // Reset counters
+      this.adStats.tracksPlayed = 0;
+      this.adStats.lastAdTime = Date.now();
+
+    } catch (error) {
+      console.error('Error playing advertisement:', error);
+      this.isPlayingAd = false;
+      // Resume track nếu có lỗi
+      if (this.pausedTrack) {
+        this.resumeAfterAd();
+      }
+    }
+  }
+
+  /**
+   * Xử lý khi ad kết thúc
+   */
+  onAdvertisementEnded() {
+    console.log('Advertisement ended');
+    this.hideAdUI();
+    this.resumeAfterAd();
+  }
+
+  /**
+   * Resume track sau khi ad kết thúc
+   */
+  resumeAfterAd() {
+    if (!this.pausedTrack) return;
+
+    this.isPlayingAd = false;
+    const { track, time, wasPlaying } = this.pausedTrack;
+
+    // Restore track
+    this.audio.src = track.audioUrl;
+    
+    const onCanPlay = () => {
+      this.audio.currentTime = time;
+      if (wasPlaying) {
+        this.audio.play().catch(err => {
+          console.error('Error resuming after ad:', err);
+        });
+      }
+      this.audio.removeEventListener('canplay', onCanPlay);
+    };
+
+    this.audio.addEventListener('canplay', onCanPlay, { once: true });
+    
+    // Fallback nếu đã ready
+    if (this.audio.readyState >= 2) {
+      onCanPlay();
+    }
+
+    this.pausedTrack = null;
+    console.log('Resumed track after ad');
+  }
+
+  /**
+   * Show ad UI overlay
+   */
+  showAdUI(ad) {
+    // Tạo overlay ad nếu chưa có
+    let adOverlay = document.getElementById('adOverlay');
+    if (!adOverlay) {
+      adOverlay = document.createElement('div');
+      adOverlay.id = 'adOverlay';
+      adOverlay.className = 'ad-overlay';
+      document.body.appendChild(adOverlay);
+    }
+
+    // Tạo nội dung mới với ảnh quảng cáo
+    adOverlay.innerHTML = `
+      <div class="ad-content">
+        <div class="ad-image-container">
+          <img src="${ad.imageUrl || ''}" alt="Quảng cáo" class="ad-image" onerror="this.style.display='none'">
+        </div>
+        <div class="ad-info">
+          <h3 class="ad-title">Quảng Cáo</h3>
+          <div class="ad-timer">
+            <div class="ad-progress-bar">
+              <div class="ad-progress-fill"></div>
+            </div>
+            <span class="ad-time-remaining">${this.adConfig.adDuration}s</span>
+          </div>
+        </div>
+        <button class="ad-skip-btn" style="display: none;">
+          <i class="fa-solid fa-forward"></i> Bỏ qua
+        </button>
+        <a href="/pro" class="ad-upgrade-btn">
+          <i class="fa-solid fa-crown"></i>
+          Nâng cấp Pro - Nghe nhạc không quảng cáo
+        </a>
+      </div>
+    `;
+
+    adOverlay.classList.add('active');
+
+    // Progress bar animation
+    const startTime = Date.now();
+    const duration = this.adConfig.adDuration * 1000;
+    const progressFill = adOverlay.querySelector('.ad-progress-fill');
+    const timeRemaining = adOverlay.querySelector('.ad-time-remaining');
+    const skipBtn = adOverlay.querySelector('.ad-skip-btn');
+
+    const updateProgress = () => {
+      if (!this.isPlayingAd) return;
+      
+      const elapsed = Date.now() - startTime;
+      const progress = (elapsed / duration) * 100;
+      const remaining = Math.ceil((duration - elapsed) / 1000);
+      
+      if (progressFill) progressFill.style.width = Math.min(progress, 100) + '%';
+      if (timeRemaining) timeRemaining.textContent = Math.max(remaining, 0) + 's';
+      
+      // Hiển thị nút skip sau skipButtonDelay giây
+      if (elapsed >= this.adConfig.skipButtonDelay * 1000 && skipBtn) {
+        skipBtn.style.display = 'block';
+      }
+      
+      if (this.isPlayingAd && elapsed < duration) {
+        requestAnimationFrame(updateProgress);
+      }
+    };
+
+    updateProgress();
+
+    // Skip button handler
+    if (skipBtn) {
+      skipBtn.addEventListener('click', () => {
+        this.onAdvertisementEnded();
+      });
+    }
+
+    // Disable player controls during ad
+    this.disablePlayerControls();
+  }
+
+  /**
+   * Hide ad UI overlay
+   */
+  hideAdUI() {
+    const adOverlay = document.getElementById('adOverlay');
+    if (adOverlay) {
+      adOverlay.classList.remove('active');
+    }
+    this.enablePlayerControls();
+  }
+
+  /**
+   * Disable player controls during ad
+   */
+  disablePlayerControls() {
+    if (this.playPauseBtn) this.playPauseBtn.disabled = true;
+    if (this.prevBtn) this.prevBtn.disabled = true;
+    if (this.nextBtn) this.nextBtn.disabled = true;
+    if (this.progressBar) this.progressBar.style.pointerEvents = 'none';
+  }
+
+  /**
+   * Enable player controls after ad
+   */
+  enablePlayerControls() {
+    if (this.playPauseBtn) this.playPauseBtn.disabled = false;
+    if (this.prevBtn) this.prevBtn.disabled = false;
+    if (this.nextBtn) this.nextBtn.disabled = false;
+    if (this.progressBar) this.progressBar.style.pointerEvents = 'auto';
   }
 
   async recordPlay(trackId) {
