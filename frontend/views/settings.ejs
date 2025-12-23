@@ -8,6 +8,7 @@
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
   <link rel="stylesheet" href="/public/css/settings.css">
+ 
 </head>
 <body>
   <header class="header">
@@ -79,17 +80,6 @@
     </form>
   </div>
   
-  <script>
-    // preview avatar
-    function previewAvatar(input) {
-      if (!input.files || !input.files[0]) return;
-      const reader = new FileReader();
-      reader.onload = e => {
-        document.getElementById('avatarPreview').innerHTML =
-          `<img src="${e.target.result}" alt="Preview">`;
-      };
-      reader.readAsDataURL(input.files[0]);
-    }
-  </script>
+   <script src="/public/js/setting.js"></script>
 </body>
 </html>
