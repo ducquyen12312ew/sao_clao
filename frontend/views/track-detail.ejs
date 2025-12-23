@@ -37,42 +37,6 @@ function closeReportModal() {
     if (desc) desc.value = '';
   }
 }
-
-const reportBtn = document.getElementById('reportBtn');
-if (reportBtn) {
-  reportBtn.addEventListener('click', openReportModal);
-}
-
-const submitReport = document.getElementById('submitReport');
-if (submitReport) {
-  submitReport.addEventListener('click', async function() {
-    const selectedReason = document.querySelector('input[name="reportReason"]:checked');
-    if (!selectedReason) {
-      alert('Vui lòng chọn lý do báo cáo');
-      return;
-    }
-    const trackId = reportBtn?.dataset.trackId;
-    const reason = selectedReason.value;
-    const description = (document.getElementById('reportDescription')?.value || '').trim();
-    try {
-      const res = await fetch(`/api/tracks/${trackId}/report`, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ reason, description })
-      });
-      const data = await res.json();
-      if (data.success) {
-        closeReportModal();
-        alert(data.message || 'Đã gửi báo cáo');
-      } else {
-        alert(data.message || 'Không thể gửi báo cáo');
-      }
-    } catch (err) {
-      console.error('Report error:', err);
-      alert('Không thể gửi báo cáo');
-    }
-  });
-}
 </script>
 <style>
 .lyrics-panel[hidden] {
@@ -277,6 +241,68 @@ if (submitReport) {
   color: var(--text-secondary);
   box-shadow: none;
 }
+
+/* Generic modal */
+.modal {
+  position: fixed;
+  inset: 0;
+  display: none;
+  align-items: center;
+  justify-content: center;
+  z-index: 1500;
+}
+.modal.active {
+  display: flex;
+}
+.modal-overlay {
+  position: absolute;
+  inset: 0;
+  background: rgba(0,0,0,0.6);
+  backdrop-filter: blur(2px);
+}
+.modal-content {
+  position: relative;
+  background: var(--bg-primary);
+  border: 1px solid var(--border-color);
+  border-radius: 16px;
+  padding: 16px;
+  width: min(520px, 92vw);
+  box-shadow: 0 20px 50px rgba(0,0,0,0.45);
+}
+.modal-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+  margin-bottom: 12px;
+}
+.modal-close {
+  background: none;
+  border: 1px solid var(--border-color);
+  color: var(--text-secondary);
+  padding: 8px 10px;
+  border-radius: 10px;
+  cursor: pointer;
+}
+.modal-body {
+  display: grid;
+  gap: 10px;
+}
+.modal-footer {
+  display: flex;
+  justify-content: flex-end;
+  gap: 10px;
+  margin-top: 12px;
+}
+.btn-cancel, .btn-submit {
+  padding: 10px 14px;
+  border-radius: 10px;
+  border: none;
+  cursor: pointer;
+  font-weight: 700;
+}
+.btn-cancel { background: var(--bg-secondary); color: var(--text-secondary); }
+.btn-submit { background: var(--accent); color: #000; }
 
 /* Queue panel */
 .queue-panel {
@@ -1132,6 +1158,99 @@ function hookLyricEvents() {
 
 hookLyricEvents();
 
+// ====== GLOBAL UI HELPERS & COMMENT HANDLERS ======
+function showToast(message) {
+  const toast = document.createElement('div');
+  toast.textContent = message;
+  toast.style.cssText = 'position:fixed;bottom:20px;right:20px;padding:12px 14px;border-radius:10px;background:rgba(0,0,0,0.8);color:#fff;z-index:2000';
+  document.body.appendChild(toast);
+  setTimeout(() => toast.remove(), 2000);
+}
+
+function initCommentHandlers() {
+  // Delegate clicks for comment like/edit/delete to the document so handlers exist immediately
+  document.addEventListener('click', async (e) => {
+    const likeBtn = e.target.closest('.comment-like');
+    if (likeBtn) {
+      const commentId = likeBtn.dataset.commentId;
+      try {
+        const res = await fetch(`/api/comments/${commentId}/like`, { method: 'POST' });
+        const data = await res.json();
+        if (data.success) {
+          likeBtn.dataset.liked = data.liked ? 'true' : 'false';
+          const icon = likeBtn.querySelector('i');
+          if (icon) icon.className = data.liked ? 'fa-solid fa-heart' : 'fa-regular fa-heart';
+          const count = likeBtn.querySelector('.comment-like-count');
+          if (count) count.textContent = data.likes;
+          showToast(data.liked ? 'Đã thả tim' : 'Đã bỏ tim');
+        } else {
+          showToast(data.message || 'Không thể thả tim bình luận');
+        }
+      } catch (err) {
+        console.error('Comment like error:', err);
+        showToast('Không thể thả tim bình luận');
+      }
+      return;
+    }
+
+    const editBtn = e.target.closest('.comment-edit');
+    const deleteBtn = e.target.closest('.comment-delete');
+    if (!editBtn && !deleteBtn) return;
+
+    const commentId = (editBtn || deleteBtn).dataset.commentId;
+    const commentEl = document.getElementById(`comment-${commentId}`);
+    const textEl = commentEl?.querySelector('.comment-text');
+
+    if (editBtn) {
+      const currentText = textEl ? textEl.textContent.trim() : '';
+      const newText = prompt('Chỉnh sửa bình luận', currentText);
+      if (newText === null) return;
+      if (!newText.trim()) {
+        showToast('Nội dung không được trống');
+        return;
+      }
+      try {
+        const res = await fetch(`/api/comments/${commentId}`, {
+          method: 'PUT',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ text: newText })
+        });
+        const data = await res.json();
+        if (data.success) {
+          if (textEl) textEl.textContent = newText;
+          showToast('Đã cập nhật bình luận');
+        } else {
+          showToast(data.message || 'Không thể cập nhật bình luận');
+        }
+      } catch (err) {
+        console.error('Edit comment error:', err);
+        showToast('Không thể cập nhật bình luận');
+      }
+      return;
+    }
+
+    if (deleteBtn) {
+      if (!confirm('Xóa bình luận này?')) return;
+      try {
+        const res = await fetch(`/api/comments/${commentId}`, { method: 'DELETE' });
+        const data = await res.json();
+        if (data.success) {
+          commentEl?.remove();
+          showToast('Đã xóa bình luận');
+        } else {
+          showToast(data.message || 'Không thể xóa bình luận');
+        }
+      } catch (err) {
+        console.error('Delete comment error:', err);
+        showToast('Không thể xóa bình luận');
+      }
+    }
+  });
+}
+
+// initialize comment handlers as soon as script loads
+initCommentHandlers();
+
 // ========== WAVEFORM ==========
 function initWaveform() {
   const waveform = document.getElementById('waveform');
@@ -1351,12 +1470,16 @@ function initActions() {
           return;
         }
         const res = await fetch(`/api/tracks/${trackId}/like`, { method: 'POST' });
-        const data = await res.json();
+        let data = {};
+        if (res.ok) data = await res.json();
         if (data.success) {
           setLikeUI(data.liked, data.likes);
+        } else {
+          showToast(data.message || 'Không thể thả tim');
         }
       } catch (err) {
         console.error('Like error:', err);
+        showToast('Không thể thả tim');
       }
     });
   }
@@ -1412,14 +1535,7 @@ function initActions() {
       if (e.key === 'Enter') submitComment.click();
     });
   }
-
-  function showToast(message) {
-    const toast = document.createElement('div');
-    toast.textContent = message;
-    toast.style.cssText = 'position:fixed;bottom:20px;right:20px;padding:12px 14px;border-radius:10px;background:rgba(0,0,0,0.8);color:#fff;z-index:2000';
-    document.body.appendChild(toast);
-    setTimeout(() => toast.remove(), 2000);
-  }
+  // comment handlers moved to top-level initCommentHandlers() to ensure they are available
 
   // ====== ADD TO PLAYLIST ======
   const playlistModal = document.getElementById('playlistModal');
@@ -1500,6 +1616,45 @@ function initActions() {
 
   if (addToPlaylistBtn) {
     addToPlaylistBtn.addEventListener('click', openPlaylistModal);
+  }
+  // ====== REPORT MODAL WIRING (attach after DOM ready) ======
+  const reportBtn = document.getElementById('reportBtn');
+  const submitReport = document.getElementById('submitReport');
+  if (reportBtn) {
+    reportBtn.addEventListener('click', () => {
+      // ensure track id present
+      if (!reportBtn.dataset.trackId) return alert('Không có track id');
+      openReportModal();
+    });
+  }
+  if (submitReport) {
+    submitReport.addEventListener('click', async function() {
+      const selectedReason = document.querySelector('input[name="reportReason"]:checked');
+      if (!selectedReason) {
+        alert('Vui lòng chọn lý do báo cáo');
+        return;
+      }
+      const trackId = reportBtn?.dataset.trackId;
+      const reason = selectedReason.value;
+      const description = (document.getElementById('reportDescription')?.value || '').trim();
+      try {
+        const res = await fetch(`/api/tracks/${trackId}/report`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ reason, description })
+        });
+        const data = await res.json();
+        if (data.success) {
+          closeReportModal();
+          alert(data.message || 'Đã gửi báo cáo');
+        } else {
+          alert(data.message || 'Không thể gửi báo cáo');
+        }
+      } catch (err) {
+        console.error('Report error:', err);
+        alert('Không thể gửi báo cáo');
+      }
+    });
   }
   window.closePlaylistModal = closePlaylistModal;
 }
