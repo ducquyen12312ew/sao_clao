@@ -453,6 +453,59 @@ const PasswordResetCollection = mongoose.model('PasswordReset', PasswordResetSch
 const TrackLikeCollection = mongoose.model('TrackLike', TrackLikeSchema);
 const AdvertisementCollection = mongoose.model('Advertisement', AdvertisementSchema);
 
+// Transaction Schema for VNPay Payments
+const TransactionSchema = new mongoose.Schema({
+  userId: {
+    type: mongoose.Schema.Types.ObjectId,
+    ref: 'User',
+    required: true,
+    index: true
+  },
+  transactionCode: {
+    type: String,
+    required: true,
+    unique: true,
+    index: true
+  },
+  plan: {
+    type: String,
+    enum: ['monthly', 'yearly'],
+    required: true
+  },
+  amount: {
+    type: Number,
+    required: true // VND
+  },
+  currency: {
+    type: String,
+    default: 'VND'
+  },
+  status: {
+    type: String,
+    enum: ['pending', 'success', 'failed', 'cancelled'],
+    default: 'pending'
+  },
+  vnpayOrderId: {
+    type: String,
+    index: true
+  },
+  vnpayResponseCode: String,
+  vnpayTransactionNo: String,
+  proExpiryDays: Number, // 30 for monthly, 365 for yearly
+  proExpiredAt: Date, // When the Pro plan expires
+  ipAddress: String,
+  userAgent: String,
+  errorMessage: String,
+  createdAt: {
+    type: Date,
+    default: Date.now,
+    index: true
+  },
+  completedAt: Date
+});
+
+const TransactionCollection = mongoose.model('Transaction', TransactionSchema);
+
 module.exports = {
   connectDB,
   UserCollection,
@@ -465,5 +518,6 @@ module.exports = {
   PasswordResetCollection,
   TrackLikeCollection,
   AdvertisementCollection,
+  TransactionCollection,
   mongoose
 };

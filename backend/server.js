@@ -31,6 +31,7 @@ const settingsRoutes = require('./routes/settings');
 const adminRoutes = require('./routes/admin');
 const aiRoutes = require('./routes/ai');
 const adsRoutes = require('./routes/ads');
+const proRoutes = require('./routes/pro-stripe');
 const querystring = require('querystring');
 
 const app = express();
@@ -40,6 +41,23 @@ const PASSWORD_RULE_MESSAGE = 'Mật khẩu phải có ít nhất 8 ký tự, g�
 app.set('view engine', 'ejs');
 app.set('views', path.join(__dirname, '..', 'frontend', 'views'));
 app.use('/public', express.static(path.join(__dirname, '..', 'frontend', 'public')));
+
+
+// Middleware to capture raw body for Stripe webhook
+app.use((req, res, next) => {
+  if (req.path === '/pro/webhook') {
+    let data = '';
+    req.on('data', chunk => {
+      data += chunk;
+    });
+    req.on('end', () => {
+      req.rawBody = data;
+      next();
+    });
+  } else {
+    next();
+  }
+});
 
 app.use(express.urlencoded({ extended: true }));
 app.use(express.json());
@@ -563,74 +581,11 @@ app.use('/settings', settingsRoutes);
 app.use('/admin', adminRoutes);
 app.use('/ai', aiRoutes);
 app.use('/api/ads', adsRoutes);
+app.use('/pro', proRoutes);
 
-// PRO page
-app.get('/pro', requireAuth, (req, res) => {
-  res.render('pro', { title: 'SAOCLAO Pro', user: req.session.user });
-});
-
-function buildVnpayUrl({ amount, orderInfo, ipAddr, plan }) {
-  const tmnCode = process.env.VNPAY_TMN_CODE;
-  const secretKey = process.env.VNPAY_HASH_SECRET;
-  const returnUrl = process.env.VNPAY_RETURN_URL || `${APP_BASE_URL}/pro`;
-  const vnpUrl = process.env.VNPAY_PAYMENT_URL || 'https://sandbox.vnpayment.vn/paymentv2/vpcpay.html';
-  const createDate = new Date();
-  const formatDate = (d) => {
-    const pad = (n) => (n < 10 ? '0' + n : '' + n);
-    return (
-      d.getFullYear().toString() +
-      pad(d.getMonth() + 1) +
-      pad(d.getDate()) +
-      pad(d.getHours()) +
-      pad(d.getMinutes()) +
-      pad(d.getSeconds())
-    );
-  };
-
-  let vnp_Params = {
-    vnp_Version: '2.1.0',
-    vnp_Command: 'pay',
-    vnp_TmnCode: tmnCode,
-    vnp_Locale: 'vn',
-    vnp_CurrCode: 'VND',
-    vnp_TxnRef: `${Date.now()}`,
-    vnp_OrderInfo: orderInfo,
-    vnp_OrderType: 'other',
-    vnp_Amount: amount * 100, // VNPAY expects amount in VND * 100
-    vnp_ReturnUrl: returnUrl,
-    vnp_IpAddr: ipAddr,
-    vnp_CreateDate: formatDate(createDate),
-    vnp_BankCode: ''
-  };
-
-  vnp_Params = Object.fromEntries(Object.entries(vnp_Params).sort());
-  const signData = querystring.stringify(vnp_Params, { encode: false });
-  const crypto = require('crypto');
-  const hmac = crypto.createHmac('sha512', secretKey);
-  const secureHash = hmac.update(Buffer.from(signData, 'utf-8')).digest('hex');
-  vnp_Params['vnp_SecureHash'] = secureHash;
-  const paymentUrl = vnpUrl + '?' + querystring.stringify(vnp_Params, { encode: false });
-  return paymentUrl;
-}
-
-app.post('/pro/pay', requireAuth, (req, res) => {
-  try {
-    const plan = req.body.plan;
-    const priceMap = { monthly: 15000, yearly: 100000 };
-    const amount = priceMap[plan] || priceMap.monthly;
-    if (!process.env.VNPAY_TMN_CODE || !process.env.VNPAY_HASH_SECRET) {
-      req.session.flash = { type: 'danger', message: 'Chưa cấu hình VNPAY (VNPAY_TMN_CODE, VNPAY_HASH_SECRET)' };
-      return req.session.save(() => res.redirect('/pro'));
-    }
-    const ipAddr = req.headers['x-forwarded-for'] || req.connection.remoteAddress || req.socket.remoteAddress || '';
-    const orderInfo = `SAOCLAO Pro - ${plan}`;
-    const url = buildVnpayUrl({ amount, orderInfo, ipAddr, plan });
-    res.redirect(url);
-  } catch (err) {
-    console.error('VNPAY pay error:', err);
-    req.session.flash = { type: 'danger', message: 'Không thể tạo liên kết thanh toán.' };
-    req.session.save(() => res.redirect('/pro'));
-  }
+// Legacy PRO page handler (now handled by proRoutes)
+app.get('/pro', (req, res) => {
+  res.redirect('/pro');
 });
 
 app.get(['/me', '/profile'], (req, res) => res.redirect('/home'));
