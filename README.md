@@ -1,198 +1,173 @@
 # SAOCLAO
-### Nền tảng nghe và chia sẻ nhạc trực tuyến
+Nền tảng nghe và chia sẻ nhạc trực tuyến (nhỏ, demo/prototype)
+
+Mục tiêu: một web app cho phép người dùng upload, nghe, chia sẻ và báo cáo bài hát; admin có thể quản lý nội dung. Dự án này là một bản demo/learning project và bao gồm cả công cụ import nhạc từ YouTube, và player client-side.
+
+---
+
+## Mục lục
+
+- [Giới thiệu](#giới-thiệu)
+- [Cài đặt nhanh](#cài-đặt-nhanh)
+- [Cấu trúc dự án](#cấu-trúc-dự-án)
+- [Kiến trúc & luồng dữ liệu](#kiến-trúc--luồng-dữ-liệu)
+- [Frontend (FE)](#frontend-fe)
+- [Backend (BE)](#backend-be)
+- [Import nhạc từ YouTube](#import-nhạc-từ-youtube)
+- [Công nghệ sử dụng](#công-nghệ-sử-dụng)
+- [Phát triển & debug nhanh](#phát-triển--debug-nhanh)
 
 ---
 
 ## Giới thiệu
 
-**SAOCLAO** là một ứng dụng web nghe nhạc lấy cảm hứng từ SoundCloud, được xây dựng với giao diện tối giản **đen – trắng**, mang phong cách hiện đại và tinh tế.
+SAOCLAO là một ứng dụng web demo cho phép người dùng nghe và chia sẻ nhạc, upload file audio/covers, tạo playlist, like/comment và report tracks. Admin có thể duyệt/approve/reject nội dung. Ứng dụng thích hợp để học tập về stack Node.js + Express + EJS, upload media (Cloudinary), và xử lý audio/video bằng yt-dlp + ffmpeg.
 
----
+## Cài đặt nhanh
 
-## Cài đặt
+1. Clone repository và chuyển vào thư mục:
 
-### 1. Sao chép mã nguồn
 ```bash
 git clone https://github.com/ducquyen12312ew/sao_clao.git
 cd sao_clao
 ```
 
-### 2. Cấu trúc thư mục
-- `backend/`: mã nguồn Node/Express, routes, cấu hình DB, script seed admin.
-- `frontend/`: `views/` (EJS) và `public/` (CSS/JS/ảnh) được server phục vụ statically.
-- `scripts/`: công cụ import nhạc từ YouTube.
+2. Cài đặt phụ thuộc và tạo file `.env`:
 
-### 3. Cài đặt các gói phụ thuộc
 ```bash
 npm install
-```
-
-### 4. Tạo file .env tại thư mục gốc
-```bash
 cp .env.example .env
 ```
 
-Thêm cấu hình sau:
-```env
-# MongoDB Atlas hoặc local
-MONGO_URI=mongodb+srv://<user>:<pass>@cluster0.mongodb.net/MusicCloud?retryWrites=true&w=majority
-SESSION_SECRET=your_secret_key
+3. Chỉnh `.env` theo môi trường của bạn (MongoDB, Cloudinary, SMTP, AI service...). Xem phần env mẫu trong file `.env.example`.
+File .env: 
+MONGO_URI=mongodb+srv://musiccloud_user:0apr8nQKucupRxjN@cluster0.9fjyw7r.mongodb.net/MusicCloud?retryWrites=true&w=majority&appName=Cluster0
+SESSION_SECRET=your_secret_key_here
 PORT=3000
 
-# Cloudinary (bắt buộc để upload audio + cover)
-CLOUDINARY_CLOUD_NAME=your_cloud_name
-CLOUDINARY_API_KEY=your_api_key
-CLOUDINARY_API_SECRET=your_api_secret
-CLOUDINARY_DEFAULT_COVER_URL=
-AI_SERVICE_URL=http://127.0.0.1:8000/generate
-AI_MODEL_PATH=./ai-service/model_saved
-SOUNDFONT_PATH=/usr/share/sounds/sf2/FluidR3_GM.sf2
-TMP_DIR=
+# Cloudinary (upload)
+CLOUDINARY_CLOUD_NAME=dysgt8t4d
+CLOUDINARY_API_KEY=458789419117252
+CLOUDINARY_API_SECRET=57XomH27Ws23FbS7OXIT7oekpKI
 
-# OAuth (bật nếu muốn đăng nhập Google/Facebook)
-GOOGLE_CLIENT_ID=
-GOOGLE_CLIENT_SECRET=
-GOOGLE_CALLBACK_URL=http://localhost:3000/auth/google/callback
-APP_BASE_URL=http://localhost:3000
+# OAuth (optional)
+GOOGLE_CLIENT_ID=330217819222-s19oi1371noj5jv5v3ocufb7om4v3li4.apps.googleusercontent.com
+GOOGLE_CLIENT_SECRET=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
+GOOGLE_CALLBACK_URL=https://sao-clao.onrender.com/auth/google/callback
+APP_BASE_URL=https://sao-clao.onrender.com
 
-# SMTP (Gmail/app password) để gửi mail reset password
+# SMTP for password reset
 SMTP_HOST=smtp.gmail.com
 SMTP_PORT=587
 SMTP_USER=
 SMTP_PASS=
-SMTP_FROM=
-```
 
-### 5. Khởi chạy backend
+# VNPay Payment Gateway (Sandbox)
+VNP_TMN_CODE=YOUR_TMN_CODE
+VNP_HASH_SECRET=YOUR_HASH_SECRET
+VNP_URL=https://sandbox.vnpayment.vn/paygate
+VNP_RETURN_URL=http://localhost:3000/pro/vnpay-return
+
+# ZaloPay Payment Gateway (Sandbox)
+ZALO_APPID=554
+ZALO_KEY1=8NdU5pG5R2spGHGhyO99HN1OhD8IQJBn
+ZALO_KEY2=uUfsWgfLkRLzq6W2uNXTCxrfxs51auny
+ZALO_ENDPOINT=https://sandbox.zalopay.com.vn/v001/tpe/createorder
+ZALO_CALLBACK_URL=http://localhost:3000/pro/zalo-callback
+APP_URL=http://localhost:3000
+SMTP_FROM=
+
+# Tools
+YTDLP_PATH=/opt/homebrew/bin/yt-dlp
+FFMPEG_BIN_DIR=/opt/homebrew/bin/ffmpeg
+
+# Stripe (Testing)
+STRIPE_PUBLISHABLE_KEY=pk_test_51ShVrjE4jV0Y80oU0W9XWAoUvbTmNw0KRP4Cbn0lgpAGmUdsJfbEzrSrCSTuzQSu2PNRBrj9sLqKjixE6J6apehz0070GWB831
+STRIPE_SECRET_KEY=sk_test_51ShVrjE4jV0Y80oUO7o5vLMMuia7VhTRJJYAloV2mCVgoRjS88ZdZsTrnPQq1aQnM0lG9bEERmdDLBivWg73Lh1N00Rc4YqDMw
+# After creating webhook endpoint or using Stripe CLI, set this:
+STRIPE_WEBHOOK_SECRET=
+4. Khởi chạy server:
+
 ```bash
 npm start
 ```
-Server mặc định chạy port 3000 và phục vụ view/static từ `frontend/`.
-- Mật khẩu khi đăng ký/đặt lại: tối thiểu 8 ký tự, có chữ hoa, chữ thường, số và ký tự đặc biệt.
 
-### 6. Seed tài khoản admin (tùy chọn)
-```bash
-node backend/seed-admins.js
-```
+Mặc định server chạy trên `http://localhost:3000` và phục vụ view/static từ `frontend/`.
 
----
+## Cấu trúc dự án
 
-## Tài khoản Admin
+Gần như toàn bộ mã nguồn được tách thành hai phần chính:
 
-**Tài khoản:** `admin1` `admin2` `admin3`  
-**Mật khẩu:** `admin123`
+- `backend/` — Node.js/Express app, routes, controllers, models, cấu hình DB.
+- `frontend/` — EJS templates (`views/`) và tài nguyên tĩnh (`public/` gồm CSS/JS/images/uploads).
+- `scripts/` — tiện ích import nhạc (import-one.js, import-batch.js) sử dụng `yt-dlp` + `ffmpeg`.
 
----
+## Kiến trúc & luồng dữ liệu
 
-## Import Nhạc từ YouTube
+- Client (browser) request page → Server Express render EJS template (kèm dữ liệu từ MongoDB).
+- Upload audio/cover: client gửi file → backend upload lên Cloudinary → lưu metadata URL trong MongoDB.
+- Player: client sử dụng `player.js` (simple audio player) để load và điều khiển audio từ Cloudinary URLs.
+- Comments/likes/reports: REST endpoints xử lý thao tác, server trả JSON cho client-side JS (fetch/XHR).
+
+### Bảo mật & quyền
+
+- Các route cần xác thực (upload, comment, like) yêu cầu session/cookie. Sử dụng `SESSION_SECRET` trong `.env`.
+- Admin-only routes (approve/reject/delete) kiểm tra role trên server trước khi thực thi.
+
+## Frontend (FE)
+
+- Template engine: EJS.
+- Tài nguyên tĩnh: `frontend/public/` — chứa `css/`, `js/`, `img/`, `uploads/`.
+- Nguyên tắc khi truyền dữ liệu server→client:
+	- Dùng `<%- JSON.stringify(obj) %>` hoặc `type="application/json"` script tag để inject dữ liệu lớn/an toàn.
+	- Tránh chèn trực tiếp EJS expression vào inline JS/CSS nếu dữ liệu chứa backticks/dollars.
+
+## Backend (BE)
+
+- Framework: Express.js.
+- DB: MongoDB (mongoose models in `backend/`).
+- Storage: Cloudinary for media hosting.
+- Các router chính: users, tracks, playlists, admin, upload, settings.
+
+## Import nhạc từ YouTube
+
+Hướng dẫn cách sử dụng `scripts/import-one.js` và `scripts/import-batch.js`.
 
 ### Yêu cầu
 
-Để import nhạc từ YouTube, bạn cần cài đặt:
+- **yt-dlp** — để download audio/video từ YouTube
+- **ffmpeg** — để convert/trim/render audio/video
 
-- **[yt-dlp](https://github.com/yt-dlp/yt-dlp/releases)** - Tải [yt-dlp.exe](https://github.com/yt-dlp/yt-dlp/releases/latest/download/yt-dlp.exe)
-- **[ffmpeg](https://www.gyan.dev/ffmpeg/builds/)** - Tải [ffmpeg-release-essentials.zip](https://www.gyan.dev/ffmpeg/builds/ffmpeg-release-essentials.zip)
-
-### Cài đặt
-
-Tạo cấu trúc thư mục sau:
-```
-D:\yt-dlp\yt-dlp.exe
-D:\ffmpeg-8.0-essentials_build\ffmpeg-8.0-essentials_build\bin\ffmpeg.exe
-```
-
-> **Lưu ý:** Nếu phiên bản ffmpeg khác hoặc đường dẫn khác, hãy cập nhật trong file `scripts/import-one.js` và `scripts/import-batch.js`
-
----
-
-### Phương thức 1: Import từng bài (import-one.js)
-
-Import một bài hát từ YouTube:
+### Ví dụ import 1 bài
 
 ```bash
 node scripts/import-one.js "<YouTube_URL>" <username> [audio|video] [max_duration_seconds]
 ```
 
-**Ví dụ:**
+### Import hàng loạt (batch)
+
+1. Tạo `urls.txt` (mỗi dòng 1 URL)
+2. Chạy:
 
 ```bash
-# Import audio (mặc định)
-node scripts/import-one.js "https://www.youtube.com/watch?v=ZlvAZsA3Nuc" quynhchi
-
-# Import audio (rõ ràng)
-node scripts/import-one.js "https://www.youtube.com/watch?v=ZlvAZsA3Nuc" quynhchi audio
-
-# Import video MV (toàn bộ)
-node scripts/import-one.js "https://www.youtube.com/watch?v=ZlvAZsA3Nuc" quynhchi video
-
-# Import video MV (chỉ 90 giây đầu)
-node scripts/import-one.js "https://www.youtube.com/watch?v=ZlvAZsA3Nuc" quynhchi video 90
+node scripts/import-batch.js urls.txt <username> [audio|video] [max_duration_seconds]
 ```
 
----
-
-### Phương thức 2: Import hàng loạt (import-batch.js)
-
-Import nhiều bài hát cùng lúc từ file danh sách URL.
-
-#### Bước 1: Tạo file danh sách URL
-
-Tạo file `urls.txt` với mỗi dòng là một URL YouTube:
-
-```
-https://www.youtube.com/watch?v=ZlvAZsA3Nuc
-https://www.youtube.com/watch?v=dQw4w9WgXcQ
-https://www.youtube.com/watch?v=kJQP7kiw5Fk
-```
-
-#### Bước 2: Chạy lệnh import batch
-
-```bash
-node scripts/import-batch.js <urls_file.txt> <username> [audio|video] [max_duration_seconds]
-```
-
-**Ví dụ:**
-
-```bash
-# Import tất cả thành audio
-node scripts/import-batch.js urls.txt quynhchi audio
-
-# Import tất cả thành video MV (90 giây mỗi video)
-node scripts/import-batch.js urls.txt quynhchi video 90
-
-# Import tất cả thành video MV (toàn bộ)
-node scripts/import-batch.js urls.txt quynhchi video
-```
+Xem trong `scripts/` để biết chi tiết và tuỳ chỉnh đường dẫn `ffmpeg`/`yt-dlp` nếu cần.
 
 ## Công nghệ sử dụng
 
-- **Backend:** Node.js, Express.js
-- **Database:** MongoDB
-- **Storage:** Cloudinary
-- **Audio/Video Processing:** yt-dlp, ffmpeg
-- **Frontend:** EJS, CSS
+- Node.js, Express.js
+- EJS
+- MongoDB (Mongoose)
+- Cloudinary (media hosting)
+- yt-dlp, ffmpeg (media processing)
+- FastAPI (AI service, optional)
 
-## AI Generate nhạc (tùy chọn)
+## Phát triển & debug nhanh
 
-1) Chạy service AI (FastAPI) trong repo:
-```
-cd ai-service
-pip install -r requirements.txt
-uvicorn app:app --host 127.0.0.1 --port 8000
-```
-Biến môi trường: 
-- `AI_MODEL_PATH` (bắt buộc): file `.keras`/`.h5` hoặc thư mục SavedModel (app dùng `TFSMLayer` để load inference-only). 
-- `SOUNDFONT_PATH` (mặc định /usr/share/sounds/sf2/FluidR3_GM.sf2), `TMP_DIR` (tùy chọn).
-Yêu cầu tool: `fluidsynth` + `ffmpeg` có trong PATH.
+- Frontend: sửa files trong `frontend/views` hoặc `frontend/public` → refresh trình duyệt.
+- Backend: `npm start` để chạy server. Kiểm tra logs để xem lỗi runtime.
+- Nếu buttons không thể click trên một trang: mở DevTools → Console và Elements và chạy `document.elementFromPoint(x,y)` để xem phần tử chặn.
 
-2) Cấu hình `.env` web: `AI_SERVICE_URL` trỏ tới `http://127.0.0.1:8000/generate` (hoặc host/port bạn chạy), Cloudinary giữ nguyên.
 
-3) Sử dụng trên web:
-- Đăng nhập -> vào `/ai`.
-- Upload MIDI hoặc audio (mp3/wav/m4a/flac/ogg), nhập thời lượng (5–120 giây) và temperature (0.2–2.0).
-- Server Node gửi file sang AI service; service chuyển audio -> MIDI (basic-pitch), chọn instrument chính, load model TensorFlow tại `AI_MODEL_PATH`, sinh continuation, render MP3 qua fluidsynth + ffmpeg.
-- Node upload MP3 lên Cloudinary (resource_type video, folder `saoclai/generated`), tạo Track mới (status approved, đánh dấu `aiGenerated`) và chuyển sang trang track.
-
-Nếu thiếu model hoặc thiếu fluidsynth/ffmpeg/soundfont, service trả lỗi rõ ràng, không crash web.
-
----
