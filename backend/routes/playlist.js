@@ -120,17 +120,23 @@ router.post('/:id/add-track', requireAuth, async (req, res) => {
     const userId = req.session.user.id;
     const playlistId = req.params.id;
 
+    if (!trackId) {
+      return res.json({ success: false, message: 'Thiếu trackId' });
+    }
+
     const playlist = await PlaylistCollection.findOne({ _id: playlistId, userId });
 
     if (!playlist) {
       return res.json({ success: false, message: 'Không tìm thấy playlist' });
     }
 
-    if (!trackId) {
-      return res.json({ success: false, message: 'Thiếu trackId' });
+    const trackExists = await PlaylistCollection.db.model('Track').exists({ _id: trackId, deletedAt: null });
+    if (!trackExists) {
+      return res.json({ success: false, message: 'Track không hợp lệ hoặc đã bị xóa' });
     }
 
-    if (playlist.tracks.some(id => id.toString() === trackId)) {
+    const alreadyIn = playlist.tracks.some(id => id.toString() === trackId.toString());
+    if (alreadyIn) {
       return res.json({ success: false, message: 'Bài hát đã có trong playlist' });
     }
 
@@ -140,7 +146,7 @@ router.post('/:id/add-track', requireAuth, async (req, res) => {
 
     res.json({ success: true, message: 'Đã thêm vào playlist' });
   } catch (err) {
-    console.error(err);
+    console.error('Add track to playlist error:', err);
     res.json({ success: false, message: 'Thêm bài hát thất bại' });
   }
 });

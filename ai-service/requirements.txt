@@ -1,8 +1,0 @@
-fastapi
-uvicorn[standard]
-python-multipart
-tensorflow
-numpy
-pretty_midi
-pandas
-basic-pitch
