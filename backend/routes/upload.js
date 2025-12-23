@@ -19,6 +19,7 @@ cloudinary.config({
   cloud_name: process.env.CLOUDINARY_CLOUD_NAME,
   api_key: process.env.CLOUDINARY_API_KEY,
   api_secret: process.env.CLOUDINARY_API_SECRET,
+  timeout: 60000 // 60s hard timeout để tránh treo
 });
 
 const storage = new CloudinaryStorage({
@@ -60,21 +61,37 @@ router.get('/', requireAuth, (req, res) => {
   res.render('upload', { title: 'Upload music' });
 });
 
-router.post(
-  '/new',
-  requireAuth,
-  upload.fields([
-    { name: 'audio', maxCount: 1 },
-    { name: 'cover', maxCount: 1 },
-  ]),
-  async (req, res) => {
+const parseUpload = upload.fields([
+  { name: 'audio', maxCount: 1 },
+  { name: 'cover', maxCount: 1 },
+]);
+
+router.post('/new', requireAuth, (req, res, next) => {
+  parseUpload(req, res, (err) => {
+    if (err) {
+      console.error('Upload parse error:', err);
+      req.session.flash = { type: 'danger', message: 'Không thể đọc file upload.' };
+      return req.session.save(() => res.redirect('/upload'));
+    }
+    next();
+  });
+}, async (req, res) => {
     try {
       const { title, artist, genres, tags, mood, lyricsText, lyricsLRC } = req.body;
       const audio = req.files?.audio?.[0];
       const cover = req.files?.cover?.[0];
+      console.log('[UPLOAD] incoming', {
+        title,
+        audio: audio ? { name: audio.originalname, size: audio.size, mimetype: audio.mimetype, path: audio.path } : null,
+        cover: cover ? { name: cover.originalname, size: cover.size, mimetype: cover.mimetype, path: cover.path } : null
+      });
 
       if (!title || !audio) {
         req.session.flash = { type: 'danger', message: 'Thiếu tiêu đề hoặc file audio.' };
+        return res.redirect('/upload');
+      }
+      if (!process.env.CLOUDINARY_CLOUD_NAME || !process.env.CLOUDINARY_API_KEY || !process.env.CLOUDINARY_API_SECRET) {
+        req.session.flash = { type: 'danger', message: 'Chưa cấu hình Cloudinary trong .env' };
         return res.redirect('/upload');
       }
 
@@ -114,10 +131,10 @@ router.post(
       res.redirect('/');
     } catch (err) {
       console.error('Upload error:', err);
-      req.session.flash = { type: 'danger', message: 'Upload thất bại.' };
+      const message = err.message || 'Upload thất bại.';
+      req.session.flash = { type: 'danger', message };
       res.redirect('/upload');
     }
-  }
-);
+});
 
 module.exports = router;

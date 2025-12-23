@@ -149,6 +149,16 @@ const TrackSchema = new mongoose.Schema({
     type: Number,
     default: 0
   },
+  aiGenerated: {
+    type: Boolean,
+    default: false
+  },
+  aiMeta: {
+    seconds: { type: Number },
+    temperature: { type: Number },
+    sourceType: { type: String },
+    createdAt: { type: Date, default: Date.now }
+  },
   lyricsText: {
     type: String,
     default: '',
@@ -250,6 +260,10 @@ const CommentSchema = new mongoose.Schema({
     type: Number, 
     default: 0 
   },
+  likedBy: [{
+    type: mongoose.Schema.Types.ObjectId,
+    ref: 'User'
+  }],
   createdAt: { 
     type: Date, 
     default: Date.now,

@@ -1,0 +1,613 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title><%= title %></title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&display=swap" rel="stylesheet">
+  <style>
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+    body { 
+      font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; 
+      background: #000; 
+      color: #fff; 
+      line-height: 1.6; 
+      overflow-x: hidden;
+    }
+    #snow-layer {
+      position: fixed;
+      inset: 0;
+      width: 100vw;
+      height: 100vh;
+      pointer-events: none;
+      z-index: 2;
+      mix-blend-mode: screen;
+      opacity: 0.9;
+    }
+    
+    /* Hero Section */
+    .hero-slider { 
+      position: relative; 
+      height: 60vh;
+      min-height: 480px;
+      max-height: 600px;
+      overflow: hidden; 
+      margin: 20px 60px 80px;
+      border-radius: 20px;
+    }
+    .hero-slide { 
+      position: absolute; 
+      top: 0; 
+      left: 0; 
+      width: 100%; 
+      height: 100%; 
+      opacity: 0; 
+      transition: opacity 1.2s ease-in-out; 
+      background-size: cover; 
+      background-position: center; 
+    }
+    .hero-slide.active { opacity: 1; }
+    .hero-overlay { 
+      position: absolute; 
+      inset: 0; 
+      background: linear-gradient(135deg, rgba(0,0,0,0.85) 0%, rgba(0,0,0,0.4) 50%, rgba(0,0,0,0.2) 100%); 
+    }
+    .hero-content { 
+      position: relative; 
+      z-index: 10; 
+      height: 100%; 
+      display: flex; 
+      flex-direction: column; 
+      justify-content: space-between; 
+      padding: 40px 60px; 
+      max-width: 1600px;
+      margin: 0 auto;
+    }
+    
+    /* Header */
+    .hero-header { 
+      display: flex; 
+      justify-content: space-between; 
+      align-items: center; 
+    }
+    .logo-link {
+      display: flex;
+      align-items: center;
+      text-decoration: none;
+      transition: transform 0.3s;
+    }
+    .logo-link:hover { transform: scale(1.05); }
+    .logo-img {
+      height: 36px;
+      width: auto;
+    }
+    .auth-buttons { 
+      display: flex; 
+      gap: 16px; 
+    }
+    .btn { 
+      padding: 14px 32px; 
+      border-radius: 50px; 
+      text-decoration: none; 
+      font-weight: 600; 
+      transition: all 0.3s; 
+      border: none; 
+      cursor: pointer; 
+      font-size: 15px; 
+      display: inline-block; 
+    }
+    .btn.outline { 
+      background: transparent; 
+      color: #fff; 
+      border: 2px solid rgba(255,255,255,0.3); 
+      backdrop-filter: blur(10px);
+    }
+    .btn.outline:hover { 
+      background: rgba(255,255,255,0.1); 
+      border-color: #fff;
+      transform: translateY(-2px);
+    }
+    .btn.primary { 
+      background: #fff; 
+      color: #000; 
+      border: 2px solid #fff;
+    }
+    .btn.primary:hover { 
+      background: #f0f0f0; 
+      transform: translateY(-2px);
+      box-shadow: 0 8px 24px rgba(255,255,255,0.2);
+    }
+    
+    /* Hero Main */
+    .hero-main { 
+      flex: 1; 
+      display: flex; 
+      flex-direction: column; 
+      justify-content: center; 
+      max-width: 750px; 
+      padding: 40px 0;
+    }
+    .hero-main h1 { 
+      font-size: 72px; 
+      font-weight: 900; 
+      margin-bottom: 24px; 
+      line-height: 1.05; 
+      letter-spacing: -2px;
+      text-shadow: 0 4px 20px rgba(0,0,0,0.5);
+    }
+    .hero-main p { 
+      font-size: 20px; 
+      color: rgba(255,255,255,0.95); 
+      margin-bottom: 40px; 
+      line-height: 1.6; 
+      font-weight: 400;
+      max-width: 650px;
+    }
+    
+    /* Hero Footer */
+    .hero-footer { 
+      display: flex; 
+      justify-content: space-between; 
+      align-items: center; 
+    }
+    .slider-dots { 
+      display: flex; 
+      gap: 14px; 
+    }
+    .dot { 
+      width: 12px; 
+      height: 12px; 
+      border-radius: 50%; 
+      background: rgba(255,255,255,0.3); 
+      cursor: pointer; 
+      transition: all 0.4s; 
+    }
+    .dot.active { 
+      background: #fff; 
+      width: 40px; 
+      border-radius: 6px; 
+    }
+    .artist-credit { 
+      text-align: right; 
+      font-size: 14px; 
+      color: rgba(255,255,255,0.9); 
+      backdrop-filter: blur(10px);
+      background: rgba(0,0,0,0.2);
+      padding: 12px 20px;
+      border-radius: 50px;
+    }
+    .artist-credit .name { 
+      font-weight: 700; 
+      display: block; 
+    }
+    .artist-credit .title { 
+      color: rgba(255,255,255,0.6); 
+      font-size: 13px;
+    }
+    
+    /* Search Section */
+    .container { 
+      max-width: 1400px; 
+      margin: 0 auto; 
+      padding: 0 60px 80px; 
+    }
+    .search-section { 
+      text-align: center; 
+      margin-bottom: 80px; 
+      padding: 60px 0;
+      background: linear-gradient(180deg, rgba(20,20,20,0.5) 0%, transparent 100%);
+      border-radius: 20px;
+    }
+    .search-section h2 { 
+      font-size: 32px; 
+      margin-bottom: 40px; 
+      font-weight: 700; 
+      letter-spacing: -0.5px;
+    }
+    .search-box { 
+      max-width: 700px; 
+      margin: 0 auto 24px; 
+      position: relative; 
+    }
+    .search-box input { 
+      width: 100%; 
+      padding: 20px 28px; 
+      background: #111; 
+      border: 2px solid #222; 
+      border-radius: 50px; 
+      color: #fff; 
+      font-size: 17px; 
+      font-weight: 500;
+      transition: all 0.3s;
+    }
+    .search-box input:focus { 
+      outline: none; 
+      border-color: #fff; 
+      background: #1a1a1a; 
+      box-shadow: 0 8px 32px rgba(255,255,255,0.1);
+    }
+    .search-box input::placeholder {
+      color: #666;
+      font-weight: 400;
+    }
+    .or { 
+      color: #666; 
+      margin: 28px 0; 
+      font-size: 15px; 
+      font-weight: 600;
+    }
+    
+    /* Trending Section */
+    .trending-header {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      margin-bottom: 32px;
+    }
+    .trending-header h2 { 
+      font-size: 36px; 
+      font-weight: 800; 
+      letter-spacing: -1px;
+    }
+    
+    /* Cards Grid - Spotify Style */
+    .cards { 
+      display: grid; 
+      grid-template-columns: repeat(5, 1fr); 
+      gap: 24px; 
+    }
+    
+    .card { 
+      background: #181818; 
+      border-radius: 8px; 
+      overflow: hidden; 
+      transition: all 0.3s;
+      cursor: pointer;
+      text-decoration: none;
+      color: inherit;
+      display: block;
+    }
+    .card:hover { 
+      background: #282828;
+    }
+    
+    .thumb-wrapper {
+      position: relative;
+      overflow: hidden;
+      aspect-ratio: 1;
+      background: #282828;
+    }
+    
+    .thumb { 
+      width: 100%;
+      height: 100%;
+      background-size: cover; 
+      background-position: center;
+      transition: all 0.3s;
+    }
+    
+    /* Play button overlay */
+    .play-overlay {
+      position: absolute;
+      inset: 0;
+      background: rgba(0, 0, 0, 0.4);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      opacity: 0;
+      transition: opacity 0.3s;
+    }
+    
+    .card:hover .play-overlay {
+      opacity: 1;
+    }
+    
+    .play-icon {
+      width: 56px;
+      height: 56px;
+      background: #fff;
+      border-radius: 50%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      box-shadow: 0 8px 24px rgba(0, 0, 0, 0.5);
+      transition: all 0.3s;
+    }
+    
+    .card:hover .play-icon {
+      transform: scale(1.05);
+    }
+    
+    .play-icon::after {
+      content: '';
+      width: 0;
+      height: 0;
+      border-left: 16px solid #000;
+      border-top: 10px solid transparent;
+      border-bottom: 10px solid transparent;
+      margin-left: 4px;
+    }
+    
+    .meta { 
+      padding: 16px; 
+    }
+    
+    .title { 
+      font-weight: 700; 
+      font-size: 16px;
+      margin-bottom: 8px;
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      color: #fff;
+    }
+    
+    .artist { 
+      color: #b3b3b3; 
+      font-size: 14px; 
+      font-weight: 500;
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+    }
+    
+    .empty-state {
+      text-align: center;
+      padding: 80px 20px;
+      color: #666;
+    }
+    .empty-state a {
+      color: #fff;
+      text-decoration: none;
+      font-weight: 700;
+      border-bottom: 2px solid #fff;
+      transition: opacity 0.3s;
+    }
+    .empty-state a:hover {
+      opacity: 0.8;
+    }
+    
+    /* Responsive */
+    @media (max-width: 1400px) {
+      .cards { grid-template-columns: repeat(4, 1fr); }
+    }
+    
+    @media (max-width: 1024px) {
+      .hero-slider { height: 65vh; min-height: 500px; }
+      .hero-content { padding: 32px 40px; }
+      .hero-main h1 { font-size: 56px; }
+      .container { padding: 0 40px 60px; }
+      .cards { grid-template-columns: repeat(3, 1fr); }
+    }
+    
+    @media (max-width: 768px) {
+      .hero-slider { height: 70vh; min-height: 600px; margin-bottom: 40px; }
+      .hero-content { padding: 24px; }
+      .hero-header { flex-direction: column; gap: 20px; align-items: flex-start; }
+      .hero-main { padding: 20px 0; }
+      .hero-main h1 { font-size: 42px; letter-spacing: -1px; }
+      .hero-main p { font-size: 17px; }
+      .hero-footer { flex-direction: column; gap: 20px; align-items: flex-start; }
+      .artist-credit { text-align: left; }
+      .container { padding: 0 24px 40px; }
+      .search-section { margin-bottom: 40px; padding: 40px 20px; }
+      .search-section h2 { font-size: 24px; }
+      .trending-header h2 { font-size: 28px; }
+      .cards { grid-template-columns: repeat(2, 1fr); gap: 16px; }
+      .logo-img { height: 28px; }
+      .btn { padding: 12px 24px; font-size: 14px; }
+    }
+  </style>
+</head>
+<body>
+  <section class="hero-slider">
+    <div class="hero-slide active" style="background-image: url('/public/img/banner1.png');">
+      <div class="hero-overlay"></div>
+      <div class="hero-content">
+        <div class="hero-header">
+          <a class="logo-link" href="/">
+            <img src="/public/img/saoclao.png" alt="SAOCLAO" class="logo-img">
+          </a>
+          <div class="auth-buttons">
+            <a href="/login" class="btn outline">Đăng nhập</a>
+            <a href="/signup" class="btn primary">Đăng ký</a>
+          </div>
+        </div>
+        <div class="hero-main">
+          <h1>Khám phá.<br>Được khám phá.</h1>
+          <p>Nơi nghệ sĩ và người nghe gặp nhau</p>
+          <a href="/upload" class="btn primary">Bắt đầu ngay</a>
+        </div>
+        <div class="hero-footer">
+          <div class="slider-dots">
+            <span class="dot active" data-slide="0"></span>
+            <span class="dot" data-slide="1"></span>
+            <span class="dot" data-slide="2"></span>
+          </div>
+          <div class="artist-credit">
+            <span class="name">No Beat Battler</span>
+            <span class="title">Phan Quyen</span>
+          </div>
+        </div>
+      </div>
+    </div>
+    <div class="hero-slide" style="background-image: url('/public/img/banner2.png');">
+      <div class="hero-overlay"></div>
+      <div class="hero-content">
+        <div class="hero-header">
+          <a class="logo-link" href="/">
+            <img src="/public/img/saoclao.png" alt="SAOCLAO" class="logo-img">
+          </a>
+          <div class="auth-buttons">
+            <a href="/login" class="btn outline">Đăng nhập</a>
+            <a href="/signup" class="btn primary">Đăng ký</a>
+          </div>
+        </div>
+        <div class="hero-main">
+          <h1>Chia sẻ âm nhạc.<br>Xây dựng fanbase.</h1>
+          <p>Tiếp cận hàng triệu người nghe</p>
+          <a href="/upload" class="btn primary">Upload ngay</a>
+        </div>
+        <div class="hero-footer">
+          <div class="slider-dots">
+            <span class="dot" data-slide="0"></span>
+            <span class="dot active" data-slide="1"></span>
+            <span class="dot" data-slide="2"></span>
+          </div>
+          <div class="artist-credit">
+            <span class="name">Indie Artist</span>
+            <span class="title">SAOCLAO Community</span>
+          </div>
+        </div>
+      </div>
+    </div>
+    <div class="hero-slide" style="background-image: url('/public/img/banner3.png');">
+      <div class="hero-overlay"></div>
+      <div class="hero-content">
+        <div class="hero-header">
+          <a class="logo-link" href="/">
+            <img src="/public/img/saoclao.png" alt="SAOCLAO" class="logo-img">
+          </a>
+          <div class="auth-buttons">
+            <a href="/login" class="btn outline">Đăng nhập</a>
+            <a href="/signup" class="btn primary">Đăng ký</a>
+          </div>
+        </div>
+        <div class="hero-main">
+          <h1>Kết nối.<br>Qua âm nhạc.</h1>
+          <p>Cộng đồng yêu nhạc Việt</p>
+          <a href="/" class="btn primary">Khám phá</a>
+        </div>
+        <div class="hero-footer">
+          <div class="slider-dots">
+            <span class="dot" data-slide="0"></span>
+            <span class="dot" data-slide="1"></span>
+            <span class="dot active" data-slide="2"></span>
+          </div>
+          <div class="artist-credit">
+            <span class="name">Music Lover</span>
+            <span class="title">SAOCLAO Fan</span>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <div class="container">
+    <section class="search-section">
+      <h2>Hear what's trending for free in the SoundCloud community</h2>
+      <div class="search-box">
+        <input type="text" placeholder="Search for artists, bands, tracks, podcasts" id="searchInput">
+      </div>
+      <div class="or">or</div>
+      <a href="/upload" class="btn primary">Upload your own</a>
+    </section>
+
+    <section>
+      <div class="trending-header">
+        <h2>Trending</h2>
+      </div>
+      <div class="cards">
+        <% 
+  // Chỉ hiển thị 5 bài ngẫu nhiên
+  const displayTracks = (tracks || []).sort(() => 0.5 - Math.random()).slice(0, 5);
+  displayTracks.forEach(t => { const cover = t.coverUrl || 'https://images.unsplash.com/photo-1470225620780-dba8ba36b745?w=400'; 
+        %>
+          <a href="/login" class="card">
+            <div class="thumb-wrapper">
+              <div class="thumb" style="background-image:url('<%= cover %>');"></div>
+              <div class="play-overlay">
+                <div class="play-icon"></div>
+              </div>
+            </div>
+            <div class="meta">
+              <div class="title"><%= t.title %></div>
+              <div class="artist"><%= t.artist || 'Unknown Artist' %></div>
+            </div>
+          </a>
+        <% }) %>
+      </div>
+      <% if (!tracks || tracks.length===0) { %>
+        <div class="empty-state">
+          <p style="font-size: 18px; margin-bottom: 12px;">Chưa có bài nào.</p>
+          <p>Hãy <a href="/upload">upload</a> bài đầu tiên.</p>
+        </div>
+      <% } %>
+    </section>
+  </div>
+
+  <canvas id="snow-layer"></canvas>
+
+  <script>
+    (() => {
+      const canvas = document.getElementById('snow-layer');
+      if (!canvas) return;
+      const ctx = canvas.getContext('2d');
+      let flakes = [];
+      const baseCount = 140;
+      const burstCount = 28;
+      const dpr = Math.max(window.devicePixelRatio || 1, 1);
+
+      const resize = () => {
+        canvas.width = window.innerWidth * dpr;
+        canvas.height = window.innerHeight * dpr;
+        ctx.scale(dpr, dpr);
+      };
+      resize();
+      window.addEventListener('resize', resize);
+
+      const spawnFlake = (x, y, burst = false) => {
+        const size = burst ? 1 + Math.random() * 3 : 1 + Math.random() * 2.5;
+        flakes.push({
+          x: x ?? Math.random() * window.innerWidth,
+          y: y ?? Math.random() * window.innerHeight,
+          r: size,
+          vy: burst ? 1 + Math.random() * 2 : 0.5 + Math.random() * 1.5,
+          vx: burst ? (Math.random() - 0.5) * 2 : (Math.random() - 0.5) * 0.6,
+          life: burst ? 120 + Math.random() * 60 : null
+        });
+      };
+
+      for (let i = 0; i < baseCount; i++) spawnFlake();
+
+      window.addEventListener('click', (e) => {
+        for (let i = 0; i < burstCount; i++) {
+          spawnFlake(e.clientX, e.clientY, true);
+        }
+      });
+
+      const render = () => {
+        ctx.clearRect(0, 0, canvas.width, canvas.height);
+        const width = window.innerWidth;
+        const height = window.innerHeight;
+
+        flakes = flakes.filter(f => {
+          f.x += f.vx;
+          f.y += f.vy;
+          if (f.life !== null) f.life -= 1;
+
+          if (f.y > height + 10) {
+            f.y = -10;
+            f.x = Math.random() * width;
+          }
+          if (f.x < -10) f.x = width + 10;
+          if (f.x > width + 10) f.x = -10;
+
+          ctx.beginPath();
+          ctx.fillStyle = 'rgba(255,255,255,0.8)';
+          ctx.arc(f.x, f.y, f.r, 0, Math.PI * 2);
+          ctx.fill();
+          return f.life === null || f.life > 0;
+        });
+
+        while (flakes.length < baseCount) spawnFlake();
+        requestAnimationFrame(render);
+      };
+      render();
+    })();
+  </script>
+  <script src="/public/js/slider.js"></script>
+</body>
+</html>

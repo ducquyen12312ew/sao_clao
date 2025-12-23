@@ -23,6 +23,14 @@ class MusicPlayer {
     }, 100);
   }
 
+  isValidTrack(track) {
+    return !!(track && track.id && track.audioUrl);
+  }
+
+  sanitizeQueue(list = []) {
+    return list.filter(t => this.isValidTrack(t));
+  }
+
   initElements() {
     this.playerEl = document.getElementById('musicPlayer');
     this.playPauseBtn = document.getElementById('playPauseBtn');
@@ -30,6 +38,8 @@ class MusicPlayer {
     this.nextBtn = document.getElementById('nextBtn');
     this.shuffleBtn = document.getElementById('shuffleBtn');
     this.repeatBtn = document.getElementById('repeatBtn');
+    this.globalLikeBtn = document.getElementById('playerLikeBtn');
+    this.globalLikeIcon = document.getElementById('playerLikeIcon');
     
     this.progressBar = document.getElementById('progressBar');
     this.progressFill = document.getElementById('progressFill');
@@ -80,6 +90,9 @@ class MusicPlayer {
     // Queue panel
     if (this.queueBtn) {
       this.queueBtn.addEventListener('click', () => this.toggleQueuePanel());
+    }
+    if (this.globalLikeBtn) {
+      this.globalLikeBtn.addEventListener('click', () => this.toggleCurrentLike());
     }
 
     // Audio events
@@ -160,6 +173,13 @@ class MusicPlayer {
     
     this.hasTrackedCurrentPlay = false;
     this.currentTrack = track;
+    this.updateLikeUI(typeof track.liked === 'boolean' ? track.liked : false);
+    // đồng bộ queueIndex nếu track đã có trong queue
+    const idxInQueue = this.queue.findIndex(t => t.id === track.id);
+    if (idxInQueue !== -1) {
+      this.queueIndex = idxInQueue;
+    }
+    this.renderQueue();
     this.updateUI(track);
     this.audio.src = track.audioUrl;
     
@@ -250,18 +270,32 @@ class MusicPlayer {
   }
 
   addToQueue(track) {
+    if (!this.isValidTrack(track)) {
+      console.warn('Bỏ qua track không hợp lệ khi thêm vào queue:', track);
+      return false;
+    }
     const exists = this.queue.find(t => t.id === track.id);
     if (exists) {
       console.log('Track already in queue');
+      this.renderQueue();
       return false;
     }
     
-    this.queue.push(track);
-    this.originalQueue.push(track);
+    const normalized = {
+      ...track,
+      title: track.title || 'Unknown',
+      artist: track.artist || 'Unknown',
+      cover: track.cover || ''
+    };
     
-    if (this.queue.length === 1) {
+    this.queue.push(normalized);
+    this.originalQueue.push(normalized);
+    
+    if (!this.currentTrack) {
       this.queueIndex = 0;
       this.playTrack(track);
+    } else if (this.queueIndex === -1) {
+      this.queueIndex = 0;
     }
     
     this.renderQueue();
@@ -436,31 +470,58 @@ class MusicPlayer {
     const playerTitle = document.getElementById('playerTitle');
     const playerArtist = document.getElementById('playerArtist');
     const playerThumb = document.getElementById('playerThumb');
+
+    const titleText = track?.title || 'Chưa chọn bài hát';
+    const artistText = track?.artist || 'Unknown Artist';
+    if (playerTitle) playerTitle.textContent = titleText;
+    if (playerArtist) playerArtist.textContent = artistText;
     
-    if (playerTitle) playerTitle.textContent = track.title;
-    if (playerArtist) playerArtist.textContent = track.artist || 'Unknown Artist';
-    
-    const thumbHTML = track.cover ? `<img src="${track.cover}" alt="${track.title}">` : '';
+    const thumbHTML = track?.cover ? `<img src="${track.cover}" alt="${titleText}">` : '';
     if (playerThumb) playerThumb.innerHTML = thumbHTML;
     
     const sidebarTitle = document.getElementById('sidebarTitle');
     const sidebarArtist = document.getElementById('sidebarArtist');
     const sidebarImage = document.getElementById('sidebarImage');
     
-    if (sidebarTitle) sidebarTitle.textContent = track.title;
-    if (sidebarArtist) sidebarArtist.textContent = track.artist || 'Unknown Artist';
+    if (sidebarTitle) sidebarTitle.textContent = titleText;
+    if (sidebarArtist) sidebarArtist.textContent = artistText;
     if (sidebarImage) sidebarImage.innerHTML = thumbHTML;
     
-    document.title = `${track.title} - ${track.artist || 'Unknown'} • SAOCLAO`;
+    if (track?.title) {
+      document.title = `${track.title} - ${track.artist || 'Unknown'} • SAOCLAO`;
+    }
   }
 
   toggleQueuePanel() {
     if (this.queuePanel) {
       this.queuePanel.classList.toggle('active');
+      const btn = document.getElementById('sidebarToggle');
+      if (btn && btn.querySelector('i')) {
+        btn.querySelector('i').className = this.queuePanel.classList.contains('active')
+          ? 'fa-solid fa-chevron-right'
+          : 'fa-solid fa-chevron-left';
+      }
     }
   }
 
   renderQueue() {
+    // Dọn các entry lỗi/thiếu dữ liệu trước khi render
+    const beforeLen = this.queue.length;
+    this.queue = this.sanitizeQueue(this.queue);
+    this.originalQueue = this.sanitizeQueue(this.originalQueue);
+    if (this.queueIndex >= this.queue.length) {
+      this.queueIndex = this.queue.length - 1;
+    }
+    if (this.queueIndex < -1) this.queueIndex = -1;
+    if (beforeLen !== this.queue.length) {
+      this.saveState();
+    }
+
+    const queueCount = document.getElementById('queueCount');
+    if (queueCount) {
+      queueCount.textContent = this.queue.length;
+    }
+
     if (!this.queueList) return;
     
     this.queueList.innerHTML = this.queue.map((track, index) => `
@@ -480,11 +541,6 @@ class MusicPlayer {
         </button>
       </div>
     `).join('');
-    
-    const queueCount = document.getElementById('queueCount');
-    if (queueCount) {
-      queueCount.textContent = this.queue.length;
-    }
   }
 
   playQueueItem(index) {
@@ -523,26 +579,72 @@ class MusicPlayer {
   }
 
   clearQueue() {
-    // giữ bài đang phát, xóa phần còn lại
-    const current = this.currentTrack;
-    if (current) {
-      this.queue = [current];
-      this.originalQueue = [current];
-      this.queueIndex = 0;
-    } else {
-      this.queue = [];
-      this.originalQueue = [];
-      this.queueIndex = -1;
+    this.queue = [];
+    this.originalQueue = [];
+    this.queueIndex = -1;
+    this.currentTrack = null;
+    this.hasTrackedCurrentPlay = false;
+    if (this.audio) {
       this.audio.pause();
       this.audio.src = '';
     }
-    this.hasTrackedCurrentPlay = false;
-    if (this.playerEl && this.queue.length === 0) {
+    if (this.playerEl) {
       this.playerEl.classList.remove('active');
     }
+    this.updateUI({});
     this.renderQueue();
     this.saveState();
     console.log('Queue cleared');
+  }
+
+  updateLikeUI(liked) {
+    if (this.globalLikeBtn) {
+      this.globalLikeBtn.dataset.liked = liked ? 'true' : 'false';
+      this.globalLikeBtn.style.color = liked ? '#ff4d4f' : 'var(--text-secondary)';
+    }
+    if (this.globalLikeIcon) {
+      this.globalLikeIcon.className = liked ? 'fa-solid fa-heart' : 'fa-regular fa-heart';
+    }
+    if (this.currentTrack) {
+      this.currentTrack.liked = !!liked;
+    }
+  }
+
+  async toggleCurrentLike() {
+    if (!this.currentTrack || !this.currentTrack.id) {
+      console.warn('No current track to like');
+      return;
+    }
+    try {
+      const res = await fetch(`/api/tracks/${this.currentTrack.id}/like`, { method: 'POST' });
+      const data = await res.json();
+      if (data.success) {
+        this.updateLikeUI(data.liked);
+        if (typeof data.likes === 'number') {
+          this.currentTrack.likes = data.likes;
+        }
+        // đồng bộ trạng thái liked vào queue
+        this.queue = this.queue.map(t => t.id === this.currentTrack.id ? { ...t, liked: data.liked } : t);
+        this.originalQueue = this.originalQueue.map(t => t.id === this.currentTrack.id ? { ...t, liked: data.liked } : t);
+        this.saveState();
+        const likeCountEl = document.getElementById('likeCount');
+        if (likeCountEl && typeof data.likes === 'number') {
+          likeCountEl.textContent = data.likes;
+        }
+        const pageLikeBtn = document.getElementById('likeBtn');
+        if (pageLikeBtn) {
+          pageLikeBtn.dataset.liked = data.liked ? 'true' : 'false';
+          pageLikeBtn.classList.toggle('liked', data.liked);
+          const icon = pageLikeBtn.querySelector('i');
+          if (icon) icon.className = data.liked ? 'fa-solid fa-heart' : 'fa-regular fa-heart';
+        }
+        if (window.location.pathname === '/likes') {
+          setTimeout(() => window.location.reload(), 250);
+        }
+      }
+    } catch (err) {
+      console.error('Toggle like error:', err);
+    }
   }
 
   handleKeyboard(e) {
@@ -644,11 +746,12 @@ class MusicPlayer {
       }
       
       this.currentTrack = state.currentTrack;
-      this.queue = state.queue || [];
-      this.originalQueue = state.originalQueue || [];
+      this.queue = this.sanitizeQueue(state.queue || []);
+      this.originalQueue = this.sanitizeQueue(state.originalQueue || []);
       this.queueIndex = state.queueIndex || 0;
       this.isShuffled = state.isShuffled || false;
       this.repeatMode = state.repeatMode || 'off';
+      this.updateLikeUI(!!state.currentTrack.liked);
       
       const wasPlaying = state.wasPlaying || false;
       const savedTime = state.currentTime || 0;

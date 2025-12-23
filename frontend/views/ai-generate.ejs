@@ -1,0 +1,201 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title><%= title || 'AI Generate - SAOCLAO' %></title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+  <link rel="stylesheet" href="/public/css/profile.css">
+  <style>
+    body { background: radial-gradient(circle at 20% 20%, #111 0, #050505 35%), #000; position: relative; overflow: hidden; }
+    .glow {
+      position: absolute; filter: blur(80px); opacity: 0.25; mix-blend-mode: screen; pointer-events: none;
+      width: 320px; height: 320px; border-radius: 50%;
+    }
+    .glow.one { background: #9b8cff; top: -60px; left: -40px; animation: float 12s ease-in-out infinite; }
+    .glow.two { background: #7cf2d4; bottom: -80px; right: -40px; animation: float 14s ease-in-out infinite reverse; }
+    @keyframes float { 0%,100% { transform: translateY(0); } 50% { transform: translateY(30px); } }
+
+    .hero { display: grid; grid-template-columns: 1fr; gap: 18px; position: relative; z-index: 1; }
+    .hero-card {
+      border: 1px solid rgba(255,255,255,0.08);
+      background: linear-gradient(135deg, rgba(255,255,255,0.03), rgba(255,255,255,0.01));
+      border-radius: 18px; padding: 26px; box-shadow: 0 20px 60px rgba(0,0,0,0.35);
+      backdrop-filter: blur(8px);
+    }
+    .headline { display: flex; align-items: center; gap: 12px; }
+    .spark {
+      width: 42px; height: 42px; border-radius: 14px;
+      background: linear-gradient(135deg, #8affdc, #8ea0ff);
+      display: grid; place-items: center; color: #000; font-size: 18px; font-weight: 800;
+      box-shadow: 0 8px 30px rgba(142,160,255,0.4);
+    }
+    .title-hero { font-size: 28px; font-weight: 800; margin: 0; letter-spacing: -0.5px; }
+    .subtitle { color: #c6c6c6; margin-top: 6px; line-height: 1.6; }
+    .chips { display: flex; flex-wrap: wrap; gap: 8px; margin-top: 12px; }
+    .chip { padding: 8px 12px; border-radius: 999px; border: 1px solid rgba(255,255,255,0.12); color: #eaeaea; background: rgba(255,255,255,0.04); font-size: 13px; }
+
+    .ai-form { display: grid; gap: 14px; margin-top: 16px; }
+    .ai-form .form-row { display: grid; grid-template-columns: repeat(auto-fit, minmax(240px, 1fr)); gap: 14px; }
+    .ai-form .form-group input,
+    .ai-form .form-group textarea,
+    .ai-form .form-group input[type="file"] { background: rgba(255,255,255,0.06); color: #fff; border: 1px solid rgba(255,255,255,0.16); border-radius: 14px; padding: 16px; }
+    .ai-form .form-group label { font-weight: 600; color: #f5f5f5; }
+    .ai-hint { color: #9aa0a6; margin: 6px 0 0; font-size: 13px; }
+
+    .cta-row { display: flex; align-items: center; gap: 12px; flex-wrap: wrap; }
+    .btn-primary { background: linear-gradient(135deg, #8effd1, #8fa4ff); color: #000; border: none; font-weight: 700; }
+    .btn-ghost { border: 1px solid rgba(255,255,255,0.12); background: transparent; color: #eaeaea; }
+
+    .steps { display: grid; grid-template-columns: 1fr; gap: 12px; margin-top: 16px; }
+    .step { padding: 14px; border: 1px dashed rgba(255,255,255,0.12); border-radius: 12px; color: #d1d1d1; font-size: 15px; background: rgba(255,255,255,0.02); }
+    .step strong { color: #fff; }
+
+    .aside-card { border: 1px solid rgba(255,255,255,0.08); border-radius: 18px; padding: 20px; background: rgba(255,255,255,0.02); box-shadow: 0 12px 40px rgba(0,0,0,0.35); backdrop-filter: blur(6px); }
+    .aside-card h3 { margin-top: 0; }
+    .aside-list { list-style: none; padding: 0; margin: 12px 0 0; display: grid; gap: 8px; color: #cfcfcf; }
+    .aside-list li { display: flex; gap: 8px; align-items: flex-start; }
+
+    @media (max-width: 960px) { .hero { grid-template-columns: 1fr; } }
+  </style>
+</head>
+<body>
+  <div class="glow one"></div>
+  <div class="glow two"></div>
+  <header class="header">
+    <div style="display: flex; align-items: center;">
+      <div class="logo">
+        <a href="/home">
+          <img src="/public/img/saoclao.png" alt="SAOCLAO">
+        </a>
+      </div>
+      <nav class="nav-menu">
+        <a href="/home" class="nav-link">
+          <i class="fa-solid fa-house"></i>
+          <span>Trang chủ</span>
+        </a>
+        <a href="/playlists" class="nav-link">
+          <i class="fa-solid fa-music"></i>
+          <span>Playlist</span>
+        </a>
+        <a href="/likes" class="nav-link">
+          <i class="fa-solid fa-heart"></i>
+          <span>Đã thích</span>
+        </a>
+        <a href="/ai" class="nav-link active">
+          <i class="fa-solid fa-wand-magic-sparkles"></i>
+          <span>AI Generate</span>
+        </a>
+        <a href="/pro" class="nav-link">
+          <i class="fa-solid fa-bolt"></i>
+          <span>Try Pro</span>
+        </a>
+      </nav>
+    </div>
+
+    <div class="header-actions">
+      <button class="upload-btn" onclick="window.location.href='/upload'">
+        <i class="fa-solid fa-cloud-arrow-up"></i>
+        <span class="btn-text">Upload</span>
+      </button>
+
+      <a href="/users/<%= user.username %>" style="text-decoration: none;">
+        <div class="user-avatar">
+          <img src="<%= user.avatarUrl || '/public/img/default-avatar.png' %>" alt="<%= user.username %>">
+        </div>
+      </a>
+
+      <form method="post" action="/logout" style="display:inline; margin-left: 8px;">
+        <button type="submit" class="btn-logout">Đăng xuất</button>
+      </form>
+    </div>
+  </header>
+
+  <div class="main-layout">
+    <div class="content-area">
+      <section class="section">
+        <% if (flash) { %>
+          <div class="flash <%= flash.type %>"><%= flash.message %></div>
+          <script>setTimeout(() => document.querySelector('.flash')?.remove(), 3500);</script>
+        <% } %>
+
+        <div class="hero">
+          <div class="hero-card">
+            <div class="headline">
+              <div class="spark"><i class="fa-solid fa-wand-magic-sparkles"></i></div>
+              <div>
+                <p class="title-hero">AI Composer</p>
+                <p class="subtitle">Tiếp nối MIDI hoặc remix từ MP3, sinh ra đoạn nhạc mới độc nhất, đăng thẳng lên SAOCLAO.</p>
+              </div>
+            </div>
+            <div class="chips">
+              <span class="chip">5–120 giây</span>
+              <span class="chip">MIDI / MP3 / WAV</span>
+              <span class="chip">Temperature 0.2–2.0</span>
+            </div>
+
+            <form class="ai-form" action="/ai/generate" method="post" enctype="multipart/form-data">
+              <div class="form-group" style="margin:0;">
+                <label>File MIDI / Audio <span class="required">*</span></label>
+                <input type="file" name="file" accept=".mid,.midi,.mp3,.wav,.m4a,.flac,.ogg,audio/*" required style="padding:18px; font-size:16px;">
+                <p class="ai-hint">Upload MIDI để tiếp nối, hoặc MP3/WAV để tự chuyển sang MIDI (có thể có sai số). Tối đa 30MB.</p>
+              </div>
+              <div class="form-row">
+                <div class="form-group">
+                  <label>Thời lượng mong muốn (giây)</label>
+                  <input type="number" name="seconds" min="5" max="120" value="30" step="1" required style="padding:16px; font-size:16px;">
+                  <p class="ai-hint">Đoạn sinh ra sẽ dài xấp xỉ giá trị này.</p>
+                </div>
+                <div class="form-group">
+                  <label>Temperature</label>
+                  <input type="number" name="temperature" min="0.2" max="2.0" step="0.1" value="1.0" required style="padding:16px; font-size:16px;">
+                  <p class="ai-hint">0.2 an toàn, 2.0 sáng tạo.</p>
+                </div>
+              </div>
+              <div class="cta-row">
+                <button type="submit" class="btn btn-primary">
+                  <i class="fa-solid fa-wand-magic-sparkles"></i> Tạo nhạc ngay
+                </button>
+                <button type="button" class="btn btn-ghost" onclick="window.location.href='/upload'">
+                  <i class="fa-solid fa-cloud-arrow-up"></i> Upload thủ công
+                </button>
+              </div>
+            </form>
+          </div>
+
+          <div class="hero-card">
+            <h3 style="margin-top:0;">Quy trình thực hiện</h3>
+            <div class="steps">
+              <div class="step"><strong>Bước 1.</strong> Nhận file → chuyển audio thành MIDI (nếu cần).</div>
+              <div class="step"><strong>Bước 2.</strong> Model TF sinh continuation theo tempo/temperature.</div>
+              <div class="step"><strong>Bước 3.</strong> Render bằng soundfont → MP3 → đăng track.</div>
+            </div>
+          </div>
+
+          <div class="hero-card">
+            <h3 style="margin-top:0;"><i class="fa-solid fa-lightbulb"></i> Mẹo tạo hay</h3>
+            <ul class="aside-list">
+              <li><i class="fa-solid fa-wave-square"></i> Chọn MIDI ít nhạc cụ, giai điệu rõ.</li>
+              <li><i class="fa-solid fa-gauge-high"></i> Tăng temperature cho ý tưởng lạ, giảm để an toàn.</li>
+              <li><i class="fa-solid fa-hourglass-half"></i> Giữ độ dài 5–20s lúc thử nghiệm để phản hồi nhanh.</li>
+              <li><i class="fa-solid fa-shapes"></i> Nếu render lỗi, kiểm tra `AI_MODEL_PATH` và `SOUNDFONT_PATH` trên server AI.</li>
+            </ul>
+          </div>
+        </div>
+      </section>
+    </div>
+
+    <div class="resize-handle" id="resizeHandle"></div>
+    <aside class="right-sidebar" id="rightSidebar">
+      <h3 class="sidebar-title">Gợi ý</h3>
+      <p style="color:#b3b3b3; line-height:1.6; font-size:14px;">
+        - Dùng MIDI piano đơn giản để AI tiếp nối.<br>
+        - Với MP3, AI sẽ tự tách và chuyển MIDI trước khi sinh nhạc mới.<br>
+        - Nếu lỗi model/soundfont, kiểm tra cấu hình AI service.
+      </p>
+    </aside>
+  </div>
+</body>
+</html>

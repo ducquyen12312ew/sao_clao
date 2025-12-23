@@ -29,6 +29,30 @@ router.get('/', requireAuth, async (req, res) => {
   }
 });
 
+// API: lấy playlist của user (để thêm bài hát)
+router.get('/api/mine', requireAuth, async (req, res) => {
+  try {
+    const userId = req.session.user.id;
+    const playlists = await PlaylistCollection.find({ userId })
+      .select('_id name isPublic tracks updatedAt')
+      .sort({ updatedAt: -1 })
+      .lean();
+
+    res.json({
+      success: true,
+      playlists: playlists.map(p => ({
+        _id: p._id,
+        name: p.name,
+        isPublic: p.isPublic,
+        hasTrack: (p.tracks || []).some(t => t?.toString() === req.query.trackId)
+      }))
+    });
+  } catch (err) {
+    console.error('Get my playlists error:', err);
+    res.status(500).json({ success: false, message: 'Không tải được playlist' });
+  }
+});
+
 router.get('/:id', requireAuth, async (req, res) => {
   try {
     const userId = req.session.user.id;
@@ -42,7 +66,8 @@ router.get('/:id', requireAuth, async (req, res) => {
       return res.redirect('/playlists');
     }
 
-    const isOwner = playlist.userId.toString() === userId.toString();
+    const playlistOwnerId = playlist.userId?._id?.toString?.() || playlist.userId?.toString?.();
+    const isOwner = playlistOwnerId === userId.toString();
     if (!playlist.isPublic && !isOwner) {
       req.session.flash = { type: 'danger', message: 'Playlist này ở chế độ riêng tư.' };
       return res.redirect('/playlists');
@@ -101,7 +126,11 @@ router.post('/:id/add-track', requireAuth, async (req, res) => {
       return res.json({ success: false, message: 'Không tìm thấy playlist' });
     }
 
-    if (playlist.tracks.includes(trackId)) {
+    if (!trackId) {
+      return res.json({ success: false, message: 'Thiếu trackId' });
+    }
+
+    if (playlist.tracks.some(id => id.toString() === trackId)) {
       return res.json({ success: false, message: 'Bài hát đã có trong playlist' });
     }
 

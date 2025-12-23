@@ -44,7 +44,7 @@
         <img src="/public/img/saoclao.png" alt="SAOCLAO">
       </div>
       <nav class="nav-menu">
-        <a href="/profile" class="nav-link">
+        <a href="/home" class="nav-link">
           <i class="fa-solid fa-house"></i> Trang chủ
         </a>
         <a href="/playlists" class="nav-link active">
@@ -52,6 +52,12 @@
         </a>
         <a href="/likes" class="nav-link">
           <i class="fa-solid fa-heart"></i> Đã thích
+        </a>
+        <a href="/ai" class="nav-link">
+          <i class="fa-solid fa-wand-magic-sparkles"></i> AI Generate
+        </a>
+        <a href="/pro" class="nav-link">
+          <i class="fa-solid fa-bolt"></i> Try Pro
         </a>
       </nav>
     </div>
@@ -144,7 +150,13 @@
       </div>
       <div class="track-list">
         <% playlist.tracks.forEach((track, index) => { %>
-          <div class="track-item" data-track-id="<%= track._id %>">
+          <div class="track-item"
+               data-track-id="<%= track._id %>"
+               data-track-title="<%= track.title || '' %>"
+               data-track-artist="<%= track.artist || 'Unknown' %>"
+               data-track-cover="<%= track.coverUrl || '' %>"
+               data-track-audio="<%= track.audioUrl || '' %>"
+               data-track-duration="<%= track.duration || 0 %>">
             <div class="track-number"><%= index + 1 %></div>
             <div class="track-info">
               <div class="track-thumb">
@@ -163,7 +175,7 @@
                 </div>
               </div>
             </div>
-            <div class="track-duration">--:--</div>
+            <div class="track-duration"><%= track.duration ? `${Math.floor(track.duration / 60)}:${(Math.floor(track.duration % 60)).toString().padStart(2, '0')}` : '--:--' %></div>
             <div class="track-actions">
         <button class="btn-track-action"
           data-track-id="<%= track._id %>"
@@ -174,6 +186,12 @@
           onclick="playFromButton(this)"
           title="Phát">
                 <i class="fa-solid fa-play"></i>
+              </button>
+              <button class="btn-track-action btn-hide-track"
+                data-track-id="<%= track._id %>"
+                onclick="toggleHideTrack(this)"
+                title="Ẩn khỏi phát">
+                <i class="fa-regular fa-eye"></i>
               </button>
               <% if (isOwner) { %>
                 <button class="btn-track-action" onclick="removeTrack('<%= track._id %>')" title="Xóa">
@@ -245,6 +263,9 @@
           <i class="fa-solid fa-volume-high volume-icon" id="volumeIcon"></i>
           <input type="range" class="volume-slider" id="volumeSlider" min="0" max="100" value="70">
         </div>
+        <button class="queue-toggle" id="playerLikeBtn" title="Đã thích">
+          <i id="playerLikeIcon" class="fa-regular fa-heart"></i>
+        </button>
         <button class="queue-toggle" id="queueBtn" title="Queue">
           <i class="fa-solid fa-list"></i>
           <span class="queue-count" id="queueCount">0</span>
@@ -343,6 +364,19 @@
     
     animateVisualizer();
     
+    function getPlaylistTracks() {
+      const trackEls = document.querySelectorAll('.track-item');
+      return Array.from(trackEls).map(el => ({
+        id: el.dataset.trackId,
+        title: el.dataset.trackTitle || '',
+        artist: el.dataset.trackArtist || '',
+        cover: el.dataset.trackCover || '',
+        audioUrl: el.dataset.trackAudio || '',
+        duration: Number(el.dataset.trackDuration || 0),
+        hidden: el.classList.contains('track-hidden')
+      })).filter(t => t.id && t.audioUrl && !t.hidden);
+    }
+
     // Play All Function
     function playAll() {
       if (!window.player) {
@@ -350,20 +384,13 @@
         return;
       }
       
-      // Build tracks list from DOM data attributes to avoid embedding EJS in JS
-      const trackEls = document.querySelectorAll('.track-item');
-      const tracks = Array.from(trackEls).map(el => ({
-        id: el.dataset.trackId,
-        title: el.dataset.trackTitle || '',
-        artist: el.dataset.trackArtist || '',
-        cover: el.dataset.trackCover || '',
-        audioUrl: el.dataset.trackAudio || ''
-      }));
+      const tracks = getPlaylistTracks();
       
       if (tracks.length > 0) {
         window.player.queue = tracks;
         window.player.originalQueue = [...tracks];
         window.player.queueIndex = 0;
+        window.player.isShuffled = false;
         window.player.playTrack(tracks[0]);
         window.player.renderQueue();
         window.player.saveState();
@@ -379,19 +406,10 @@
         return;
       }
       
-      // Build tracks list from DOM data attributes to avoid embedding EJS in JS
-      const trackEls2 = document.querySelectorAll('.track-item');
-      const tracks = Array.from(trackEls2).map(el => ({
-        id: el.dataset.trackId,
-        title: el.dataset.trackTitle || '',
-        artist: el.dataset.trackArtist || '',
-        cover: el.dataset.trackCover || '',
-        audioUrl: el.dataset.trackAudio || ''
-      }));
+      const tracks = getPlaylistTracks();
       
       if (tracks.length > 0) {
-        // Shuffle array
-        const shuffled = tracks.sort(() => Math.random() - 0.5);
+        const shuffled = [...tracks].sort(() => Math.random() - 0.5);
         
         window.player.queue = shuffled;
         window.player.originalQueue = [...tracks];
@@ -418,6 +436,13 @@
       }
       
       const track = { id, title, artist, cover, audioUrl };
+      const tracks = getPlaylistTracks();
+      const idx = tracks.findIndex(t => t.id === id);
+      if (tracks.length > 0) {
+        window.player.queue = tracks;
+        window.player.originalQueue = [...tracks];
+        window.player.queueIndex = idx >= 0 ? idx : 0;
+      }
       window.player.playTrack(track);
       
       // Update UI
@@ -432,6 +457,49 @@
       const cover = btn.getAttribute('data-track-cover') || '';
       const audioUrl = btn.getAttribute('data-track-audio') || '';
       window.playTrack(id, title, artist, cover, audioUrl);
+    }
+
+    // Hide track handling (local per playlist)
+    const hiddenKey = `playlist_hidden_<%= playlist._id %>`;
+    function loadHiddenSet() {
+      try {
+        const raw = localStorage.getItem(hiddenKey);
+        return new Set(raw ? JSON.parse(raw) : []);
+      } catch {
+        return new Set();
+      }
+    }
+    function saveHiddenSet(set) {
+      try {
+        localStorage.setItem(hiddenKey, JSON.stringify(Array.from(set)));
+      } catch (err) {
+        console.error('Cannot save hidden list', err);
+      }
+    }
+    const hiddenSet = loadHiddenSet();
+
+    function applyHiddenState() {
+      document.querySelectorAll('.track-item').forEach(item => {
+        const id = item.dataset.trackId;
+        const btn = item.querySelector('.btn-hide-track i');
+        const isHidden = hiddenSet.has(id);
+        item.classList.toggle('track-hidden', isHidden);
+        if (btn) {
+          btn.className = isHidden ? 'fa-solid fa-eye-slash' : 'fa-regular fa-eye';
+        }
+      });
+    }
+
+    function toggleHideTrack(btn) {
+      const id = btn.closest('.track-item')?.dataset?.trackId;
+      if (!id) return;
+      if (hiddenSet.has(id)) {
+        hiddenSet.delete(id);
+      } else {
+        hiddenSet.add(id);
+      }
+      saveHiddenSet(hiddenSet);
+      applyHiddenState();
     }
     
     // Remove Track from Playlist
@@ -563,6 +631,17 @@
     // Queue toggle
     document.getElementById('queueBtn')?.addEventListener('click', () => {
       document.getElementById('queuePanel').classList.toggle('active');
+    });
+
+    // Cập nhật thời lượng hiển thị từ dataset nếu cần
+    document.addEventListener('DOMContentLoaded', () => {
+      const items = document.querySelectorAll('.track-item');
+      items.forEach(item => {
+        const durationCell = item.querySelector('.track-duration');
+        const dur = Number(item.dataset.trackDuration || 0);
+        if (durationCell) durationCell.textContent = formatTime(dur);
+      });
+      applyHiddenState();
     });
   </script>
 </body>
