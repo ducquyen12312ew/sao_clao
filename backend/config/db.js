@@ -72,6 +72,14 @@ const UserSchema = new mongoose.Schema({
     type: String,
     default: ''
   },
+  isPro: {
+    type: Boolean,
+    default: false
+  },
+  proExpiresAt: {
+    type: Date,
+    default: null
+  },
   createdAt: { 
     type: Date, 
     default: Date.now 
@@ -150,6 +158,10 @@ const TrackSchema = new mongoose.Schema({
     default: 0
   },
   aiGenerated: {
+    type: Boolean,
+    default: false
+  },
+  isPrivate: {
     type: Boolean,
     default: false
   },
@@ -394,6 +406,42 @@ const TrackLikeSchema = new mongoose.Schema({
 
 TrackLikeSchema.index({ trackId: 1, userId: 1 }, { unique: true });
 
+// Advertisement Schema
+const AdvertisementSchema = new mongoose.Schema({
+  title: {
+    type: String,
+    required: true
+  },
+  audioUrl: {
+    type: String,
+    required: true
+  },
+  imageUrl: {
+    type: String,
+    default: ''
+  },
+  duration: {
+    type: Number, // seconds
+    default: 30
+  },
+  isActive: {
+    type: Boolean,
+    default: true
+  },
+  priority: {
+    type: Number,
+    default: 1 // Số càng cao càng ưu tiên phát
+  },
+  impressions: {
+    type: Number,
+    default: 0 // Số lần đã phát
+  },
+  createdAt: {
+    type: Date,
+    default: Date.now
+  }
+});
+
 const UserCollection = mongoose.model('User', UserSchema);
 const TrackCollection = mongoose.model('Track', TrackSchema);
 const PlayHistoryCollection = mongoose.model('PlayHistory', PlayHistorySchema);
@@ -403,6 +451,7 @@ const FollowCollection = mongoose.model('Follow', FollowSchema);
 const ReportCollection = mongoose.model('Report', ReportSchema);
 const PasswordResetCollection = mongoose.model('PasswordReset', PasswordResetSchema);
 const TrackLikeCollection = mongoose.model('TrackLike', TrackLikeSchema);
+const AdvertisementCollection = mongoose.model('Advertisement', AdvertisementSchema);
 
 module.exports = {
   connectDB,
@@ -415,5 +464,6 @@ module.exports = {
   ReportCollection,
   PasswordResetCollection,
   TrackLikeCollection,
+  AdvertisementCollection,
   mongoose
 };

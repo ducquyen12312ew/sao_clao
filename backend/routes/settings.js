@@ -1,19 +1,19 @@
 const express = require('express');
 const multer = require('multer');
-const { v2: cloudinary } = require('cloudinary');
-const CloudinaryStorage = require('multer-storage-cloudinary');
+const cloudinary = require('cloudinary').v2;
+const { Readable } = require('stream');
 const { UserCollection } = require('../config/db');
 
 const router = express.Router();
 
-// Cloudinary configuration
+// Cloudinary config
 cloudinary.config({
   cloud_name: process.env.CLOUDINARY_CLOUD_NAME,
   api_key: process.env.CLOUDINARY_API_KEY,
   api_secret: process.env.CLOUDINARY_API_SECRET,
 });
 
-// Authentication middleware
+// Auth middleware
 const requireAuth = (req, res, next) => {
   if (!req.session.user) {
     req.session.flash = { type: 'warning', message: 'Vui lòng đăng nhập.' };
@@ -22,20 +22,9 @@ const requireAuth = (req, res, next) => {
   next();
 };
 
-// Cloudinary storage configuration for avatar uploads
-const storage = new CloudinaryStorage({
-  cloudinary,
-  params: {
-    folder: 'musiccloud/avatars',
-    resource_type: 'image',
-    allowed_formats: ['jpg', 'jpeg', 'png', 'gif', 'webp'],
-    transformation: [
-      { width: 400, height: 400, crop: 'fill', gravity: 'face' }
-    ]
-  }
-});
+// Multer memory storage
+const storage = multer.memoryStorage();
 
-// File filter to only allow images
 const fileFilter = (req, file, cb) => {
   if (/image\/(png|jpe?g|gif|webp)/.test(file.mimetype)) {
     cb(null, true);
@@ -44,12 +33,23 @@ const fileFilter = (req, file, cb) => {
   }
 };
 
-// Multer upload configuration
 const upload = multer({ 
   storage, 
   fileFilter, 
   limits: { fileSize: 2 * 1024 * 1024 }
 });
+
+// Helper: Upload buffer lên Cloudinary qua stream
+const uploadToCloudinary = (buffer, options) => {
+  return new Promise((resolve, reject) => {
+    const stream = cloudinary.uploader.upload_stream(options, (error, result) => {
+      if (error) return reject(error);
+      resolve(result);
+    });
+    
+    Readable.from(buffer).pipe(stream);
+  });
+};
 
 // GET settings page
 router.get('/', requireAuth, async (req, res) => {
@@ -100,30 +100,45 @@ router.post('/profile', requireAuth, upload.single('avatar'), async (req, res) =
       bio: bio ? bio.trim() : ''
     };
     
+    // Upload avatar nếu có
     if (req.file) {
-      console.log('New avatar uploaded to Cloudinary:', req.file.path);
+      console.log('[SETTINGS] Uploading new avatar to Cloudinary...');
       
+      // Get old user to delete old avatar
       const oldUser = await UserCollection.findById(userId).select('avatarUrl');
       
-      updateData.avatarUrl = req.file.path;
+      // Upload new avatar
+      const result = await uploadToCloudinary(req.file.buffer, {
+        folder: 'musiccloud/avatars',
+        resource_type: 'image',
+        public_id: `avatar_${userId}_${Date.now()}`,
+        transformation: [
+          { width: 400, height: 400, crop: 'fill', gravity: 'face' }
+        ]
+      });
       
+      updateData.avatarUrl = result.secure_url;
+      console.log('[SETTINGS] New avatar uploaded:', result.secure_url);
+      
+      // Delete old avatar from Cloudinary
       if (oldUser && oldUser.avatarUrl && oldUser.avatarUrl.includes('cloudinary.com')) {
         try {
           const matches = oldUser.avatarUrl.match(/\/musiccloud\/avatars\/([^/.]+)/);
           
           if (matches && matches[1]) {
             const publicId = `musiccloud/avatars/${matches[1]}`;
-            console.log('Attempting to delete old avatar:', publicId);
+            console.log('[SETTINGS] Deleting old avatar:', publicId);
             
-            const result = await cloudinary.uploader.destroy(publicId);
-            console.log('Cloudinary delete result:', result);
+            const deleteResult = await cloudinary.uploader.destroy(publicId);
+            console.log('[SETTINGS] Delete result:', deleteResult);
           }
         } catch (err) {
-          console.error('Error deleting old avatar from Cloudinary:', err);
+          console.error('[SETTINGS] Error deleting old avatar:', err);
         }
       }
     }
     
+    // Update user in DB
     const updatedUser = await UserCollection.findByIdAndUpdate(
       userId,
       { $set: updateData },
@@ -138,6 +153,7 @@ router.post('/profile', requireAuth, upload.single('avatar'), async (req, res) =
       return req.session.save(() => res.redirect('/settings'));
     }
     
+    // Update session
     req.session.user = {
       id: updatedUser._id.toString(),
       name: updatedUser.name,
