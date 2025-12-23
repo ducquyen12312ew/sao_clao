@@ -9,10 +9,12 @@ require("dotenv").config();
 
 const isWin = process.platform === "win32";
 
-// YTDLP_PATH:
-// - Trên macOS/Linux: chỉ cần đặt trong .env = /opt/homebrew/bin/yt-dlp
-// - Trên Windows: có thể để trong .env = D:\yt-dlp\yt-dlp.exe
-const YTDLP_PATH = process.env.YTDLP_PATH || (isWin ? "D:\\yt-dlp\\yt-dlp.exe" : "yt-dlp");
+// YTDLP_PATH with existence fallback
+let YTDLP_PATH = process.env.YTDLP_PATH || (isWin ? "D:\\yt-dlp\\yt-dlp.exe" : "yt-dlp");
+if (!fs.existsSync(YTDLP_PATH)) {
+  // fallback to PATH binary if provided path is missing
+  YTDLP_PATH = "yt-dlp";
+}
 
 // FFMPEG_BIN_DIR (optional):
 // - Trên macOS/Linux: /opt/homebrew/bin
@@ -50,7 +52,14 @@ async function downloadAudio(url, outPrefix) {
     "--write-thumbnail",
     "--output", `${outPrefix}.%(ext)s`,
   ];
-  await execFileAsync(YTDLP_PATH, args, { maxBuffer: 200 * 1024 * 1024 });
+  try {
+    await execFileAsync(YTDLP_PATH, args, { maxBuffer: 200 * 1024 * 1024 });
+  } catch (err) {
+    if (err.code === 'ENOENT') {
+      throw new Error(`yt-dlp not found. Install yt-dlp and ensure it's in PATH, or set YTDLP_PATH. Current YTDLP_PATH=${YTDLP_PATH}`);
+    }
+    throw err;
+  }
   const audio = ["mp3", "m4a", "webm", "wav"].map(e => `${outPrefix}.${e}`).find(fs.existsSync);
   const thumb = ["jpg", "jpeg", "png", "webp"].map(e => `${outPrefix}.${e}`).find(fs.existsSync);
   if (!audio) throw new Error("Audio file not found");
@@ -67,7 +76,14 @@ async function downloadVideo(url, outPrefix, maxDuration = 180) {
     "--output", `${outPrefix}.%(ext)s`,
   ];
   if (maxDuration) args.push("--postprocessor-args", `ffmpeg:-t ${maxDuration}`);
-  await execFileAsync(YTDLP_PATH, args, { maxBuffer: 500 * 1024 * 1024 });
+  try {
+    await execFileAsync(YTDLP_PATH, args, { maxBuffer: 500 * 1024 * 1024 });
+  } catch (err) {
+    if (err.code === 'ENOENT') {
+      throw new Error(`yt-dlp not found. Install yt-dlp and ensure it's in PATH, or set YTDLP_PATH. Current YTDLP_PATH=${YTDLP_PATH}`);
+    }
+    throw err;
+  }
 
   const video = `${outPrefix}.mp4`;
   const thumb = ["jpg", "jpeg", "png", "webp"].map(e => `${outPrefix}.${e}`).find(fs.existsSync);
@@ -77,12 +93,22 @@ async function downloadVideo(url, outPrefix, maxDuration = 180) {
 
 async function extractAudioFromVideo(videoPath, outPrefix) {
   const outMp3 = `${outPrefix}.mp3`;
-  await execFileAsync("ffmpeg", ["-y", "-i", videoPath, "-vn", "-acodec", "libmp3lame", "-q:a", "0", outMp3], { maxBuffer: 500 * 1024 * 1024 });
+  try {
+    await execFileAsync("ffmpeg", ["-y", "-i", videoPath, "-vn", "-acodec", "libmp3lame", "-q:a", "0", outMp3], { maxBuffer: 500 * 1024 * 1024 });
+  } catch (err) {
+    if (err.code === 'ENOENT') {
+      throw new Error("ffmpeg not found. Install ffmpeg and ensure it's in PATH, or set FFMPEG_BIN_DIR.");
+    }
+    throw err;
+  }
   if (!fs.existsSync(outMp3)) throw new Error("Failed to extract audio");
   return outMp3;
 }
 
 async function uploadToCloudinary(filePath, type) {
+  if (!process.env.CLOUDINARY_CLOUD_NAME || !process.env.CLOUDINARY_API_KEY || !process.env.CLOUDINARY_API_SECRET) {
+    throw new Error("Cloudinary credentials missing (.env CLOUDINARY_*).");
+  }
   const folder =
     type === "video" ? "musiccloud/videos" :
     type === "audio" ? "musiccloud/audio" : "musiccloud/covers";
@@ -246,6 +272,7 @@ async function processTrack(url, username, user, tracks, type = "audio", maxDura
     };
 
     const r = await tracks.insertOne(trackDoc);
+    console.log("Uploaded:", { audioUrl, videoUrl, coverUrl, artist: parsed.artist, title: parsed.title });
     return { success: true, id: r.insertedId };
   } catch (err) {
     return { success: false, error: err.message };

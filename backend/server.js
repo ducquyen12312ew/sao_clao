@@ -29,7 +29,6 @@ const playlistRoutes = require('./routes/playlist');
 const userRoutes = require('./routes/user');
 const settingsRoutes = require('./routes/settings');
 const adminRoutes = require('./routes/admin');
-const aiRoutes = require('./routes/ai');
 const adsRoutes = require('./routes/ads');
 const proRoutes = require('./routes/pro-stripe');
 const querystring = require('querystring');
@@ -579,7 +578,6 @@ app.use('/playlists', playlistRoutes);
 app.use('/users', userRoutes);  
 app.use('/settings', settingsRoutes);
 app.use('/admin', adminRoutes);
-app.use('/ai', aiRoutes);
 app.use('/api/ads', adsRoutes);
 app.use('/pro', proRoutes);
 
