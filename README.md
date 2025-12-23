@@ -40,52 +40,8 @@ cp .env.example .env
 ```
 
 3. Chỉnh `.env` theo môi trường của bạn (MongoDB, Cloudinary, SMTP, AI service...). Xem phần env mẫu trong file `.env.example`.
-File .env: 
-MONGO_URI=mongodb+srv://musiccloud_user:0apr8nQKucupRxjN@cluster0.9fjyw7r.mongodb.net/MusicCloud?retryWrites=true&w=majority&appName=Cluster0
-SESSION_SECRET=your_secret_key_here
-PORT=3000
 
-# Cloudinary (upload)
-CLOUDINARY_CLOUD_NAME=dysgt8t4d
-CLOUDINARY_API_KEY=458789419117252
-CLOUDINARY_API_SECRET=57XomH27Ws23FbS7OXIT7oekpKI
 
-# OAuth (optional)
-GOOGLE_CLIENT_ID=330217819222-s19oi1371noj5jv5v3ocufb7om4v3li4.apps.googleusercontent.com
-GOOGLE_CLIENT_SECRET=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
-GOOGLE_CALLBACK_URL=https://sao-clao.onrender.com/auth/google/callback
-APP_BASE_URL=https://sao-clao.onrender.com
-
-# SMTP for password reset
-SMTP_HOST=smtp.gmail.com
-SMTP_PORT=587
-SMTP_USER=
-SMTP_PASS=
-
-# VNPay Payment Gateway (Sandbox)
-VNP_TMN_CODE=YOUR_TMN_CODE
-VNP_HASH_SECRET=YOUR_HASH_SECRET
-VNP_URL=https://sandbox.vnpayment.vn/paygate
-VNP_RETURN_URL=http://localhost:3000/pro/vnpay-return
-
-# ZaloPay Payment Gateway (Sandbox)
-ZALO_APPID=554
-ZALO_KEY1=8NdU5pG5R2spGHGhyO99HN1OhD8IQJBn
-ZALO_KEY2=uUfsWgfLkRLzq6W2uNXTCxrfxs51auny
-ZALO_ENDPOINT=https://sandbox.zalopay.com.vn/v001/tpe/createorder
-ZALO_CALLBACK_URL=http://localhost:3000/pro/zalo-callback
-APP_URL=http://localhost:3000
-SMTP_FROM=
-
-# Tools
-YTDLP_PATH=/opt/homebrew/bin/yt-dlp
-FFMPEG_BIN_DIR=/opt/homebrew/bin/ffmpeg
-
-# Stripe (Testing)
-STRIPE_PUBLISHABLE_KEY=pk_test_51ShVrjE4jV0Y80oU0W9XWAoUvbTmNw0KRP4Cbn0lgpAGmUdsJfbEzrSrCSTuzQSu2PNRBrj9sLqKjixE6J6apehz0070GWB831
-STRIPE_SECRET_KEY=sk_test_51ShVrjE4jV0Y80oUO7o5vLMMuia7VhTRJJYAloV2mCVgoRjS88ZdZsTrnPQq1aQnM0lG9bEERmdDLBivWg73Lh1N00Rc4YqDMw
-# After creating webhook endpoint or using Stripe CLI, set this:
-STRIPE_WEBHOOK_SECRET=
 4. Khởi chạy server:
 
 ```bash
