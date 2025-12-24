@@ -2,6 +2,13 @@ const express = require('express');
 const { PlaylistCollection } = require('../config/db');
 const router = express.Router();
 
+/**
+ * Middleware: requireAuth
+ * - Mục đích: Bảo vệ các route chỉ cho user đã đăng nhập truy cập.
+ * - Input: req.session.user phải tồn tại.
+ * - Nếu không có session user: set flash message và redirect về /login.
+ * - Nếu có: gọi next() để tiếp tục xử lý.
+ */
 const requireAuth = (req, res, next) => {
   if (!req.session.user) {
     req.session.flash = { type: 'warning', message: 'Vui lòng đăng nhập.' };
@@ -10,6 +17,14 @@ const requireAuth = (req, res, next) => {
   next();
 };
 
+
+/**
+ * GET /playlists/
+ * - Mục đích: Hiển thị trang playlist của user đang đăng nhập.
+ * - Auth: requireAuth (bắt buộc phải đăng nhập).
+ * - Tác vụ: lấy tất cả playlist của user (populate tracks), render view 'playlists'.
+ * - Output: HTML page hoặc 500 khi có lỗi server.
+ */
 router.get('/', requireAuth, async (req, res) => {
   try {
     const userId = req.session.user.id;
@@ -29,7 +44,14 @@ router.get('/', requireAuth, async (req, res) => {
   }
 });
 
-// API: lấy playlist của user (để thêm bài hát)
+
+/**
+ * GET /playlists/api/mine
+ * - Mục đích: API trả về danh sách playlist của user hiện tại (dùng khi thêm bài vào playlist).
+ * - Auth: requireAuth
+ * - Query params: trackId (tuỳ chọn) — để đánh dấu playlist đã chứa track đó hay chưa (hasTrack boolean).
+ * - Response: JSON { success: true, playlists: [{ _id, name, isPublic, hasTrack }] }
+ */
 router.get('/api/mine', requireAuth, async (req, res) => {
   try {
     const userId = req.session.user.id;
@@ -53,6 +75,13 @@ router.get('/api/mine', requireAuth, async (req, res) => {
   }
 });
 
+/**
+ * GET /playlists/:id
+ * - Mục đích: Hiển thị trang chi tiết playlist.
+ * - Auth: requireAuth
+ * - Behavior: tìm playlist theo id, xử lý quyền truy cập (public/private), lọc track không hợp lệ nếu cần.
+ * - Output: render 'playlist-detail' hoặc redirect với flash khi không hợp lệ.
+ */
 router.get('/:id', requireAuth, async (req, res) => {
   try {
     const userId = req.session.user.id;
@@ -90,6 +119,14 @@ router.get('/:id', requireAuth, async (req, res) => {
   }
 });
 
+/**
+ * POST /playlists/create
+ * - Mục đích: Tạo playlist mới cho user đang đăng nhập.
+ * - Auth: requireAuth
+ * - Body: { name, description, isPublic }
+ * - Validation: name bắt buộc.
+ * - Response: JSON { success: true, playlist: { _id, name, isPublic } } hoặc lỗi.
+ */
 router.post('/create', requireAuth, async (req, res) => {
   try {
     const { name, description, isPublic } = req.body;
@@ -114,6 +151,13 @@ router.post('/create', requireAuth, async (req, res) => {
   }
 });
 
+/**
+ * POST /playlists/:id/add-track
+ * - Mục đích: Thêm một track vào playlist (chỉ owner mới được thực hiện).
+ * - Auth: requireAuth
+ * - Body: { trackId }
+ * - Steps: kiểm tra trackId, kiểm tra playlist thuộc user, kiểm tra track tồn tại, tránh trùng lặp, lưu playlist.
+ */
 router.post('/:id/add-track', requireAuth, async (req, res) => {
   try {
     const { trackId } = req.body;
@@ -151,6 +195,13 @@ router.post('/:id/add-track', requireAuth, async (req, res) => {
   }
 });
 
+/**
+ * POST /playlists/:id/remove-track
+ * - Mục đích: Xóa một track khỏi playlist của user.
+ * - Auth: requireAuth
+ * - Body: { trackId }
+ * - Behavior: tìm playlist thuộc user, loại bỏ trackId khỏi mảng tracks, lưu thay đổi.
+ */
 router.post('/:id/remove-track', requireAuth, async (req, res) => {
   try {
     const { trackId } = req.body;
@@ -174,6 +225,12 @@ router.post('/:id/remove-track', requireAuth, async (req, res) => {
   }
 });
 
+/**
+ * POST /playlists/:id/delete
+ * - Mục đích: Xóa hẳn playlist (chỉ owner).
+ * - Auth: requireAuth
+ * - Response: JSON { success: true } hoặc lỗi nếu playlist không tồn tại.
+ */
 router.post('/:id/delete', requireAuth, async (req, res) => {
   try {
     const userId = req.session.user.id;
@@ -192,6 +249,13 @@ router.post('/:id/delete', requireAuth, async (req, res) => {
   }
 });
 
+/**
+ * POST /playlists/:id/update
+ * - Mục đích: Cập nhật metadata của playlist (name, description, isPublic).
+ * - Auth: requireAuth
+ * - Body: { name?, description?, isPublic? }
+ * - Response: JSON { success: true, isPublic } hoặc lỗi.
+ */
 router.post('/:id/update', requireAuth, async (req, res) => {
   try {
     const { name, description, isPublic } = req.body;
@@ -221,6 +285,13 @@ router.post('/:id/update', requireAuth, async (req, res) => {
   }
 });
 
+/**
+ * POST /playlists/:id/visibility
+ * - Mục đích: Thay đổi chế độ public/private của playlist.
+ * - Auth: requireAuth
+ * - Body: { isPublic }
+ * - Response: JSON { success: true, isPublic }
+ */
 router.post('/:id/visibility', requireAuth, async (req, res) => {
   try {
     const { isPublic } = req.body;

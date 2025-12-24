@@ -1,4 +1,9 @@
 // ===== TOGGLE SIDEBAR =====
+/**
+ * toggleSidebar()
+ * - Mục đích: Mở/đóng sidebar phải và cập nhật icon toggle.
+ * - Side-effects: thay đổi class 'active' trên #rightSidebar, cập nhật icon trong #sidebarToggle.
+ */
 window.toggleSidebar = function () {
   const sidebar = document.getElementById('rightSidebar');
   const toggle = document.getElementById('sidebarToggle');
@@ -14,6 +19,12 @@ window.toggleSidebar = function () {
 };
 
 // ===== NOTIFICATION =====
+/**
+ * showNotification(message)
+ * - Mục đích: Hiển thị thông báo tạm thời ở bottom-center trang.
+ * - Params: message (string)
+ * - Side-effects: thêm element .custom-notification vào DOM và tự remove sau timeout.
+ */
 function showNotification(message) {
   const existing = document.querySelector('.custom-notification');
   if (existing) existing.remove();
@@ -44,6 +55,12 @@ function showNotification(message) {
 }
 
 // ===== PLAY TRACK =====
+/**
+ * playTrackFromData(btn)
+ * - Mục đích: Đọc thông tin track từ data-track (JSON) trên nút và gọi global playTrack.
+ * - Params: btn (element) - chứa attribute data-track (JSON string).
+ * - Side-effects: gọi window.playTrack(...) nếu dữ liệu hợp lệ.
+ */
 function playTrackFromData(btn) {
   try {
     const data = JSON.parse(btn.dataset.track || '{}');
@@ -56,6 +73,13 @@ function playTrackFromData(btn) {
 }
 
 // ===== LIKE TRACK =====
+/**
+ * toggleLike(trackId, btnEl)
+ * - Mục đích: Gọi API để like/unlike track và cập nhật UI tạm thời.
+ * - Params: trackId (string), btnEl (element button được click)
+ * - Side-effects: showNotification, khi unlike có animate và remove card.
+ * - Returns: none (async)
+ */
 async function toggleLike(trackId, btnEl) {
   try {
     const res = await fetch(`/api/tracks/${trackId}/like`, { method: 'POST' });

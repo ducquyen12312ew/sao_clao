@@ -1,6 +1,11 @@
 let userPlaylists = window.__HOME_DATA__?.playlists || [];
 console.log('Initial playlists from server:', userPlaylists.length);
 
+/**
+ * toggleSidebar()
+ * - Mục đích: Mở/đóng sidebar bên phải và đổi icon nút toggle.
+ * - Side-effects: thay đổi class 'active' trên #rightSidebar và cập nhật icon trong #sidebarToggle.
+ */
 window.toggleSidebar = function() {
   const sidebar = document.getElementById('rightSidebar');
   const toggle = document.getElementById('sidebarToggle');
@@ -19,12 +24,23 @@ window.toggleSidebar = function() {
   }
 };
 
+/**
+ * playTrack(id, title, artist, cover, audioUrl)
+ * - Mục đích: Proxy gọi player.playTrack nếu player đã khởi tạo.
+ * - Params: id, title, artist, cover, audioUrl
+ */
 window.playTrack = function(id, title, artist, cover, audioUrl) {
   if (window.player) {
     window.player.playTrack({ id, title, artist, cover, audioUrl });
   }
 };
 
+/**
+ * playFromButton(btn)
+ * - Mục đích: Xử lý sự kiện khi người dùng nhấn nút play trên card.
+ * - Params: btn (element nút chứa data-* attributes của track)
+ * - Behavior: nếu player chưa sẵn sàng -> cảnh báo; nếu track đang phát thì toggle play; ngược lại play track và thêm vào hàng đợi.
+ */
 function playFromButton(btn) {
   const track = {
     id: btn.dataset.trackId,
@@ -45,12 +61,22 @@ function playFromButton(btn) {
   }
 }
 
+/**
+ * playTrackFromSearch(id, title, artist, cover, audioUrl)
+ * - Mục đích: Phát track khi người dùng nhấn play từ danh sách kết quả tìm kiếm.
+ */
 window.playTrackFromSearch = function(id, title, artist, cover, audioUrl) {
   if (window.player) {
     window.player.playTrack({ id, title, artist, cover, audioUrl });
   }
 };
 
+/**
+ * addToQueue(track)
+ * - Mục đích: Thêm track vào hàng đợi player.
+ * - Params: track object { id, title, artist, cover, audioUrl }
+ * - Side-effects: showNotification tùy kết quả, đóng context menu.
+ */
 window.addToQueue = function(track) {
   if (!track) {
     showNotification('Lỗi: Không có bài hát');
@@ -73,6 +99,11 @@ window.addToQueue = function(track) {
   closeContextMenu();
 };
 
+/**
+ * openCreatePlaylistModal()
+ * - Mục đích: Mở modal tạo playlist mới và focus vào input tên.
+ * - Side-effects: đóng context menu hiện tại.
+ */
 window.openCreatePlaylistModal = function() {
   closeContextMenu();
   const modal = document.getElementById('createPlaylistModal');
@@ -88,6 +119,10 @@ window.openCreatePlaylistModal = function() {
   if (descInput) descInput.value = '';
 };
 
+/**
+ * closeCreatePlaylistModal()
+ * - Mục đích: Đóng modal tạo playlist và reset các input liên quan.
+ */
 window.closeCreatePlaylistModal = function() {
   const modal = document.getElementById('createPlaylistModal');
   const nameInput = document.getElementById('playlistName');
@@ -98,6 +133,15 @@ window.closeCreatePlaylistModal = function() {
   if (descInput) descInput.value = '';
 };
 
+/**
+ * createPlaylist()
+ * - Mục đích: Gửi request tạo playlist mới tới server.
+ * - Flow:
+ *   1. Lấy tên và mô tả từ form, validate tên.
+ *   2. POST /playlists/create JSON { name, description }.
+ *   3. Nếu thành công: load lại playlists, nếu có contextTrack thì tự động add vào playlist mới, reload page.
+ * - Side-effects: showNotification, đóng modal, reload.
+ */
 window.createPlaylist = async function() {
   const nameInput = document.getElementById('playlistName');
   const descInput = document.getElementById('playlistDescription');
@@ -138,6 +182,11 @@ window.createPlaylist = async function() {
   }
 };
 
+/**
+ * initResizeSidebar()
+ * - Mục đích: Thiết lập sự kiện kéo để thay đổi kích thước sidebar phải.
+ * - Behavior: bắt mousedown trên handle, theo dõi mousemove và mouseup trên document.
+ */
 function initResizeSidebar() {
   const resizeHandle = document.getElementById('resizeHandle');
   const rightSidebar = document.getElementById('rightSidebar');
@@ -169,6 +218,11 @@ function initResizeSidebar() {
   });
 }
 
+/**
+ * initSearch()
+ * - Mục đích: Khởi tạo chức năng tìm kiếm (debounce, fetch API, hiển thị dropdown kết quả).
+ * - Side-effects: thêm element #searchDropdown nếu chưa có, xử lý sự kiện input/focus/clear.
+ */
 function initSearch() {
   const searchInput = document.getElementById('searchInput');
   const searchClear = document.getElementById('searchClear');
@@ -252,6 +306,12 @@ function initSearch() {
   });
 }
 
+/**
+ * displaySearchResults(users, tracks, query)
+ * - Mục đích: Hiển thị kết quả tìm kiếm trong dropdown.
+ * - Params: users array, tracks array, query string (chưa sử dụng trong hàm nhưng có thể dùng để highlight)
+ * - Side-effects: cập nhật innerHTML của #searchDropdown.
+ */
 function displaySearchResults(users, tracks, query) {
   const searchDropdown = document.getElementById('searchDropdown');
   
@@ -317,6 +377,12 @@ function displaySearchResults(users, tracks, query) {
   searchDropdown.innerHTML = html;
 }
 
+/**
+ * loadPlaylists()
+ * - Mục đích: Tải danh sách playlist của user từ API /api/playlists.
+ * - Behavior: nếu API trả lỗi hoặc không có, sử dụng dữ liệu server-side đã embed (window.__HOME_DATA__).
+ * - Side-effects: cập nhật `userPlaylists` và gọi updatePlaylistSubmenu().
+ */
 async function loadPlaylists() {
   try {
     console.log('Loading playlists from API...');
@@ -344,6 +410,11 @@ async function loadPlaylists() {
   }
 }
 
+/**
+ * updatePlaylistSubmenu()
+ * - Mục đích: Cập nhật DOM submenu chứa danh sách playlist (ở context menu).
+ * - Side-effects: tạo các .submenu-item và attach onclick để addToPlaylist.
+ */
 function updatePlaylistSubmenu() {
   const submenu = document.getElementById('playlistSubmenu');
   if (!submenu) {
@@ -374,6 +445,12 @@ function updatePlaylistSubmenu() {
   console.log('Submenu updated. Total items:', submenu.children.length);
 }
 
+/**
+ * showContextMenu(e, id, title, artist, cover, audioUrl)
+ * - Mục đích: Hiển thị context menu khi người dùng click chuột phải trên track card.
+ * - Params: MouseEvent e, track metadata
+ * - Side-effects: set window.contextTrack, position và show #contextMenu, attach close listener.
+ */
 function showContextMenu(e, id, title, artist, cover, audioUrl) {
   e.preventDefault();
   e.stopPropagation();
@@ -400,6 +477,10 @@ function showContextMenu(e, id, title, artist, cover, audioUrl) {
   }, 10);
 }
 
+/**
+ * closeContextMenu()
+ * - Mục đích: Đóng context menu nếu đang mở và remove listener đóng.
+ */
 function closeContextMenu() {
   const menu = document.getElementById('contextMenu');
   if (!menu) return;
@@ -408,6 +489,12 @@ function closeContextMenu() {
   document.removeEventListener('click', closeContextMenu);
 }
 
+/**
+ * addToPlaylist(playlistId)
+ * - Mục đích: Gửi request thêm track đang được chọn (window.contextTrack) vào playlist.
+ * - Params: playlistId (string)
+ * - Side-effects: showNotification tuỳ kết quả.
+ */
 async function addToPlaylist(playlistId) {
   if (!window.contextTrack) {
     showNotification('Lỗi: Không có bài hát được chọn');
@@ -433,6 +520,12 @@ async function addToPlaylist(playlistId) {
   }
 }
 
+/**
+ * showNotification(message)
+ * - Mục đích: Hiển thị một notification tạm thời ở bottom-center trang.
+ * - Params: message (string)
+ * - Side-effects: thêm element .custom-notification vào DOM và tự remove sau timeout.
+ */
 function showNotification(message) {
   const existingNotifs = document.querySelectorAll('.custom-notification');
   existingNotifs.forEach(n => n.remove());
@@ -485,6 +578,10 @@ if (!document.getElementById('notif-animations')) {
   document.head.appendChild(style);
 }
 
+/**
+ * initEventListeners()
+ * - Mục đích: Đăng ký các event listeners chung của trang (keyboard, contextmenu, form submit shortcut).
+ */
 function initEventListeners() {
   document.addEventListener('keydown', (e) => {
     if (e.key === 'Escape') {

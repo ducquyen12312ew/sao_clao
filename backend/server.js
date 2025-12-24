@@ -42,7 +42,13 @@ app.set('views', path.join(__dirname, '..', 'frontend', 'views'));
 app.use('/public', express.static(path.join(__dirname, '..', 'frontend', 'public')));
 
 
-// Middleware to capture raw body for Stripe webhook
+/**
+ * Middleware: capture raw body for Stripe webhook
+ * - Mục đích: Stripe webhook yêu cầu xác thực chữ ký trên raw request body.
+ *   Middleware này chỉ thu thập raw body khi đường dẫn là '/pro/webhook'
+ * - Input: req stream
+ * - Output: gán `req.rawBody` chứa nội dung thô của body, sau đó gọi next().
+ */
 app.use((req, res, next) => {
   if (req.path === '/pro/webhook') {
     let data = '';
@@ -62,8 +68,18 @@ app.use(express.urlencoded({ extended: true }));
 app.use(express.json());
 app.get('/favicon.ico', (req, res) => res.status(204).end());
 
-// Basic payload sanitization to prevent NoSQL injection-style keys
+/**
+ * Kiểm tra key nguy hiểm trong payload (phòng NoSQL injection)
+ * - dangerousKey(key): true nếu key có thể là payload tấn công (bắt đầu bằng '$', chứa '.', '__proto__', 'constructor').
+ */
 const dangerousKey = (key) => key.startsWith('$') || key.includes('.') || key === '__proto__' || key === 'constructor';
+
+/**
+ * sanitizeObject(obj)
+ * - Mục đích: Duyệt object/array và xoá bất kỳ thuộc tính có key nguy hiểm.
+ * - Input: object/array (ví dụ req.body, req.query, req.params)
+ * - Side-effect: sửa đổi object gốc (mutate) và trả về object sau khi sanitize.
+ */
 function sanitizeObject(obj) {
   if (!obj || typeof obj !== 'object') return obj;
   if (Array.isArray(obj)) {
@@ -118,7 +134,12 @@ app.use((req, res, next) => {
   next();
 });
 
-// Helpers
+/**
+ * isStrongPassword(password)
+ * - Mục đích: Kiểm tra mật khẩu có đủ mạnh theo quy tắc.
+ * - Quy tắc: >=8 ký tự, có chữ hoa, chữ thường, số và ký tự đặc biệt.
+ * - Trả về: boolean
+ */
 const isStrongPassword = (password) => {
   return (
     typeof password === 'string' &&
@@ -130,6 +151,12 @@ const isStrongPassword = (password) => {
   );
 };
 
+/**
+ * buildSessionUser(user)
+ * - Mục đích: Tạo object session-safe được lưu trong `req.session.user`.
+ * - Input: user document từ DB
+ * - Output: object rút gọn (id, name, username, avatarUrl, bio, role, isPro)
+ */
 const buildSessionUser = (user) => ({
   id: user._id?.toString(),
   name: user.name,
@@ -140,6 +167,12 @@ const buildSessionUser = (user) => ({
   isPro: user.isPro || false
 });
 
+/**
+ * ensureUniqueUsername(base)
+ * - Mục đích: Sinh username hợp lệ duy nhất dựa trên base.
+ * - Behavior: chuẩn hoá base, thử các biến thể với số đếm cho đến khi không trùng.
+ * - Trả về: chuỗi username hợp lệ và chưa tồn tại.
+ */
 async function ensureUniqueUsername(base) {
   const safeBase = (base || 'user').toLowerCase().replace(/[^a-z0-9_]/g, '') || `user${Date.now()}`;
   let candidate = safeBase;
@@ -151,6 +184,13 @@ async function ensureUniqueUsername(base) {
   return candidate;
 }
 
+/**
+ * upsertOAuthUser(provider, profile)
+ * - Mục đích: Tạo hoặc cập nhật user khi đăng nhập qua OAuth (Google).
+ * - Input: provider (ví dụ 'google'), profile (OAuth profile object)
+ * - Behavior: tìm user theo providerId hoặc email; nếu không tồn tại thì tạo user mới với password hash random.
+ * - Trả về: user document từ DB.
+ */
 async function upsertOAuthUser(provider, profile) {
   const email = profile.emails?.[0]?.value?.toLowerCase() || '';
   const providerId = profile.id;
@@ -213,6 +253,11 @@ if (process.env.GOOGLE_CLIENT_ID && process.env.GOOGLE_CLIENT_SECRET) {
   ));
 }
 
+/**
+ * sendResetEmail(email, url)
+ * - Mục đích: Gửi email đặt lại mật khẩu nếu SMTP được cấu hình.
+ * - Nếu không có transporter sẽ log link ra console thay vì gửi mail.
+ */
 const transporter = process.env.SMTP_HOST
   ? nodemailer.createTransport({
       host: process.env.SMTP_HOST,
@@ -241,6 +286,10 @@ const sendResetEmail = async (email, url) => {
   });
 };
 
+/**
+ * requireAuth
+ * - Middleware bảo vệ route HTML: nếu chưa đăng nhập thì set flash và redirect /login.
+ */
 const requireAuth = (req, res, next) => {
   if (!req.session.user) {
     req.session.flash = { type: 'warning', message: 'Vui lòng đăng nhập.' };
@@ -251,6 +300,10 @@ const requireAuth = (req, res, next) => {
   next();
 };
 
+/**
+ * requireAuthJson
+ * - Middleware cho API JSON: trả về 401 JSON nếu chưa đăng nhập (không redirect).
+ */
 const requireAuthJson = (req, res, next) => {
   if (!req.session.user) {
     return res.status(401).json({ success: false, message: 'Vui lòng đăng nhập' });
@@ -258,6 +311,13 @@ const requireAuthJson = (req, res, next) => {
   next();
 };
 
+/**
+ * getTrackFilter(user, ownerId)
+ * - Mục đích: Trả về filter dùng để truy vấn TrackCollection tuỳ theo quyền của user.
+ * - Nếu user.role === 'admin' => không filter (admin thấy tất cả).
+ * - Nếu ownerId === user.id => chỉ filter status: 'approved' (chủ sở hữu nhìn thấy approved tracks).
+ * - Ngược lại: chỉ trả về các track approved và không private.
+ */
 const getTrackFilter = (user, ownerId = null) => {
   if (user?.role === 'admin') return {};
 
@@ -358,6 +418,11 @@ app.delete('/tracks/:id', requireAuthJson, async (req, res) => {
 });
 
 
+/**
+ * GET /
+ * - Landing page: nếu đã đăng nhập redirect /home, ngược lại render landing với một số track mẫu.
+ * - Public route.
+ */
 app.get('/', async (req, res) => {
   try {
     if (req.session.user) return res.redirect('/home');
@@ -377,6 +442,10 @@ app.get('/', async (req, res) => {
   }
 });
 
+/**
+ * GET /signup
+ * - Hiển thị form đăng ký. Nếu đã đăng nhập redirect về /home.
+ */
 app.get('/signup', (req, res) => {
   if (req.session.user) {
     req.session.flash = { type: 'info', message: 'Bạn đã đăng nhập rồi.' };
@@ -385,6 +454,12 @@ app.get('/signup', (req, res) => {
   res.render('signup', { title: 'Create account' });
 });
 
+/**
+ * POST /signup
+ * - Xử lý đăng ký người dùng mới.
+ * - Body: { name, username, email, password }
+ * - Kiểm tra validate, hash mật khẩu, lưu user và redirect tới /login.
+ */
 app.post('/signup', async (req, res) => {
   if (req.session.user) return res.redirect('/');
 
@@ -425,11 +500,21 @@ app.post('/signup', async (req, res) => {
   }
 });
 
+/**
+ * GET /login
+ * - Hiển thị form đăng nhập. Nếu đã đăng nhập redirect /home.
+ */
 app.get('/login', (req, res) => {
   if (req.session.user) return res.redirect('/home');
   res.render('login', { title: 'Sign in' });
 });
 
+/**
+ * POST /login
+ * - Xử lý xác thực bằng username/email + password.
+ * - Body: { identifier, password }
+ * - On success: req.logIn và lưu session, redirect tùy role.
+ */
 app.post('/login', async (req, res) => {
   if (req.session.user) return res.redirect('/profile');
   
@@ -470,6 +555,10 @@ app.post('/login', async (req, res) => {
   }
 });
 
+/**
+ * Social auth (Google)
+ * - Nếu Google strategy được cấu hình, mở route /auth/google và callback.
+ */
 // Social auth
 if (passport._strategies && passport._strategies.google) {
   app.get('/auth/google', passport.authenticate('google', { scope: ['profile', 'email'] }));
@@ -504,11 +593,20 @@ const doLogout = (req, res) => {
 app.get('/logout', doLogout);
 app.post('/logout', doLogout);
 
+/**
+ * GET /forgot-password
+ * - Hiển thị form yêu cầu gửi link đặt lại mật khẩu.
+ */
 app.get('/forgot-password', (req, res) => {
   if (req.session.user) return res.redirect('/profile');
   res.render('forgot-password', { title: 'Quên mật khẩu' });
 });
 
+/**
+ * POST /forgot-password
+ * - Xử lý yêu cầu đặt lại mật khẩu: tạo token có hash lưu DB và gửi email (nếu cấu hình SMTP),
+ * - Body: { email }
+ */
 app.post('/forgot-password', async (req, res) => {
   try {
     const { email } = req.body;
@@ -537,6 +635,10 @@ app.post('/forgot-password', async (req, res) => {
   }
 });
 
+/**
+ * GET /reset-password/:token
+ * - Hiển thị form đặt lại mật khẩu nếu token hợp lệ (chưa dùng, chưa hết hạn).
+ */
 app.get('/reset-password/:token', async (req, res) => {
   const token = req.params.token;
   const tokenHash = crypto.createHash('sha256').update(token).digest('hex');
@@ -554,6 +656,11 @@ app.get('/reset-password/:token', async (req, res) => {
   res.render('reset-password', { title: 'Đặt lại mật khẩu', token });
 });
 
+/**
+ * POST /reset-password/:token
+ * - Xử lý đặt lại mật khẩu: validate mật khẩu, cập nhật passwordHash và mark token used.
+ * - Body: { password }
+ */
 app.post('/reset-password/:token', async (req, res) => {
   try {
     const token = req.params.token;
@@ -597,6 +704,7 @@ app.post('/reset-password/:token', async (req, res) => {
   }
 });
 
+// Mounted routers (upload, playlists, users, settings, admin, ads, pro)
 app.use('/upload', uploadRoutes);
 app.use('/playlists', playlistRoutes);
 app.use('/users', userRoutes);  
@@ -612,6 +720,12 @@ app.get('/pro', (req, res) => {
 
 app.get(['/me', '/profile'], (req, res) => res.redirect('/home'));
 
+/**
+ * GET /home
+ * - Trang chính sau khi đăng nhập: show recently played, playlists, personalized recommendations.
+ * - Auth: requireAuth
+ * - Output: render 'home' với moreOfWhatYouLike, recentlyPlayed, playlists
+ */
 app.get('/home', requireAuth, async (req, res) => {
   try {
     const userId = req.session.user.id;
@@ -710,6 +824,11 @@ app.get('/home', requireAuth, async (req, res) => {
   }
 });
 
+/**
+ * GET /likes
+ * - Hiển thị trang các bài đã thích của user.
+ * - Auth: requireAuth
+ */
 app.get('/likes', requireAuth, async (req, res) => {
   try {
     const userId = req.session.user.id;
@@ -736,6 +855,12 @@ app.get('/likes', requireAuth, async (req, res) => {
     res.status(500).send('Server error');
   }
 });
+/**
+ * POST /api/plays/:trackId
+ * - Ghi nhận play của user (tạo PlayHistory và tăng playCount trên Track).
+ * - Auth: requireAuth
+ * - Response: JSON { ok: true }
+ */
 app.post('/api/plays/:trackId', requireAuth, async (req, res) => {
   try {
     const trackId = req.params.trackId;
@@ -758,6 +883,12 @@ app.post('/api/plays/:trackId', requireAuth, async (req, res) => {
   }
 });
 
+/**
+ * GET /api/playlists
+ * - API trả về danh sách playlist (id, name) của user hiện tại.
+ * - Auth: requireAuth
+ * - Response: JSON { success: true, playlists }
+ */
 app.get('/api/playlists', requireAuth, async (req, res) => {
   try {
     const playlists = await PlaylistCollection
@@ -772,6 +903,12 @@ app.get('/api/playlists', requireAuth, async (req, res) => {
   }
 });
 
+/**
+ * GET /api/search?q=...
+ * - API tìm kiếm tracks và users theo query q.
+ * - Auth: requireAuth
+ * - Response: JSON { success: true, tracks, users }
+ */
 app.get('/api/search', requireAuth, async (req, res) => {
   try {
     const { q } = req.query;
@@ -834,6 +971,12 @@ app.get('/api/search', requireAuth, async (req, res) => {
   }
 });
 
+/**
+ * GET /api/recommendations/:trackId
+ * - Trả về danh sách gợi ý tương tự dựa trên genres/tags/mood của track nguồn.
+ * - Auth: requireAuth
+ * - Query: limit (tuỳ chọn)
+ */
 app.get('/api/recommendations/:trackId', requireAuth, async (req, res) => {
   try {
     const { trackId } = req.params;
@@ -889,6 +1032,11 @@ app.get('/api/recommendations/:trackId', requireAuth, async (req, res) => {
   }
 });
 
+/**
+ * GET /api/tracks/genre/:genre
+ * - Trả về tracks theo genre (filter by getTrackFilter và deletedAt)
+ * - Auth: requireAuth
+ */
 app.get('/api/tracks/genre/:genre', requireAuth, async (req, res) => {
   try {
     const { genre } = req.params;
@@ -907,6 +1055,11 @@ app.get('/api/tracks/genre/:genre', requireAuth, async (req, res) => {
 }
 });
 
+/**
+ * GET /api/tracks/mood/:mood
+ * - Trả về tracks theo mood tương ứng.
+ * - Auth: requireAuth
+ */
 app.get('/api/tracks/mood/:mood', requireAuth, async (req, res) => {
   try {
     const { mood } = req.params;
@@ -925,6 +1078,11 @@ app.get('/api/tracks/mood/:mood', requireAuth, async (req, res) => {
   }
 });
 
+/**
+ * GET /api/genres
+ * - Trả về danh sách genres (distinct) có trong tracks phù hợp với quyền truy cập của user.
+ * - Auth: requireAuth
+ */
 app.get('/api/genres', requireAuth, async (req, res) => {
   try {
     const filter = getTrackFilter(req.session.user);
@@ -938,6 +1096,11 @@ app.get('/api/genres', requireAuth, async (req, res) => {
   }
 });
 
+/**
+ * GET /api/moods
+ * - Trả về danh sách mood (distinct) có trong tracks phù hợp với quyền truy cập của user.
+ * - Auth: requireAuth
+ */
 app.get('/api/moods', requireAuth, async (req, res) => {
   try {
     const filter = getTrackFilter(req.session.user);
@@ -948,6 +1111,11 @@ app.get('/api/moods', requireAuth, async (req, res) => {
   }
 });
 
+/**
+ * GET /api/search/users?q=...
+ * - Tìm kiếm người dùng theo username hoặc name.
+ * - Auth: requireAuth
+ */
 app.get('/api/search/users', requireAuth, async (req, res) => {
   try {
     const { q } = req.query;
@@ -972,6 +1140,11 @@ app.get('/api/search/users', requireAuth, async (req, res) => {
   }
 });
 
+/**
+ * GET /track/:id
+ * - Render trang chi tiết track bao gồm: track, comments, relatedTracks, playlists chứa track.
+ * - Auth: requireAuth
+ */
 app.get('/track/:id', requireAuth, async (req, res) => {
   try {
     const filter = getTrackFilter(req.session.user);
@@ -1040,6 +1213,11 @@ app.get('/track/:id', requireAuth, async (req, res) => {
   }
 });
 
+/**
+ * POST /api/tracks/:id/like
+ * - Like/unlike track (toggle). Auth: requireAuth
+ * - Response: { success: true, likes, liked }
+ */
 app.post('/api/tracks/:id/like', requireAuth, async (req, res) => {
   try {
     const trackId = req.params.id;
@@ -1076,6 +1254,13 @@ app.post('/api/tracks/:id/like', requireAuth, async (req, res) => {
   }
 });
 
+/**
+ * POST /api/tracks/:id/comments
+ * - Tạo comment mới cho track.
+ * - Body: { text }
+ * - Auth: requireAuth
+ * - Response: JSON with populated comment.
+ */
 app.post('/api/tracks/:id/comments', requireAuth, async (req, res) => {
   try {
     const { text } = req.body;
@@ -1107,6 +1292,12 @@ app.post('/api/tracks/:id/comments', requireAuth, async (req, res) => {
   }
 });
 
+/**
+ * toggleCommentLike(req, res)
+ * - Mục đích: Thả/huỷ thả tim cho comment (toggle) và trả về likes/liked.
+ * - Auth: requireAuthJson (route uses requireAuthJson wrapper)
+ * - Route: POST /api/comments/:id/like
+ */
 // Like/unlike comment
 const toggleCommentLike = async (req, res) => {
   try {
@@ -1137,9 +1328,16 @@ const toggleCommentLike = async (req, res) => {
   }
 };
 
+// Route: POST /api/comments/:id/like -> toggleCommentLike (wrapped above)
 app.post('/api/comments/:id/like', requireAuthJson, toggleCommentLike);
 
 // UPDATE COMMENT (OWNER)
+/**
+ * PUT /api/comments/:id
+ * - Cập nhật nội dung comment (owner hoặc admin).
+ * - Auth: requireAuthJson
+ * - Body: { text }
+ */
 app.put('/api/comments/:id', requireAuthJson, async (req, res) => {
   try {
     const { text } = req.body;
@@ -1164,6 +1362,11 @@ app.put('/api/comments/:id', requireAuthJson, async (req, res) => {
 });
 
 // DELETE COMMENT - OWNER OR ADMIN
+/**
+ * DELETE /api/comments/:id
+ * - Xóa comment (owner hoặc admin).
+ * - Auth: requireAuthJson
+ */
 app.delete('/api/comments/:id', requireAuthJson, async (req, res) => {
   try {
     const sessionUserId = (req.session.user.id || '').toString();
@@ -1199,6 +1402,11 @@ app.delete('/api/comments/:id', requireAuthJson, async (req, res) => {
   }
 });
 
+/**
+ * POST /api/tracks/:id/report
+ * - Báo cáo một track (reason, description). Auth required.
+ * - Tạo Report document nếu chưa tồn tại report pending từ cùng user.
+ */
 app.post('/api/tracks/:id/report', requireAuth, async (req, res) => {
   try {
     const { reason, description } = req.body;
@@ -1245,6 +1453,11 @@ app.post('/api/tracks/:id/report', requireAuth, async (req, res) => {
   }
 });
 
+/**
+ * GET /api/admin/notifications/count
+ * - Dành cho admin: trả về số báo cáo và số tracks pending để hiển thị notification badge.
+ * - Auth: requireAuth + role check inside handler (must be admin).
+ */
 app.get('/api/admin/notifications/count', requireAuth, async (req, res) => {
   try {
     if (req.session.user.role !== 'admin') {
@@ -1273,6 +1486,11 @@ app.get('/api/admin/notifications/count', requireAuth, async (req, res) => {
 });
 
 
+/**
+ * 404 handler
+ * - Nếu path bắt đầu bằng /api/ => trả về 404 JSON
+ * - Ngược lại render 404 page.
+ */
 app.use((req, res) => {
   if (req.path.startsWith('/api/')) {
     return res.status(404).json({ success: false, message: 'Endpoint không tồn tại' });
@@ -1280,6 +1498,10 @@ app.use((req, res) => {
   res.status(404).render('404', { title: 'Not found' });
 });
 
+/**
+ * Error handler
+ * - Log error và trả về 500 Internal Server Error.
+ */
 app.use((err, req, res, next) => {
   console.error(err);
   res.status(500).send('Internal Server Error');

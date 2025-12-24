@@ -1,8 +1,3 @@
-/**
- * Routes for Advertisement System
- * Handles ad fetching and tracking
- */
-
 const express = require('express');
 const { AdvertisementCollection } = require('../config/db');
 
